@@ -6,6 +6,7 @@ import { UsersModule } from '../users/users.module'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { JWTEnvs } from './consts/jwt.const'
+import { MailService } from '../../common/utils/mail-util/mail.service'
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { JWTEnvs } from './consts/jwt.const'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, StringUtilService],
+  providers: [AuthService, StringUtilService, MailService],
   exports: [AuthService],
 })
 export class AuthModule {}
