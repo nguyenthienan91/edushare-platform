@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 import { UsersService } from '../users/users.service'
 import { StringUtilService } from '../../common/utils/string-util/string-util.service'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
@@ -6,6 +6,8 @@ import { SignInDto, SignUpDto } from './dto/sign.dto'
 import { UserInfo, WithUser } from '../../common/decorators/user.decorator'
 import { JwtPayload, JWTToken, TokenKeys } from './consts/jwt.const'
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto'
+import { randomUUID } from 'crypto'
+import { MailService } from '../../common/utils/mail-util/mail.service'
 
 @Injectable()
 export class AuthService {
@@ -13,6 +15,7 @@ export class AuthService {
     private usersService: UsersService,
     private stringUtilService: StringUtilService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async createToken<T extends Record<string, any>>(payload: T) {
@@ -87,14 +90,26 @@ export class AuthService {
 
     const userEmail = user.email
     if (userEmail) {
-      // await this.mailUtilService.sendMail({
-      //   to: userEmail,
-      //   subject: 'Reset password',
-      //   template: MailTemplate.RESET_PASSWORD,
-      //   context: { redirectTo },
-      // });
+      // 1. Tạo Token và thời gian hết hạn (15 phút)
+      const token = randomUUID()
+      const expires = new Date(Date.now() + 15 * 60 * 1000)
+
+      // 2. Lưu vào database (Sử dụng các trường đã thêm vào Schema trước đó)
+      await this.usersService.update(user.id, {
+        resetPasswordToken: token,
+        resetPasswordExpiresAt: expires.toISOString(),
+      })
+
+      // 3. Gửi mail qua Resend
+      try {
+        await this.mailService.sendResetPasswordEmail(user.email, token, redirectTo)
+        return { message: 'Vui lòng kiểm tra email của bạn' }
+      } catch (error) {
+        throw new InternalServerErrorException('Lỗi khi gửi email')
+      }
     } else {
       this.sendSMS()
+      return { message: 'Vui lòng kiểm tra điện thoại của bạn' }
     }
   }
 
