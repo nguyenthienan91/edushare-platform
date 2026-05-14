@@ -1,0 +1,76 @@
+import { type LucideIcon, LayoutDashboard, Users, Group, AlertCircle, Banknote, Gauge, FolderPlus, Upload, Wallet, ShieldCheck, RefreshCw, Home, Star } from 'lucide-react'
+import { SidebarSeparator } from '@/components/ui/sidebar'
+import { NavUser } from '@/components/nav-user'
+import { NavMain } from '@/components/nav-main'
+
+export type DashboardRole = 'admin' | 'owner'
+
+type SidebarLink = {
+  title: string
+  url: string
+  icon: LucideIcon
+  isActive?: boolean
+  items?: { title: string; url: string }[]
+}
+
+const roleMenus: Record<DashboardRole, { sections: { label: string; items: SidebarLink[] }[] }> = {
+  admin: {
+    sections: [
+      {
+        label: 'Khám phá',
+        items: [
+          { title: 'Tổng quan Admin', url: '/admin/overview', icon: Home, isActive: true },
+        ],
+      },
+      {
+        label: 'Quản trị',
+        items: [
+          { title: 'Quản lý người dùng', url: '/admin/users', icon: Users },
+          { title: 'Quản lý nhóm', url: '/admin/groups', icon: Group },
+          { title: 'Quản lý tranh chấp', url: '/admin/disputes', icon: AlertCircle },
+          { title: 'Phê duyệt rút tiền', url: '/admin/withdrawals', icon: Banknote },
+          { title: 'Thống kê doanh thu', url: '/admin/revenue', icon: Gauge },
+        ],
+      },
+    ],
+  },
+  owner: {
+    sections: [
+      {
+        label: 'Khám phá',
+        items: [
+          { title: 'Tổng quan Owner', url: '/owner/overview', icon: Home, isActive: true },
+        ],
+      },
+      {
+        label: 'Quản lý',
+        items: [
+          { title: 'Tạo nhóm', url: '/owner/groups/create', icon: FolderPlus },
+          { title: 'Quản lý nhóm', url: '/owner/groups', icon: Group },
+          { title: 'Tải bằng chứng', url: '/owner/evidence', icon: Upload },
+          { title: 'Ví ký quỹ', url: '/owner/wallet', icon: Wallet },
+          { title: 'Yêu cầu rút tiền', url: '/owner/withdrawals', icon: Banknote },
+          { title: 'Nhắc gia hạn', url: '/owner/renewals', icon: RefreshCw },
+        ],
+      },
+    ],
+  },
+}
+
+export function RoleSidebar({ role }: { role: DashboardRole }) {
+  const menu = roleMenus[role]
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="p-2">
+        <NavMain sections={menu.sections} />
+      </div>
+      <div className="mt-auto p-2">
+        <SidebarSeparator />
+        <div className="pt-2">
+          <NavUser />
+        </div>
+      </div>
+    </div>
+  )
+}
