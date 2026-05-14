@@ -1,0 +1,166 @@
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Sparkles } from 'lucide-react'
+
+export default function LoginPage() {
+  const [isLogin, setIsLogin] = useState(true)
+  const [role, setRole] = useState('member')
+  const navigate = useNavigate()
+
+  const roleRoutes: Record<string, string> = {
+    admin: '/admin',
+    owner: '/owner',
+    member: '/member',
+    public: '/'
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!isLogin) {
+      setIsLogin(true)
+      return
+    }
+
+    navigate(roleRoutes[role] ?? '/')
+  }
+
+  return (
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+      {/* Logo */}
+      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+        <Link to='/' className='flex items-center justify-center gap-3 group'>
+          <div className='relative'>
+            <div className='absolute inset-0 bg-emerald-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity'></div>
+
+            <div className='relative bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 rounded-2xl shadow-lg'>
+              <Sparkles className='w-8 h-8 text-white' />
+            </div>
+          </div>
+
+          <div className='text-left'>
+            <h1 className='text-2xl font-bold text-slate-900 tracking-tight'>Share Hub</h1>
+
+            <p className='text-xs text-emerald-600 font-medium'>Chia sẻ thông minh hơn</p>
+          </div>
+        </Link>
+
+        <h2 className='mt-8 text-center text-3xl font-extrabold text-slate-900'>
+          {isLogin ? 'Đăng nhập vào tài khoản' : 'Tạo tài khoản mới'}
+        </h2>
+
+        <p className='mt-2 text-center text-sm text-slate-600'>
+          {isLogin ? 'Chào mừng bạn quay trở lại' : 'Bắt đầu hành trình của bạn'}
+        </p>
+      </div>
+
+      {/* Card */}
+      <div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md'>
+        <div className='bg-white py-8 px-6 shadow-sm border border-slate-100 sm:rounded-2xl'>
+          <form className='space-y-6' onSubmit={handleSubmit}>
+            {/* Register only */}
+            {!isLogin && (
+              <div>
+                <label className='block text-sm font-medium text-slate-700'>Họ và tên</label>
+
+                <div className='mt-1'>
+                  <input
+                    type='text'
+                    placeholder='Nguyễn Văn A'
+                    className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Role */}
+            <div>
+              <label className='block text-sm font-medium text-slate-700'>Vai trò</label>
+
+              <div className='mt-1'>
+                <select
+                  value={role}
+                  onChange={(event) => setRole(event.target.value)}
+                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+                >
+                  <option value='member'>Member</option>
+                  <option value='owner'>Owner</option>
+                  <option value='admin'>Admin</option>
+                  <option value='public'>Public</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className='block text-sm font-medium text-slate-700'>Email</label>
+
+              <div className='mt-1'>
+                <input
+                  type='email'
+                  placeholder='you@example.com'
+                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className='block text-sm font-medium text-slate-700'>Mật khẩu</label>
+
+              <div className='mt-1'>
+                <input
+                  type='password'
+                  placeholder='••••••••'
+                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
+                />
+              </div>
+            </div>
+
+            {/* Remember */}
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center'>
+                <input
+                  id='remember-me'
+                  type='checkbox'
+                  className='h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded'
+                />
+
+                <label htmlFor='remember-me' className='ml-2 block text-sm text-slate-900'>
+                  Ghi nhớ đăng nhập
+                </label>
+              </div>
+
+              <div className='text-sm'>
+                <button type='button' className='font-medium text-emerald-600 hover:text-emerald-500'>
+                  Quên mật khẩu?
+                </button>
+              </div>
+            </div>
+
+            {/* Button */}
+            <div>
+              <button
+                type='submit'
+                className='w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors'
+              >
+                {isLogin ? 'Đăng nhập' : 'Đăng ký'}
+              </button>
+            </div>
+          </form>
+
+          {/* Switch */}
+          <div className='mt-6 text-center'>
+            <button
+              type='button'
+              onClick={() => setIsLogin(!isLogin)}
+              className='text-sm font-medium text-slate-600 hover:text-slate-900'
+            >
+              {isLogin ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
