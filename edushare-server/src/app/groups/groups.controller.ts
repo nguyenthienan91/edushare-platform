@@ -4,8 +4,11 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
+import { Roles } from '../../common/decorators/roles.decorator'
+import { UserRole } from '../users/entities/user.entity'
 
 @Controller('groups')
+@Roles(UserRole.GROUP_OWNER)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
@@ -32,5 +35,17 @@ export class GroupsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.groupsService.remove({ _id: id })
+  }
+
+  @Post(':id/join')
+  @Roles()
+  join(@Param('id') id: string, @User() user: UserInfo) {
+    return this.groupsService.joinGroup(id, user.userID)
+  }
+
+  @Delete(':id/members/:userId')
+  @Roles()
+  removeMember(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.groupsService.removeMember(id, userId)
   }
 }
