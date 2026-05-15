@@ -8,7 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from '../users/entities/user.entity'
 
 @Controller('groups')
-@Roles(UserRole.GROUP_OWNER)
+@Roles(UserRole.ADMIN)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
@@ -37,10 +37,10 @@ export class GroupsController {
     return this.groupsService.remove({ _id: id })
   }
 
-  @Post(':id/join')
+  @Post(':id/join/members/:memberId')
   @Roles()
-  join(@Param('id') id: string, @User() user: UserInfo) {
-    return this.groupsService.joinGroup(id, user.userID)
+  join(@Param('id') id: string, @Param('memberId') memberId: string) {
+    return this.groupsService.joinGroup(id, memberId)
   }
 
   @Delete(':id/members/:userId')

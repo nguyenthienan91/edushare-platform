@@ -25,6 +25,9 @@ export class Group {
   occupiedSlots!: number
 
   @Prop({ type: Number, required: true, min: 0 })
+  totalPrice!: number
+
+  @Prop({ type: Number, required: true, min: 0 })
   price!: number
 
   @Prop({

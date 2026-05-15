@@ -57,6 +57,7 @@ export class GroupsService {
       ...createGroupDto,
       occupiedSlots: 0,
       members: [],
+      price: createGroupDto.totalPrice / createGroupDto.totalSlots,
       ownerId: new Types.ObjectId(userId),
       status: GroupStatus.AVAILABLE,
     })

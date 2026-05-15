@@ -10,6 +10,7 @@ export const GroupSchema = z.object({
   description: z.string().trim().min(1),
   totalSlots: z.number().int().min(1),
   occupiedSlots: z.number().int().min(0),
+  totalPrice: z.number().finite().min(0),
   price: z.number().finite().min(0),
   status: GroupStatusEnum,
   ownerId: objectIdSchema,
