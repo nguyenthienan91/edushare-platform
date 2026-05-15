@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, QueryFilter, Types } from 'mongoose'
 import { Group, GroupDocument, GroupStatus } from './entities/group.entity'
@@ -11,6 +12,32 @@ export class GroupsService {
     @InjectModel(Group.name)
     private readonly groupModel: Model<GroupDocument>,
   ) {}
+
+  private calculateStatus(params: { occupiedSlots: number; totalSlots: number; expiredAt: Date | null }): GroupStatus {
+    const { occupiedSlots, totalSlots, expiredAt } = params
+    const now = new Date()
+    if (expiredAt && expiredAt <= now) return GroupStatus.EXPIRED
+    if (occupiedSlots >= totalSlots) return GroupStatus.FULL
+    return GroupStatus.AVAILABLE
+  }
+
+  private async syncStatus(group: GroupDocument): Promise<GroupDocument> {
+    const nextStatus = this.calculateStatus({
+      occupiedSlots: group.occupiedSlots,
+
+      totalSlots: group.totalSlots,
+
+      expiredAt: group.expiredAt ?? null,
+    })
+
+    if (group.status === nextStatus) {
+      return group
+    }
+
+    group.status = nextStatus
+
+    return group.save()
+  }
 
   async create(createGroupDto: CreateGroupDto, userId: string) {
     const createdGroup = new this.groupModel({
@@ -61,9 +88,10 @@ export class GroupsService {
       throw new NotFoundException('Group not found')
     }
 
+    const data = await this.syncStatus(updatedGroup)
     return {
       message: 'Group updated successfully',
-      data: updatedGroup,
+      data,
     }
   }
 
@@ -78,5 +106,18 @@ export class GroupsService {
       message: 'Group deleted successfully',
       data: deletedGroup,
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  @Cron(CronExpression.EVERY_MINUTE)
+  async markExpiredGroups(): Promise<void> {
+    const now = new Date()
+    await this.groupModel.updateMany(
+      {
+        expiredAt: { $ne: null, $lte: now },
+        status: { $ne: GroupStatus.EXPIRED },
+      },
+      { $set: { status: GroupStatus.EXPIRED } },
+    )
   }
 }

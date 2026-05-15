@@ -8,14 +8,18 @@ import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
 import { AuthGuard } from './auth/auth.guard'
 import { RolesGuard } from '../common/security/roles/roles.guard'
-import { GroupsModule } from './groups/groups.module';
+import { GroupsModule } from './groups/groups.module'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
+      // eslint-disable-next-line @typescript-eslint/require-await
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
       }),
