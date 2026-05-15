@@ -10,7 +10,7 @@ export default function LoginPage() {
   const roleRoutes: Record<string, string> = {
     admin: '/admin',
     owner: '/owner',
-    member: '/member',
+    member: '/dashboard',
     public: '/'
   }
 
@@ -26,14 +26,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+    <div className='min-h-screen bg-linear-to-br from-slate-50 via-emerald-50 to-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
       {/* Logo */}
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <Link to='/' className='flex items-center justify-center gap-3 group'>
           <div className='relative'>
             <div className='absolute inset-0 bg-emerald-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity'></div>
 
-            <div className='relative bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 rounded-2xl shadow-lg'>
+            <div className='relative bg-linear-to-br from-emerald-500 to-emerald-600 p-3 rounded-2xl shadow-lg'>
               <Sparkles className='w-8 h-8 text-white' />
             </div>
           </div>

@@ -9,7 +9,12 @@ import AdminUsers from '@/pages/admin/AdminUsers'
 import AdminWithdrawals from '@/pages/admin/AdminWithdrawals'
 import LandingPage from '@/pages/Landingpage'
 import LoginPage from '@/pages/auth/LoginPage'
-import MemberHomePage from '@/pages/member/MemberHomePage'
+import MemberParticipantPage from '@/pages/member/MemberParticipantPage'
+import MemberParticipantOrdersPage from '@/pages/member/MemberParticipantOrdersPage'
+import MemberWalletPage from '@/pages/member/MemberWalletPage'
+import MemberReviewsPage from '@/pages/member/MemberReviewsPage'
+import MemberDisputesPage from '@/pages/member/MemberDisputesPage'
+import MemberSettingsPage from '@/pages/member/MemberSettingsPage'
 import OwnerCreateGroup from '@/pages/owner/OwnerCreateGroup'
 import OwnerDashboard from '@/pages/owner/OwnerDashboard'
 import OwnerEvidence from '@/pages/owner/OwnerEvidence'
@@ -32,7 +37,7 @@ function DashboardRoute({
   role,
   title,
   description,
-  children,
+  children
 }: {
   role: DashboardRole
   title: string
@@ -54,7 +59,61 @@ export default function AppRoutes() {
       </Route>
 
       <Route path='/login' element={<LoginPage />} />
-      <Route path='/member' element={<MemberHomePage />} />
+      <Route path='/member' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member/overview' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member/wallet' element={<Navigate to='/dashboard/wallet' replace />} />
+      <Route path='/member/groups' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member/renewals' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member/transactions' element={<Navigate to='/dashboard/participant/orders' replace />} />
+      <Route path='/dashboard' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route
+        path='/dashboard/participant'
+        element={
+          <DashboardRoute role='member' title='Thị trường' description='Khám phá các nhóm và cơ hội tham gia.'>
+            <MemberParticipantPage />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/participant/orders'
+        element={
+          <DashboardRoute role='member' title='Đơn hàng của tôi' description='Theo dõi các đơn hàng gần đây.'>
+            <MemberParticipantOrdersPage />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/wallet'
+        element={
+          <DashboardRoute role='member' title='Ví ký quỹ' description='Quản lý số dư và giao dịch ký quỹ.'>
+            <MemberWalletPage />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/reviews'
+        element={
+          <DashboardRoute role='member' title='Đánh giá' description='Xem lại các đánh giá của bạn.'>
+            <MemberReviewsPage />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/disputes'
+        element={
+          <DashboardRoute role='member' title='Tranh chấp' description='Theo dõi các tranh chấp đang xử lý.'>
+            <MemberDisputesPage />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/settings'
+        element={
+          <DashboardRoute role='member' title='Cài đặt' description='Thiết lập tài khoản và tuỳ chọn cá nhân.'>
+            <MemberSettingsPage />
+          </DashboardRoute>
+        }
+      />
 
       <Route path='/admin' element={<Navigate to='/admin/overview' replace />} />
       <Route
