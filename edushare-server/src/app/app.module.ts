@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
 import { AuthGuard } from './auth/auth.guard'
 import { RolesGuard } from '../common/security/roles/roles.guard'
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RolesGuard } from '../common/security/roles/roles.guard'
     }),
     AuthModule,
     UsersModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],
