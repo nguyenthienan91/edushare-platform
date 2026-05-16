@@ -1,6 +1,19 @@
-import { ArrowUpRight, ShieldAlert, Users, Wallet, Zap } from 'lucide-react'
+import { ArrowUpRight, CalendarDays, ShieldAlert, Users, Wallet, Zap } from 'lucide-react'
+import { addDays } from 'date-fns'
+import * as React from 'react'
+import type { DateRange } from 'react-day-picker'
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useMemo } from 'react'
 
 const stats = [
   {
@@ -34,23 +47,15 @@ const stats = [
 ]
 
 const communityGrowth = [24, 30, 28, 36, 42, 48, 56]
-const chartHeight = 240
-const chartWidth = 540
-const padding = 28
-const maxValue = Math.max(...communityGrowth)
-const minValue = Math.min(...communityGrowth)
-const range = Math.max(maxValue - minValue, 1)
-
-const points = communityGrowth
-  .map((value, index) => {
-    const x = padding + (index * (chartWidth - padding * 2)) / (communityGrowth.length - 1)
-    const y = chartHeight - padding - ((value - minValue) / range) * (chartHeight - padding * 2)
-    return `${x},${y}`
-  })
-  .join(' ')
-
-const areaPath = `M ${padding},${chartHeight - padding} L ${points} L ${chartWidth - padding},${chartHeight - padding} Z`
-const linePath = `M ${points.replaceAll(' ', ' L ')}`
+const chartData = [
+  { name: 'T2', value: 24 },
+  { name: 'T3', value: 30 },
+  { name: 'T4', value: 28 },
+  { name: 'T5', value: 36 },
+  { name: 'T6', value: 42 },
+  { name: 'T7', value: 48 },
+  { name: 'CN', value: 56 },
+]
 
 const topServices = [
   { name: 'Netflix', tone: 'bg-rose-100 text-rose-700' },
@@ -59,7 +64,46 @@ const topServices = [
   { name: 'Disney+', tone: 'bg-violet-100 text-violet-700' }
 ]
 
+const rangePresets = [
+  { label: 'Hôm nay', days: 0 },
+  { label: '7 ngày', days: 6 },
+  { label: '30 ngày', days: 29 },
+  { label: 'Năm nay', days: 364 },
+]
+
+const dateTabs = [
+  { value: 'day', label: 'Theo ngày', icon: CalendarDays },
+  { value: 'month', label: 'Theo tháng', icon: CalendarDays },
+  { value: 'year', label: 'Theo năm', icon: CalendarDays },
+] as const
+
 export default function AdminDashboard() {
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: new Date(new Date().getFullYear(), 0, 12),
+    to: addDays(new Date(new Date().getFullYear(), 0, 12), 30),
+  })
+  const [dateFilterMode, setDateFilterMode] = React.useState<'day' | 'month' | 'year'>('day')
+
+  const rangeLabel = useMemo(() => {
+    switch (dateFilterMode) {
+      case 'day':
+        return 'Chọn ngày'
+      case 'month':
+        return 'Chọn tháng'
+      case 'year':
+        return 'Chọn năm'
+      default:
+        return 'Chọn ngày'
+    }
+  }, [dateFilterMode])
+
+  const setPresetRange = (days: number) => {
+    const to = new Date()
+    const from = new Date()
+    from.setDate(to.getDate() - days)
+    setDateRange({ from, to })
+  }
+
   return (
     <div className='space-y-6 bg-[#f0f9ff]'>
       <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50'>
@@ -97,70 +141,107 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      <div className='grid gap-4 lg:grid-cols-[1.2fr_0.8fr]'>
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
-          <CardHeader>
-            <CardTitle className='text-slate-900'>Community Health Chart</CardTitle>
-            <CardDescription>
-              Lượng người dùng mới trong tuần, hiển thị bằng biểu đồ vùng màu xanh lá nhạt.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='rounded-3xl bg-emerald-50/60 p-4'>
-              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className='h-65 w-full overflow-visible'>
-                <defs>
-                  <linearGradient id='growthArea' x1='0' x2='0' y1='0' y2='1'>
-                    <stop offset='0%' stopColor='#34d399' stopOpacity='0.28' />
-                    <stop offset='100%' stopColor='#34d399' stopOpacity='0.02' />
-                  </linearGradient>
-                </defs>
-
-                <path d={areaPath} fill='url(#growthArea)' />
-                <path
-                  d={linePath}
-                  fill='none'
-                  stroke='#22c55e'
-                  strokeWidth='4'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-
-                {communityGrowth.map((value, index) => {
-                  const x = padding + (index * (chartWidth - padding * 2)) / (communityGrowth.length - 1)
-                  const y = chartHeight - padding - ((value - minValue) / range) * (chartHeight - padding * 2)
-                  return (
-                    <g key={`${value}-${index}`}>
-                      <circle cx={x} cy={y} r='5' fill='#16a34a' stroke='#ffffff' strokeWidth='4' />
-                      <text
-                        x={x}
-                        y={chartHeight - 4}
-                        textAnchor='middle'
-                        className='fill-slate-400 text-[12px] font-medium'
-                      >
-                        {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][index]}
-                      </text>
-                    </g>
-                  )
-                })}
-              </svg>
+      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <CardHeader className='space-y-4 border-b border-slate-100/80 pb-4'>
+          <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
+            <div>
+              <CardTitle className='text-slate-900'>Community Health Chart</CardTitle>
+           
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
-          <CardHeader>
-            <CardTitle className='text-slate-900'>Top Services</CardTitle>
-            <CardDescription>Các dịch vụ được yêu thích nhất trong cộng đồng.</CardDescription>
-          </CardHeader>
-          <CardContent className='flex flex-wrap gap-3'>
-            {topServices.map((service) => (
-              <Badge key={service.name} className={`rounded-full px-4 py-2 text-sm font-medium ${service.tone}`}>
-                {service.name}
-              </Badge>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+            <div className='flex flex-col gap-3 md:flex-row md:items-center'>
+              <Tabs value={dateFilterMode} onValueChange={(value) => setDateFilterMode(value as typeof dateFilterMode)}>
+                <TabsList className='rounded-full bg-slate-100 p-1'>
+                  {dateTabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className='rounded-full px-4 py-2 text-sm data-[state=active]:bg-white data-[state=active]:text-slate-900'
+                      >
+                        <Icon className='mr-2 size-4' />
+                        {tab.label}
+                      </TabsTrigger>
+                    )
+                  })}
+                </TabsList>
+              </Tabs>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant='outline'
+                    className='h-12 min-w-[280px] justify-start rounded-2xl border-slate-200 bg-slate-50 px-4 text-left font-normal text-slate-700 hover:bg-slate-100'
+                  >
+                    <span className='truncate'>{rangeLabel}</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align='end' className='w-auto p-0'>
+                  <Calendar
+                    mode='range'
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                    className='rounded-2xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/60'
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className='h-[320px] rounded-3xl bg-emerald-50/60 p-4'>
+            <ResponsiveContainer width='100%' height='100%'>
+              <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
+              <defs>
+                <linearGradient id='growthArea' x1='0' x2='0' y1='0' y2='1'>
+                  <stop offset='0%' stopColor='#34d399' stopOpacity='0.35' />
+                  <stop offset='100%' stopColor='#34d399' stopOpacity='0.03' />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='#dbeafe' />
+              <XAxis dataKey='name' tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <YAxis tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={32} />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 16,
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 20px 25px -5px rgb(15 23 42 / 0.1)',
+                }}
+                labelStyle={{ color: '#0f172a', fontWeight: 600 }}
+                formatter={(value) => [`${value} users`, 'Tăng trưởng']}
+              />
+              <Area
+                type='monotone'
+                dataKey='value'
+                stroke='#22c55e'
+                strokeWidth={3}
+                fill='url(#growthArea)'
+                dot={{ r: 4, strokeWidth: 2, fill: '#16a34a' }}
+                activeDot={{ r: 6 }}
+              />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <CardHeader>
+          <CardTitle className='text-slate-900'>Top Services</CardTitle>
+          <CardDescription>Các dịch vụ được yêu thích nhất trong cộng đồng.</CardDescription>
+        </CardHeader>
+        <CardContent className='flex flex-wrap gap-3'>
+          {topServices.map((service) => (
+            <Badge key={service.name} className={`rounded-full px-4 py-2 text-sm font-medium ${service.tone}`}>
+              {service.name}
+            </Badge>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   )
 }
