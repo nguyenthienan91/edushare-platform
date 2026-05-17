@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
@@ -5,6 +6,7 @@ import {
   BadgeCheck,
   Bell,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   CreditCard,
   FileCheck2,
@@ -85,7 +87,89 @@ const TESTIMONIALS = [
   { name: 'Tuấn Khải', role: 'Người dùng thường xuyên', text: 'Escrow giúp mình yên tâm hơn, đặc biệt là khi tham gia các nhóm phần mềm học tập có giá trị cao.', rating: 5 },
 ];
 
+const FAQ_CATEGORIES = [
+  { id: 'all', label: 'Tất cả' },
+  { id: 'escrow', label: '💰 Escrow & Thanh toán' },
+  { id: 'security', label: '🛡️ An toàn & Bảo mật' },
+  { id: 'dispute', label: '⚖️ Tranh chấp' },
+  { id: 'wallet', label: '👤 Tài khoản & Ví' },
+];
+
+const FAQS = [
+  {
+    category: 'escrow',
+    question: 'Tôi có được hoàn tiền không?',
+    answer:
+      'Có, nếu giao dịch thất bại hoặc có tranh chấp được xác minh, hệ thống sẽ hoàn tiền theo kết quả xử lý của admin.',
+  },
+  {
+    category: 'escrow',
+    question: 'Có phí ẩn nào không?',
+    answer:
+      'Không. EduShare hiển thị rõ membership 29k/tháng và các khoản thanh toán liên quan trước khi bạn xác nhận giao dịch.',
+  },
+  {
+    category: 'security',
+    question: 'Nếu người bán lừa đảo thì sao?',
+    answer:
+      'Tiền được giữ trong escrow cho đến khi giao dịch hợp lệ. Nếu phát sinh lừa đảo, bạn có thể tạo khiếu nại để admin xử lý.',
+  },
+  {
+    category: 'security',
+    question: 'Trust Score có đáng tin không?',
+    answer:
+      'Trust Score được tổng hợp từ lịch sử giao dịch, đánh giá của thành viên và mức độ minh bạch của chủ nhóm để hỗ trợ ra quyết định.',
+  },
+  {
+    category: 'dispute',
+    question: 'Mất bao lâu để xử lý tranh chấp?',
+    answer:
+      'Thông thường hệ thống xử lý trong 24h–48h tùy mức độ phức tạp và số lượng bằng chứng từ hai phía.',
+  },
+  {
+    category: 'dispute',
+    question: 'Tôi cần chuẩn bị gì khi khiếu nại?',
+    answer:
+      'Bạn chỉ cần cung cấp mô tả giao dịch và tải lên bằng chứng liên quan như ảnh chụp màn hình, tin nhắn hoặc minh chứng thanh toán.',
+  },
+  {
+    category: 'wallet',
+    question: 'Membership của tôi hết hạn thì sao?',
+    answer:
+      'Khi membership hết hạn, hệ thống sẽ tự động khóa quyền tham gia nhóm cho đến khi bạn gia hạn lại.',
+  },
+  {
+    category: 'wallet',
+    question: 'Tôi có thể rút tiền từ ví khi nào?',
+    answer:
+      'Chủ nhóm có thể gửi yêu cầu rút tiền sau khi giao dịch được xác nhận hoàn tất và không có tranh chấp đang mở.',
+  },
+];
+
 export default function LandingPage() {
+  const [activeFaqCategory, setActiveFaqCategory] = useState('all');
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  const faqSections = useMemo(() => {
+    const categories = FAQ_CATEGORIES.filter((category) => category.id !== 'all');
+    return categories.map((category) => ({
+      ...category,
+      items: FAQS.filter((faq) => faq.category === category.id),
+    }));
+  }, []);
+
+
+  const visibleFaqSections = useMemo(
+    () =>
+      faqSections.filter((section) => activeFaqCategory === 'all' || section.id === activeFaqCategory),
+    [activeFaqCategory, faqSections],
+  );
+
+  const sectionHeadingMap = useMemo(
+    () => Object.fromEntries(faqSections.map((section) => [section.id, section.label])),
+    [faqSections],
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-indigo-50/50 text-slate-900 overflow-x-hidden">
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-sm">
@@ -205,6 +289,84 @@ export default function LandingPage() {
       </section>
 
       <section id="trust" className="px-4 py-20 sm:px-6"><div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.95fr_1.05fr]"><div className="rounded-[2rem] bg-gradient-to-br from-indigo-600 to-sky-500 p-8 text-white shadow-lg shadow-sky-100 sm:p-10"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-100">Cơ chế bảo vệ</p><h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Bảo vệ giao dịch, người dùng và uy tín cộng đồng</h2><p className="mt-4 max-w-xl leading-relaxed text-white/90">EduShare được xây dựng để hạn chế scam, giảm thao tác thủ công và hỗ trợ xử lý tranh chấp minh bạch.</p><div className="mt-8 grid gap-4 sm:grid-cols-2">{[{ icon: ShieldCheck, text: 'Escrow giữ tiền an toàn' }, { icon: BadgeCheck, text: 'Trust Score rõ ràng' }, { icon: Bell, text: 'Thông báo tự động' }, { icon: Clock3, text: 'Xử lý tranh chấp nhanh' }].map(({ icon: Icon, text }) => (<div key={text} className="flex items-center gap-3 rounded-2xl bg-white/15 px-4 py-3"><Icon className="h-5 w-5 text-orange-200" /><span className="text-sm font-medium">{text}</span></div>))}</div></div><div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm sm:p-10" id="testimonials"><div className="mb-8 flex items-center justify-between"><div><p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">Cảm nhận</p><h2 className="mt-2 text-2xl font-bold text-slate-900">Người dùng nói gì?</h2></div><div className="hidden rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600 sm:block">Dành cho sinh viên</div></div><div className="grid gap-5">{TESTIMONIALS.map((item) => (<div key={item.name} className="rounded-3xl bg-slate-50 p-5"><div className="mb-3 flex gap-1">{Array.from({ length: item.rating }).map((_, i) => (<Star key={i} className="h-4 w-4 fill-orange-400 text-orange-400" />))}</div><p className="text-sm leading-relaxed text-slate-700">“{item.text}”</p><div className="mt-4 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-sm font-bold text-white">{item.name.charAt(0)}</div><div><div className="text-sm font-semibold text-slate-900">{item.name}</div><div className="text-xs text-slate-500">{item.role}</div></div></div></div>))}</div></div></div></section>
+
+      <section id="faq" className="px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-5 py-2 text-sm font-semibold text-violet-700 shadow-sm">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-300 text-[11px]">?</span>
+              Câu hỏi thường gặp
+            </div>
+            <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">Câu hỏi thường gặp</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500">Tìm câu trả lời nhanh cho những thắc mắc phổ biến nhất về EduShare.</p>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-2xl">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                value={''}
+                readOnly
+                placeholder=""
+                className="h-16 w-full rounded-[1.6rem] border-2 border-emerald-400 bg-white pl-14 pr-5 text-base outline-none shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"
+              />
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-3 border-b border-slate-200 pb-6">
+            {FAQ_CATEGORIES.map((category) => {
+              const active = activeFaqCategory === category.id;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setActiveFaqCategory(category.id)}
+                  className={`rounded-full border px-5 py-3 text-sm font-semibold transition-all ${active ? 'border-slate-900 bg-slate-950 text-white shadow-lg shadow-slate-200' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mx-auto mt-16 max-w-4xl space-y-12">
+            {visibleFaqSections.map((section) => (
+                <div key={section.id} className="space-y-6">
+                  <h3 className="flex items-center gap-3 text-2xl font-bold text-slate-950">
+                    <span>{sectionHeadingMap[section.id]}</span>
+                  </h3>
+
+                  <div className="space-y-4">
+                    {section.items.map((item) => {
+                      const globalIndex = FAQS.findIndex((faq) => faq.question === item.question);
+                      const isOpen = openFaqIndex === globalIndex;
+
+                      return (
+                        <div key={item.question} className="space-y-4">
+                          <button
+                            type="button"
+                            onClick={() => setOpenFaqIndex(isOpen ? -1 : globalIndex)}
+                            className="flex w-full items-center justify-between rounded-[1.4rem] border border-slate-200 bg-white px-6 py-6 text-left shadow-sm transition-all hover:border-slate-300"
+                          >
+                            <span className="text-lg font-medium text-slate-900">{item.question}</span>
+                            <span className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                              <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                            </span>
+                          </button>
+                          {isOpen && (
+                            <div className="rounded-[1.4rem] border border-slate-100 bg-slate-50 px-6 py-5 text-slate-600 shadow-sm">
+                              {item.answer}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
 
       <section className="px-4 pb-24 pt-8 sm:px-6"><div className="mx-auto max-w-5xl rounded-[2rem] bg-gradient-to-r from-indigo-600 via-sky-500 to-orange-400 p-[1px] shadow-xl shadow-indigo-100"><div className="rounded-[2rem] bg-white px-6 py-12 text-center sm:px-10"><h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Sẵn sàng thử cách ghép nhóm an toàn hơn?</h2><p className="mx-auto mt-4 max-w-2xl text-slate-600">Tham gia EduShare để tìm nhóm phù hợp, bảo vệ giao dịch bằng escrow và quản lý mọi thứ gọn gàng hơn.</p><div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row"><Link to="/login" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-7 py-3.5 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800">Bắt đầu miễn phí <ArrowRight className="h-5 w-5" /></Link><a href="#features" className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-50">Xem tính năng</a></div></div></div></section>
     </div>
