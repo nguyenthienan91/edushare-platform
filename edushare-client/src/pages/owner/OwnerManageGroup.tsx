@@ -19,6 +19,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -37,10 +44,10 @@ import {
 import { useMemo, useState } from 'react'
 
 const groups = [
-  { id: 1, name: 'Netflix Premium', members: 3, total: 5, status: 'Đang chờ' },
-  { id: 2, name: 'YouTube Family', members: 4, total: 4, status: 'Đã đủ' },
-  { id: 3, name: 'Spotify Duo', members: 1, total: 2, status: 'Cần gia hạn' },
-  { id: 4, name: 'Disney+ Shared', members: 2, total: 6, status: 'Đang chờ' },
+  { id: 1, name: 'Netflix Premium', members: 3, total: 5, status: 'Đang chờ', productType: 'Streaming' },
+  { id: 2, name: 'YouTube Family', members: 4, total: 4, status: 'Đã đủ', productType: 'Streaming' },
+  { id: 3, name: 'Spotify Duo', members: 1, total: 2, status: 'Cần gia hạn', productType: 'Music' },
+  { id: 4, name: 'Disney+ Shared', members: 2, total: 6, status: 'Đang chờ', productType: 'Streaming' },
 ]
 
 const pendingMembers = [
@@ -60,13 +67,21 @@ const statusVariants = {
   'Cần gia hạn': 'bg-sky-100 text-sky-700 hover:bg-sky-100',
 } as const
 
+const productTypes = ['Tất cả', ...new Set(groups.map((group) => group.productType))]
+
 export default function OwnerManageGroup() {
   const [query, setQuery] = useState('')
+  const [productType, setProductType] = useState('Tất cả')
   const [selectedGroup, setSelectedGroup] = useState(groups[0])
 
   const filteredGroups = useMemo(() => {
-    return groups.filter((group) => group.name.toLowerCase().includes(query.toLowerCase()))
-  }, [query])
+    return groups.filter((group) => {
+      const matchesQuery = group.name.toLowerCase().includes(query.toLowerCase())
+      const matchesProductType = productType === 'Tất cả' || group.productType === productType
+
+      return matchesQuery && matchesProductType
+    })
+  }, [query, productType])
 
   return (
     <DashboardLayout
@@ -93,14 +108,31 @@ export default function OwnerManageGroup() {
 
         <Card className="rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
           <CardContent className="p-4 md:p-5">
-            <div className="relative max-w-md">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm nhóm..."
-                className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11"
-              />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="relative w-full md:max-w-md">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm nhóm..."
+                  className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11"
+                />
+              </div>
+
+              <div className="w-full md:w-64">
+                <Select value={productType} onValueChange={setProductType}>
+                  <SelectTrigger className="!h-12 w-full rounded-2xl border-slate-200 bg-slate-50 px-4 text-slate-700">
+                    <SelectValue placeholder="Lọc theo loại sản phẩm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
