@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { Group, GroupDocument, GroupStatus } from './entities/group.entity'
+import { Group, GroupCategory, GroupDocument, GroupStatus } from './entities/group.entity'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { UsersService } from '../users/users.service'
@@ -22,6 +22,126 @@ export class GroupsService {
     if (expiredAt && expiredAt <= now) return GroupStatus.EXPIRED
     if (occupiedSlots >= totalSlots) return GroupStatus.FULL
     return GroupStatus.AVAILABLE
+  }
+
+  private escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
+  private normalizeQueryValue(value: string | string[] | undefined): string | undefined {
+    if (Array.isArray(value)) {
+      return value[0]
+    }
+    return value
+  }
+
+  private buildSearchFilter(query: Record<string, string | string[] | undefined>): Record<string, unknown> {
+    const filter: Record<string, unknown> = {}
+    let hasFilter = false
+
+    const setFilter = (key: string, value: unknown) => {
+      filter[key] = value
+      hasFilter = true
+    }
+
+    const parseText = (value: string, field: string) => {
+      const trimmed = value.trim()
+      if (!trimmed) {
+        throw new BadRequestException(`${field} is required`)
+      }
+      setFilter(field, new RegExp(this.escapeRegex(trimmed), 'i'))
+    }
+
+    const parseEnum = (value: string, field: string, allowed: readonly string[]) => {
+      if (!allowed.includes(value)) {
+        throw new BadRequestException(`${field} is invalid`)
+      }
+      setFilter(field, value)
+    }
+
+    const parseNumber = (value: string, field: string) => {
+      const parsed = Number(value)
+      if (!Number.isFinite(parsed)) {
+        throw new BadRequestException(`${field} must be a number`)
+      }
+      setFilter(field, parsed)
+    }
+
+    const parseObjectId = (value: string, field: string) => {
+      if (!Types.ObjectId.isValid(value)) {
+        throw new BadRequestException(`${field} is invalid`)
+      }
+      setFilter(field, new Types.ObjectId(value))
+    }
+
+    const parseDate = (value: string, field: string) => {
+      const parsed = new Date(value)
+      if (Number.isNaN(parsed.getTime())) {
+        throw new BadRequestException(`${field} is invalid`)
+      }
+      setFilter(field, parsed)
+    }
+
+    const name = this.normalizeQueryValue(query.name)
+    if (name !== undefined) {
+      parseText(name, 'name')
+    }
+
+    const description = this.normalizeQueryValue(query.description)
+    if (description !== undefined) {
+      parseText(description, 'description')
+    }
+
+    const category = this.normalizeQueryValue(query.category)
+    if (category !== undefined) {
+      parseEnum(category, 'category', Object.values(GroupCategory))
+    }
+
+    const status = this.normalizeQueryValue(query.status)
+    if (status !== undefined) {
+      parseEnum(status, 'status', Object.values(GroupStatus))
+    }
+
+    const ownerId = this.normalizeQueryValue(query.ownerId)
+    if (ownerId !== undefined) {
+      parseObjectId(ownerId, 'ownerId')
+    }
+
+    const members = this.normalizeQueryValue(query.members)
+    if (members !== undefined) {
+      parseObjectId(members, 'members')
+    }
+
+    const totalSlots = this.normalizeQueryValue(query.totalSlots)
+    if (totalSlots !== undefined) {
+      parseNumber(totalSlots, 'totalSlots')
+    }
+
+    const occupiedSlots = this.normalizeQueryValue(query.occupiedSlots)
+    if (occupiedSlots !== undefined) {
+      parseNumber(occupiedSlots, 'occupiedSlots')
+    }
+
+    const totalPrice = this.normalizeQueryValue(query.totalPrice)
+    if (totalPrice !== undefined) {
+      parseNumber(totalPrice, 'totalPrice')
+    }
+
+    const price = this.normalizeQueryValue(query.price)
+    if (price !== undefined) {
+      parseNumber(price, 'price')
+    }
+
+    const expiredAt = this.normalizeQueryValue(query.expiredAt)
+    if (expiredAt !== undefined) {
+      parseDate(expiredAt, 'expiredAt')
+    }
+
+    if (!hasFilter) {
+      throw new BadRequestException('At least one filter is required')
+    }
+
+    return filter
   }
 
   private async syncStatus(group: GroupDocument): Promise<GroupDocument> {
@@ -73,6 +193,37 @@ export class GroupsService {
       message: 'Groups retrieved successfully',
       data: await this.groupModel
         .find()
+        .populate('ownerId', 'id email displayName')
+        .populate('members', 'id email displayName')
+        .exec(),
+    }
+  }
+
+  async sortByPrice(order: 'asc' | 'desc' = 'asc'): Promise<{ message: string; data: GroupDocument[] }> {
+    if (order !== 'asc' && order !== 'desc') {
+      throw new BadRequestException('order must be asc or desc')
+    }
+
+    const direction = order === 'desc' ? -1 : 1
+    return {
+      message: 'Groups retrieved successfully',
+      data: await this.groupModel
+        .find()
+        .sort({ price: direction })
+        .populate('ownerId', 'id email displayName')
+        .populate('members', 'id email displayName')
+        .exec(),
+    }
+  }
+
+  async search(
+    query: Record<string, string | string[] | undefined>,
+  ): Promise<{ message: string; data: GroupDocument[] }> {
+    const filter = this.buildSearchFilter(query)
+    return {
+      message: 'Groups retrieved successfully',
+      data: await this.groupModel
+        .find(filter)
         .populate('ownerId', 'id email displayName')
         .populate('members', 'id email displayName')
         .exec(),
