@@ -1,12 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class DateUtilService {
-  getCurrentDate(
-    locales: Intl.LocalesArgument = 'en-GB',
-    format?: Intl.DateTimeFormatOptions,
-  ) {
-    return this.formatDate(new Date(), locales, format);
+  getCurrentDate(locales: Intl.LocalesArgument = 'en-GB', format?: Intl.DateTimeFormatOptions) {
+    return this.formatDate(new Date(), locales, format)
   }
 
   formatDate(
@@ -22,7 +19,7 @@ export class DateUtilService {
       hour12: false,
     },
   ) {
-    const data = new Intl.DateTimeFormat(locales, format).format(date);
-    return data;
+    const data = new Intl.DateTimeFormat(locales, format).format(date)
+    return data
   }
 }

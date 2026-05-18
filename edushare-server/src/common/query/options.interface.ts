@@ -1,5 +1,5 @@
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
 export class GetOptionsParams extends createZodDto(
   z
@@ -11,5 +11,5 @@ export class GetOptionsParams extends createZodDto(
 ) {}
 
 export interface Options {
-  getOptions(params: GetOptionsParams);
+  getOptions(params: GetOptionsParams)
 }

@@ -1,14 +1,11 @@
-import { Module } from '@nestjs/common';
-import {
-  WinstonModule,
-  utilities as nestWinstonModuleUtilities,
-} from 'nest-winston';
-import winston from 'winston';
+import { Module } from '@nestjs/common'
+import { WinstonModule, utilities as nestWinstonModuleUtilities } from 'nest-winston'
+import winston from 'winston'
 
 @Module({})
 export class LoggerModule {
   private static initLogsFile() {
-    const logLevels = ['error', 'warn', 'info'];
+    const logLevels = ['error', 'warn', 'info']
     return logLevels.map(
       (level) =>
         new winston.transports.File({
@@ -19,7 +16,7 @@ export class LoggerModule {
             winston.format.json(),
           ),
         }),
-    );
+    )
   }
   private static initConsoleLog() {
     const result = new winston.transports.Console({
@@ -33,12 +30,12 @@ export class LoggerModule {
           appName: true,
         }),
       ),
-    });
-    return result;
+    })
+    return result
   }
   static createLogger() {
     return WinstonModule.createLogger({
       transports: [this.initConsoleLog(), ...this.initLogsFile()],
-    });
+    })
   }
 }
