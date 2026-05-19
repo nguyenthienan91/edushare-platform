@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
+import { ApiQuery } from '@nestjs/swagger'
+import { GroupCategory, GroupStatus } from './entities/group.entity'
 import { GroupsService } from './groups.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
@@ -20,6 +22,30 @@ export class GroupsController {
   @Get()
   findAll() {
     return this.groupsService.findAll()
+  }
+
+  @Get('sort/price')
+  @Roles()
+  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'] })
+  sortByPrice(@Query('order') order?: 'asc' | 'desc') {
+    return this.groupsService.sortByPrice(order)
+  }
+
+  @Get('search')
+  @Roles()
+  @ApiQuery({ name: 'name', required: false, type: String })
+  @ApiQuery({ name: 'description', required: false, type: String })
+  @ApiQuery({ name: 'category', required: false, enum: GroupCategory })
+  @ApiQuery({ name: 'status', required: false, enum: GroupStatus })
+  @ApiQuery({ name: 'ownerId', required: false, type: String })
+  @ApiQuery({ name: 'members', required: false, type: String })
+  @ApiQuery({ name: 'totalSlots', required: false, type: Number })
+  @ApiQuery({ name: 'occupiedSlots', required: false, type: Number })
+  @ApiQuery({ name: 'totalPrice', required: false, type: Number })
+  @ApiQuery({ name: 'price', required: false, type: Number })
+  @ApiQuery({ name: 'expiredAt', required: false, type: String, format: 'date-time' })
+  search(@Query() query: Record<string, string | string[] | undefined>) {
+    return this.groupsService.search(query)
   }
 
   @Get(':id')
