@@ -91,18 +91,20 @@ export default function AdminDisputes() {
 
   return (
     <div className='space-y-6  min-h-[calc(100vh-(--spacing(20)))]'>
-      <div className='rounded-3xl border border-amber-100/60 bg-white p-6 shadow-sm shadow-amber-100/40'>
-        <p className='text-sm font-medium text-amber-600'>Trung tâm hòa giải</p>
-        <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Quản lý Khiếu nại</h2>
-        <p className='mt-2 text-sm leading-6 text-slate-500'>
-          Xử lý tranh chấp giữa các thành viên bằng góc nhìn khách quan. Ưu tiên sự đồng thuận và duy trì môi trường
-          chia sẻ tích cực.
-        </p>
-      </div>
+      <Card>
+        <CardContent>
+          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Trung tâm hòa giải</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Quản lý Khiếu nại</h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6'>
+            Xử lý tranh chấp giữa các thành viên bằng góc nhìn khách quan. Ưu tiên sự đồng thuận và duy trì môi trường
+            chia sẻ tích cực.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className='grid gap-6 lg:grid-cols-[380px_1fr] items-start'>
         {/* Left Column: List of Disputes */}
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm overflow-hidden flex flex-col h-[calc(100vh-230px)]'>
+        <Card >
           <CardHeader className='py-5 px-6 border-b border-slate-50 bg-amber-50/30'>
             <CardTitle className='text-lg flex items-center gap-2'>
               <History className='w-5 h-5 text-amber-500' /> Đang chờ xử lý
@@ -117,7 +119,7 @@ export default function AdminDisputes() {
                   className={`w-full text-left p-4 rounded-2xl transition-all border ${
                     selectedId === dispute.id
                       ? 'bg-amber-50 border-amber-200 shadow-sm'
-                      : 'bg-white border-transparent hover:bg-slate-50'
+                      : ' border-transparent hover:'
                   }`}
                 >
                   <div className='flex items-start justify-between mb-2'>
@@ -132,17 +134,17 @@ export default function AdminDisputes() {
                     <span className='text-[11px] text-slate-400 font-medium'>{dispute.date}</span>
                   </div>
                   <h4
-                    className={`font-medium text-sm leading-snug mb-1 ${selectedId === dispute.id ? 'text-amber-900' : 'text-slate-800'}`}
+                    className={`font-medium text-sm leading-snug mb-1 ${selectedId === dispute.id ? 'text-amber-900' : ''}`}
                   >
                     {dispute.title}
                   </h4>
-                  <p className='text-xs text-slate-500 mb-3 line-clamp-1'>{dispute.groupName}</p>
+                  <p className='text-xs  mb-3 line-clamp-1'>{dispute.groupName}</p>
                   <div className='flex items-center gap-4 text-xs font-medium'>
                     <div className='flex items-center gap-1.5 opacity-80'>
                       <Avatar className='h-5 w-5'>
                         <AvatarImage src={dispute.member.avatar} />
                       </Avatar>
-                      <span className='text-slate-600'>{dispute.member.name}</span>
+                      <span className=''>{dispute.member.name}</span>
                     </div>
                   </div>
                 </button>
@@ -153,7 +155,7 @@ export default function AdminDisputes() {
 
         {/* Right Column: Dispute Detail & Action */}
         <div className=' flex flex-col gap-6 h-[calc(100vh-230px)]'>
-          <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm flex-1 flex flex-col overflow-hidden'>
+          <Card >
             {/* Header Detail */}
             <div className='p-6 border-b border-slate-100 flex items-center justify-between bg-linear-to-r from-amber-50/50 to-white'>
               <div>
@@ -164,9 +166,9 @@ export default function AdminDisputes() {
                   >
                     {currentDispute.id}
                   </Badge>
-                  <span className='text-sm font-medium text-slate-500'>{currentDispute.groupName}</span>
+                  <span className='text-sm font-medium '>{currentDispute.groupName}</span>
                 </div>
-                <h3 className='text-xl font-semibold text-slate-800'>{currentDispute.title}</h3>
+                <h3 className='text-xl font-semibold '>{currentDispute.title}</h3>
               </div>
 
               <div className='flex items-center gap-4'>
@@ -174,7 +176,7 @@ export default function AdminDisputes() {
                   <Avatar className='h-10 w-10 ring-2 ring-slate-100 mb-1'>
                     <AvatarImage src={currentDispute.member.avatar} />
                   </Avatar>
-                  <span className='text-[10px] font-medium text-slate-500'>Người khiếu nại</span>
+                  <span className='text-[10px] font-medium '>Người khiếu nại</span>
                 </div>
                 <ChevronRight className='w-4 h-4 text-slate-300' />
                 <div className='flex flex-col items-center'>
@@ -190,8 +192,8 @@ export default function AdminDisputes() {
             <ScrollArea className='flex-1 p-6 overflow-y-auto'>
               <div className='space-y-6'>
                 {/* Evidence Section */}
-                <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
-                  <h4 className='flex items-center gap-2 text-sm font-medium text-slate-700 mb-3'>
+                <div className=' rounded-2xl p-4 border border-slate-100'>
+                  <h4 className='flex items-center gap-2 text-sm font-medium  mb-3'>
                     <ImageIcon className='w-4 h-4' /> Bằng chứng gửi kèm
                   </h4>
                   <ScrollArea className='w-full whitespace-nowrap rounded-xl'>
@@ -217,7 +219,7 @@ export default function AdminDisputes() {
 
                 {/* Chat History */}
                 <div>
-                  <h4 className='flex items-center gap-2 text-sm font-medium text-slate-700 mb-4'>
+                  <h4 className='flex items-center gap-2 text-sm font-medium  mb-4'>
                     <MessageSquare className='w-4 h-4' /> Lịch sử trao đổi
                   </h4>
                   <div className='space-y-4'>
@@ -228,14 +230,14 @@ export default function AdminDisputes() {
                         </Avatar>
                         <div className={`flex flex-col ${msg.role === 'owner' ? 'items-end' : 'items-start'}`}>
                           <div className='flex items-center gap-2 mb-1'>
-                            <span className='text-xs font-medium text-slate-600'>{msg.sender}</span>
+                            <span className='text-xs font-medium '>{msg.sender}</span>
                             <span className='text-[10px] text-slate-400'>{msg.time}</span>
                           </div>
                           <div
                             className={`px-4 py-2.5 rounded-2xl text-sm max-w-[85%] ${
                               msg.role === 'owner'
                                 ? 'bg-amber-100 text-amber-900 rounded-tr-sm'
-                                : 'bg-slate-100 text-slate-800 rounded-tl-sm'
+                                : 'bg-slate-100  rounded-tl-sm'
                             }`}
                           >
                             {msg.content}
@@ -249,8 +251,8 @@ export default function AdminDisputes() {
             </ScrollArea>
 
             {/* Resolution Actions */}
-            <div className='p-4 border-t border-slate-100 bg-white flex items-center justify-end gap-3 mt-auto'>
-              <Button variant='ghost' className='text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl'>
+            <div className='p-4 border-t border-slate-100  flex items-center justify-end gap-3 mt-auto'>
+              <Button variant='ghost' className=' hover: hover:bg-slate-100 rounded-xl'>
                 <XCircle className='w-4 h-4 mr-2' /> Đóng khiếu nại
               </Button>
               <Button variant='outline' className='text-amber-700 border-amber-200 hover:bg-amber-50 rounded-xl'>

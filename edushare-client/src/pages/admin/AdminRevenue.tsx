@@ -14,6 +14,7 @@ import {
   Cell,
   Legend
 } from 'recharts'
+import { Badge } from '@/components/ui/badge'
 
 // Mock Data
 const monthlyData = [
@@ -37,32 +38,28 @@ export default function AdminRevenue() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
-      <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50 flex flex-col md:flex-row md:items-start md:justify-between gap-4'>
-        <div>
-          <p className='text-sm font-medium text-emerald-600'>Thống kê tài chính</p>
-          <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Doanh thu & Hoa hồng</h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
+      <Card>
+        <CardContent>
+          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Thống kê tài chính</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Doanh thu & Hoa hồng</h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6'>
             Theo dõi tổng khối lượng giao dịch, lợi nhuận từ phí nền tảng và báo cáo tình hình tăng trưởng.
           </p>
-        </div>
-        <Button className='rounded-xl bg-sky-50 text-sky-600 hover:bg-sky-100 hover:text-sky-700 shadow-none border border-sky-200/50 flex shrink-0'>
-          <Download className='mr-2 h-4 w-4' /> Xuất báo cáo PDF
-        </Button>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className='grid gap-4 md:grid-cols-3'>
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
-              <p className='text-sm font-medium text-slate-500'>Tổng phí thu được (Tháng này)</p>
+              <p className='text-sm font-medium '>Tổng phí thu được (Tháng này)</p>
               <div className='p-2 bg-emerald-100 rounded-xl'>
                 <HandCoins className='h-5 w-5 text-emerald-600' />
               </div>
             </div>
             <div className='mt-4'>
-              <h3 className='text-3xl font-bold text-slate-900'>$1,900</h3>
+              <h3 className='text-3xl font-bold '>$1,900</h3>
               <p className='flex items-center mt-1 text-sm text-emerald-600 font-medium'>
                 <TrendingUp className='h-4 w-4 mr-1' /> +18.5% so với tháng trước
               </p>
@@ -70,16 +67,16 @@ export default function AdminRevenue() {
           </CardContent>
         </Card>
 
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
-              <p className='text-sm font-medium text-slate-500'>Tổng giao dịch trên sàn</p>
+              <p className='text-sm font-medium '>Tổng giao dịch trên sàn</p>
               <div className='p-2 bg-sky-100 rounded-xl'>
                 <CreditCard className='h-5 w-5 text-sky-600' />
               </div>
             </div>
             <div className='mt-4'>
-              <h3 className='text-3xl font-bold text-slate-900'>$9,500</h3>
+              <h3 className='text-3xl font-bold '>$9,500</h3>
               <p className='flex items-center mt-1 text-sm text-sky-600 font-medium'>
                 <TrendingUp className='h-4 w-4 mr-1' /> +22.4% so với tháng trước
               </p>
@@ -87,17 +84,17 @@ export default function AdminRevenue() {
           </CardContent>
         </Card>
 
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
-              <p className='text-sm font-medium text-slate-500'>Tỉ lệ giữ chân</p>
+              <p className='text-sm font-medium '>Tỉ lệ giữ chân</p>
               <div className='p-2 bg-violet-100 rounded-xl'>
                 <Percent className='h-5 w-5 text-violet-600' />
               </div>
             </div>
             <div className='mt-4'>
-              <h3 className='text-3xl font-bold text-slate-900'>92.4%</h3>
-              <p className='flex items-center mt-1 text-sm text-slate-500 font-medium'>Người dùng gia hạn tự động</p>
+              <h3 className='text-3xl font-bold '>92.4%</h3>
+              <p className='flex items-center mt-1 text-sm  font-medium'>Người dùng gia hạn tự động</p>
             </div>
           </CardContent>
         </Card>
@@ -106,9 +103,9 @@ export default function AdminRevenue() {
       {/* Charts */}
       <div className='grid gap-4 lg:grid-cols-3'>
         {/* Bar Chart - Revenue Growth */}
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30 lg:col-span-2'>
+        <Card className=' lg:col-span-2'>
           <CardHeader>
-            <CardTitle className='text-lg text-slate-800'>Tốc độ tăng trưởng</CardTitle>
+            <CardTitle className='text-lg '>Tốc độ tăng trưởng</CardTitle>
             <CardDescription>So sánh Khối lượng giao dịch và Lợi nhuận phí nền tảng trong 6 tháng</CardDescription>
           </CardHeader>
           <CardContent>
@@ -120,7 +117,6 @@ export default function AdminRevenue() {
                     dataKey='name'
                     axisLine={false}
                     tickLine={false}
-                    tick={{ padding: 10, fill: '#64748b', fontSize: 12 }}
                   />
                   <YAxis
                     axisLine={false}
@@ -146,9 +142,9 @@ export default function AdminRevenue() {
         </Card>
 
         {/* Pie Chart - Services Breakdown */}
-        <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+        <Card>
           <CardHeader>
-            <CardTitle className='text-lg text-slate-800'>Tỷ trọng Dịch vụ</CardTitle>
+            <CardTitle className='text-lg '>Tỷ trọng Dịch vụ</CardTitle>
             <CardDescription>Đóng góp doanh thu của các nền tảng tháng này</CardDescription>
           </CardHeader>
           <CardContent className='flex flex-col items-center justify-center'>
@@ -187,9 +183,9 @@ export default function AdminRevenue() {
                 <div key={index} className='flex items-center justify-between text-sm'>
                   <div className='flex items-center gap-2'>
                     <div className='w-3 h-3 rounded-full' style={{ backgroundColor: service.color }} />
-                    <span className='text-slate-600 font-medium'>{service.name}</span>
+                    <span className=' font-medium'>{service.name}</span>
                   </div>
-                  <span className='text-slate-900 font-bold'>{service.value}%</span>
+                  <span className=' font-bold'>{service.value}%</span>
                 </div>
               ))}
             </div>

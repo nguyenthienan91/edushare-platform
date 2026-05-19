@@ -46,7 +46,6 @@ const stats = [
   }
 ]
 
-const communityGrowth = [24, 30, 28, 36, 42, 48, 56]
 const chartData = [
   { name: 'T2', value: 24 },
   { name: 'T3', value: 30 },
@@ -64,12 +63,6 @@ const topServices = [
   { name: 'Disney+', tone: 'bg-violet-100 text-violet-700' }
 ]
 
-const rangePresets = [
-  { label: 'Hôm nay', days: 0 },
-  { label: '7 ngày', days: 6 },
-  { label: '30 ngày', days: 29 },
-  { label: 'Năm nay', days: 364 },
-]
 
 const dateTabs = [
   { value: 'day', label: 'Theo ngày', icon: CalendarDays },
@@ -97,30 +90,25 @@ export default function AdminDashboard() {
     }
   }, [dateFilterMode])
 
-  const setPresetRange = (days: number) => {
-    const to = new Date()
-    const from = new Date()
-    from.setDate(to.getDate() - days)
-    setDateRange({ from, to })
-  }
-
   return (
-    <div className='space-y-6 bg-[#f0f9ff]'>
-      <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50'>
-        <p className='text-sm font-medium text-emerald-600'>ShareBuddy Admin Dashboard</p>
-        <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>
-          Cộng đồng đang phát triển thế nào?
-        </h2>
-        <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
-          Theo dõi nhịp tăng trưởng của cộng đồng bằng một giao diện trực quan, thoáng đãng và dễ đọc.
-        </p>
-      </div>
+    <div className='space-y-6 '>
+      <Card>
+        <CardContent>
+          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Admin Dashboard</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight '>
+            Cộng đồng đang phát triển thế nào?
+          </h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6 '>
+            Theo dõi nhịp tăng trưởng của cộng đồng bằng một giao diện trực quan, thoáng đãng và dễ đọc.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
         {stats.map((item) => {
           const Icon = item.icon
           return (
-            <Card key={item.label} className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+            <Card key={item.label} className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30'>
               <CardContent className='p-5'>
                 <div className='flex items-start justify-between gap-4'>
                   <div className='space-y-3'>
@@ -128,9 +116,9 @@ export default function AdminDashboard() {
                       <Icon className='size-5' />
                     </div>
                     <div>
-                      <p className='text-sm text-slate-500'>{item.label}</p>
-                      <p className='mt-1 text-3xl font-semibold tracking-tight text-slate-900'>{item.value}</p>
-                      <p className='mt-1 text-xs text-slate-500'>{item.note}</p>
+                      <p className='text-sm '>{item.label}</p>
+                      <p className='mt-1 text-3xl font-semibold tracking-tight '>{item.value}</p>
+                      <p className='mt-1 text-xs '>{item.note}</p>
                     </div>
                   </div>
                   <ArrowUpRight className='size-4 text-slate-300' />
@@ -141,11 +129,11 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+      <Card>
         <CardHeader className='space-y-4 border-b border-slate-100/80 pb-4'>
           <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
             <div>
-              <CardTitle className='text-slate-900'>Community Health Chart</CardTitle>
+              <CardTitle className=''>Community Health Chart</CardTitle>
            
             </div>
 
@@ -158,7 +146,7 @@ export default function AdminDashboard() {
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className='rounded-full px-4 py-2 text-sm data-[state=active]:bg-white data-[state=active]:text-slate-900'
+                        className='rounded-full px-4 py-2 text-sm data-[state=active]: data-[state=active]:'
                       >
                         <Icon className='mr-2 size-4' />
                         {tab.label}
@@ -172,7 +160,7 @@ export default function AdminDashboard() {
                 <PopoverTrigger asChild>
                   <Button
                     variant='outline'
-                    className='h-12 min-w-[280px] justify-start rounded-2xl border-slate-200 bg-slate-50 px-4 text-left font-normal text-slate-700 hover:bg-slate-100'
+                    className='h-12 min-w-[280px] justify-start rounded-2xl border-slate-200  px-4 text-left font-normal  hover:bg-slate-100'
                   >
                     <span className='truncate'>{rangeLabel}</span>
                   </Button>
@@ -185,7 +173,7 @@ export default function AdminDashboard() {
                     onSelect={setDateRange}
                     numberOfMonths={2}
                     disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                    className='rounded-2xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/60'
+                    className='rounded-2xl border border-slate-200  p-3 shadow-xl shadow-slate-200/60'
                   />
                 </PopoverContent>
               </Popover>
@@ -212,7 +200,7 @@ export default function AdminDashboard() {
                   boxShadow: '0 20px 25px -5px rgb(15 23 42 / 0.1)',
                 }}
                 labelStyle={{ color: '#0f172a', fontWeight: 600 }}
-                formatter={(value) => [`${value} users`, 'Tăng trưởng']}
+                formatter={(value: number | string) => [`${value} users`, 'Tăng trưởng']}
               />
               <Area
                 type='monotone'
@@ -229,9 +217,9 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30'>
+      <Card>
         <CardHeader>
-          <CardTitle className='text-slate-900'>Top Services</CardTitle>
+          <CardTitle className=''>Top Services</CardTitle>
           <CardDescription>Các dịch vụ được yêu thích nhất trong cộng đồng.</CardDescription>
         </CardHeader>
         <CardContent className='flex flex-wrap gap-3'>

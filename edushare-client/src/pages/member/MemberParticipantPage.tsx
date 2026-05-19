@@ -100,11 +100,11 @@ export default function MemberParticipantPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold ">
             Thị trường đăng ký
           </h1>
 
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm  mt-1">
             Tìm và tham gia nhóm chia sẻ tài khoản an toàn
           </p>
         </div>
@@ -123,7 +123,7 @@ export default function MemberParticipantPage() {
             />
           </div>
 
-          <button className="px-3 py-2 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 flex items-center gap-2">
+          <button className="px-3 py-2 border border-slate-200 rounded-lg  hover: flex items-center gap-2">
             <Filter className="w-4 h-4" />
             <span className="hidden sm:block text-sm">Bộ lọc</span>
           </button>
@@ -140,7 +140,7 @@ export default function MemberParticipantPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className=" rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
             >
               <div className="p-5">
                 {/* Top */}
@@ -158,17 +158,17 @@ export default function MemberParticipantPage() {
                 {/* Info */}
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Loại</span>
+                    <span className="">Loại</span>
                     <span>{listing.type}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Kỳ hạn</span>
+                    <span className="">Kỳ hạn</span>
                     <span>{listing.duration}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Slot</span>
+                    <span className="">Slot</span>
                     <span className="text-emerald-600 font-semibold">
                       {listing.availableSlots}/{listing.totalSlots}
                     </span>
@@ -176,7 +176,7 @@ export default function MemberParticipantPage() {
                 </div>
 
                 {/* Rules */}
-                <div className="bg-slate-50 p-3 rounded-lg text-xs text-slate-600">
+                <div className=" p-3 rounded-lg text-xs ">
                   <span className="font-semibold block mb-1">
                     Quy tắc:
                   </span>
@@ -186,9 +186,9 @@ export default function MemberParticipantPage() {
               </div>
 
               {/* Bottom */}
-              <div className="border-t border-slate-100 p-4 flex items-center justify-between bg-slate-50">
+              <div className="border-t border-slate-100 p-4 flex items-center justify-between ">
                 <div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs ">
                     Giá mỗi slot
                   </div>
 
@@ -222,7 +222,7 @@ export default function MemberParticipantPage() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className="bg-white rounded-2xl w-full max-w-md overflow-hidden"
+              className=" rounded-2xl w-full max-w-md overflow-hidden"
             >
               {/* Header */}
               <div className="bg-amber-50 p-6 text-center border-b border-amber-100">
@@ -237,7 +237,7 @@ export default function MemberParticipantPage() {
 
               {/* Body */}
               <div className="p-6">
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 mb-5">
+                <div className=" border border-slate-200 rounded-lg p-4 text-sm  mb-5">
                   Share Hub chỉ là nền tảng hỗ trợ chia sẻ chi phí,
                   không bán tài khoản.
                 </div>
@@ -253,7 +253,7 @@ export default function MemberParticipantPage() {
                     className="mt-1"
                   />
 
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm ">
                     Tôi đồng ý với điều khoản sử dụng.
                   </p>
                 </div>

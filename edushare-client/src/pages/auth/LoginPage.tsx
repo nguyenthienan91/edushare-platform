@@ -26,42 +26,42 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-white via-slate-50 to-indigo-50/40 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+    <div className='min-h-screen  from-white via-slate-50 to-indigo-50/40 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
       {/* Logo */}
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <Link to='/' className='flex items-center justify-center gap-3 group'>
           <div className='relative'>
             <div className='absolute inset-0 bg-indigo-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity'></div>
 
-            <div className='relative bg-gradient-to-br from-indigo-500 to-sky-500 p-3 rounded-2xl shadow-lg'>
+            <div className='relative r from-indigo-500 to-sky-500 p-3 rounded-2xl shadow-lg'>
               <Sparkles className='w-8 h-8 text-white' />
             </div>
           </div>
 
           <div className='text-left'>
-            <h1 className='text-2xl font-bold text-slate-900 tracking-tight'>Share Hub</h1>
+            <h1 className='text-2xl font-bold  tracking-tight'>Share Hub</h1>
 
             <p className='text-xs text-sky-600 font-medium'>An toàn, thân thiện, dành cho sinh viên</p>
           </div>
         </Link>
 
-        <h2 className='mt-8 text-center text-3xl font-extrabold text-slate-900'>
+        <h2 className='mt-8 text-center text-3xl font-extrabold '>
           {isLogin ? 'Đăng nhập vào tài khoản' : 'Tạo tài khoản mới'}
         </h2>
 
-        <p className='mt-2 text-center text-sm text-slate-600'>
+        <p className='mt-2 text-center text-sm '>
           {isLogin ? 'Chào mừng bạn quay trở lại' : 'Bắt đầu hành trình của bạn'}
         </p>
       </div>
 
       {/* Card */}
       <div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className='bg-white py-8 px-6 shadow-sm border border-slate-100 sm:rounded-2xl'>
+        <div className=' py-8 px-6 shadow-sm border border-slate-100 sm:rounded-2xl'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             {/* Register only */}
             {!isLogin && (
               <div>
-                <label className='block text-sm font-medium text-slate-700'>Họ và tên</label>
+                <label className='block text-sm font-medium '>Họ và tên</label>
 
                 <div className='mt-1'>
                   <input
@@ -75,13 +75,13 @@ export default function LoginPage() {
 
             {/* Role */}
             <div>
-              <label className='block text-sm font-medium text-slate-700'>Vai trò</label>
+              <label className='block text-sm font-medium '>Vai trò</label>
 
               <div className='mt-1'>
                 <select
                   value={role}
                   onChange={(event) => setRole(event.target.value)}
-                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
                 >
                   <option value='member'>Member</option>
                   <option value='owner'>Owner</option>
@@ -93,7 +93,7 @@ export default function LoginPage() {
 
             {/* Email */}
             <div>
-              <label className='block text-sm font-medium text-slate-700'>Email</label>
+              <label className='block text-sm font-medium '>Email</label>
 
               <div className='mt-1'>
                 <input
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label className='block text-sm font-medium text-slate-700'>Mật khẩu</label>
+              <label className='block text-sm font-medium '>Mật khẩu</label>
 
               <div className='mt-1'>
                 <input
@@ -126,7 +126,7 @@ export default function LoginPage() {
                   className='h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded'
                 />
 
-                <label htmlFor='remember-me' className='ml-2 block text-sm text-slate-900'>
+                <label htmlFor='remember-me' className='ml-2 block text-sm '>
                   Ghi nhớ đăng nhập
                 </label>
               </div>
@@ -154,7 +154,7 @@ export default function LoginPage() {
             <button
               type='button'
               onClick={() => setIsLogin(!isLogin)}
-              className='text-sm font-medium text-slate-600 hover:text-slate-900'
+              className='text-sm font-medium  hover:'
             >
               {isLogin ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
             </button>

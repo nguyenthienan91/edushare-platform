@@ -25,13 +25,13 @@ const orders: OrderItem[] = [
 ]
 
 const statusMeta: Record<OrderStatus, { label: string; tone: string; actionIcon: ComponentType<{ className?: string }> }> = {
-  pending_payment: { label: 'Chờ thanh toán', tone: 'bg-slate-100 text-slate-700', actionIcon: RefreshCw },
+  pending_payment: { label: 'Chờ thanh toán', tone: 'bg-slate-100 ', actionIcon: RefreshCw },
   confirmed: { label: 'Đã xác nhận', tone: 'bg-blue-100 text-blue-700', actionIcon: RefreshCw },
   pending_access: { label: 'Đã xác nhận', tone: 'bg-blue-100 text-blue-700', actionIcon: RefreshCw },
   released: { label: 'Đã hoàn tất', tone: 'bg-emerald-100 text-emerald-700', actionIcon: ShieldCheck },
   disputed: { label: 'Đang tranh chấp', tone: 'bg-rose-100 text-rose-700', actionIcon: Info },
   refunded: { label: 'Đã hoàn tiền', tone: 'bg-violet-100 text-violet-700', actionIcon: FileText },
-  cancelled: { label: 'Đã hủy', tone: 'bg-slate-200 text-slate-600', actionIcon: X },
+  cancelled: { label: 'Đã hủy', tone: 'bg-slate-200 ', actionIcon: X },
 }
 
 function formatVnd(value: number) {
@@ -49,7 +49,7 @@ function StepCard({ label, done = false, active = false }: { label: string; done
       >
         {done ? '✓' : '•'}
       </div>
-      <div className="text-sm font-semibold text-slate-900">{label}</div>
+      <div className="text-sm font-semibold ">{label}</div>
     </div>
   )
 }
@@ -67,22 +67,22 @@ export default function MemberParticipantOrdersPage() {
           Đơn hàng thuê bao an toàn
         </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Đơn hàng của tôi</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">Xem nhanh gói bạn vừa tham gia, trạng thái ký quỹ và bước tiếp theo cần làm.</p>
+        <p className="mt-2 max-w-2xl text-sm  sm:text-base">Xem nhanh gói bạn vừa tham gia, trạng thái ký quỹ và bước tiếp theo cần làm.</p>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+        <div className="inline-flex items-center gap-2 rounded-2xl  px-4 py-3 text-sm font-semibold ">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
           Đang hoạt động: {activeOrders.length} gói
         </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700">
+        <div className="inline-flex items-center gap-2 rounded-2xl  px-4 py-3 text-sm font-semibold text-sky-700">
           <Clock3 className="h-4 w-4" />
           Theo dõi escrow và truy cập
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-sm">
-        <div className="hidden grid-cols-[1.1fr_1.2fr_0.6fr_0.8fr_1fr] gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 md:grid">
+      <div className="overflow-hidden rounded-[28px] border border-slate-100  shadow-sm">
+        <div className="hidden grid-cols-[1.1fr_1.2fr_0.6fr_0.8fr_1fr] gap-4 border-b border-slate-100  px-6 py-4 text-xs font-bold uppercase tracking-wider  md:grid">
           <div>Mã đơn</div>
           <div>Nền tảng</div>
           <div>Giá</div>
@@ -102,13 +102,13 @@ export default function MemberParticipantOrdersPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: index * 0.04 }}
                 onClick={() => setSelectedOrder(order)}
-                className="grid w-full gap-4 px-5 py-5 text-left transition hover:bg-slate-50 md:grid-cols-[1.1fr_1.2fr_0.6fr_0.8fr_1fr] md:items-center md:px-6"
+                className="grid w-full gap-4 px-5 py-5 text-left transition hover: md:grid-cols-[1.1fr_1.2fr_0.6fr_0.8fr_1fr] md:items-center md:px-6"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-lg">{order.icon}</div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl  text-lg">{order.icon}</div>
                   <div>
-                    <div className="font-mono text-sm font-semibold text-slate-900">{order.id}</div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                    <div className="font-mono text-sm font-semibold ">{order.id}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs ">
                       <Clock3 className="h-3.5 w-3.5" />
                       {order.createdAt}
                     </div>
@@ -117,18 +117,18 @@ export default function MemberParticipantOrdersPage() {
 
                 <div>
                   <div className="text-base font-semibold text-slate-950">{order.groupName}</div>
-                  <div className="mt-1 text-sm text-slate-500">Chủ nhóm: {order.ownerName}</div>
+                  <div className="mt-1 text-sm ">Chủ nhóm: {order.ownerName}</div>
                 </div>
 
                 <div className="text-base font-semibold text-emerald-600">{formatVnd(order.price)}</div>
 
                 <div>
                   <span className={clsx('inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold', meta.tone)}>{meta.label}</span>
-                  <div className="mt-2 text-sm text-slate-500">{order.nextAction}</div>
+                  <div className="mt-2 text-sm ">{order.nextAction}</div>
                 </div>
 
                 <div className="flex justify-start md:justify-end">
-                  <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200">
+                  <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium  transition hover:bg-slate-200">
                     <ActionIcon className="h-4 w-4" />
                     Xem chi tiết
                     <ArrowRight className="h-4 w-4" />
@@ -155,7 +155,7 @@ export default function MemberParticipantOrdersPage() {
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl rounded-[28px] bg-white shadow-2xl"
+              className="w-full max-w-2xl rounded-[28px]  shadow-2xl"
             >
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-6">
                 <div>
@@ -164,24 +164,24 @@ export default function MemberParticipantOrdersPage() {
                     Chi tiết đơn
                   </div>
                   <h3 className="mt-3 text-2xl font-bold text-slate-950">{selectedOrder.groupName} · {selectedOrder.id}</h3>
-                  <p className="mt-1 text-sm text-slate-500">Gói bạn vừa tham gia đang được theo dõi trong hệ thống ký quỹ.</p>
+                  <p className="mt-1 text-sm ">Gói bạn vừa tham gia đang được theo dõi trong hệ thống ký quỹ.</p>
                 </div>
-                <button type="button" onClick={() => setSelectedOrder(null)} className="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+                <button type="button" onClick={() => setSelectedOrder(null)} className="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="grid gap-6 p-6">
-                <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
-                  <div className="flex items-center justify-between"><span className="text-slate-500">Mã đơn</span><span className="font-semibold text-slate-900">{selectedOrder.id}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-slate-500">Ngày tạo</span><span className="font-semibold text-slate-900">{selectedOrder.createdAt}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-slate-500">Giá</span><span className="font-semibold text-slate-900">{formatVnd(selectedOrder.price)}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-slate-500">Chủ nhóm</span><span className="font-semibold text-slate-900">{selectedOrder.ownerName}</span></div>
+                <div className="grid gap-3 rounded-2xl  p-4 text-sm sm:grid-cols-2">
+                  <div className="flex items-center justify-between"><span className="">Mã đơn</span><span className="font-semibold ">{selectedOrder.id}</span></div>
+                  <div className="flex items-center justify-between"><span className="">Ngày tạo</span><span className="font-semibold ">{selectedOrder.createdAt}</span></div>
+                  <div className="flex items-center justify-between"><span className="">Giá</span><span className="font-semibold ">{formatVnd(selectedOrder.price)}</span></div>
+                  <div className="flex items-center justify-between"><span className="">Chủ nhóm</span><span className="font-semibold ">{selectedOrder.ownerName}</span></div>
                 </div>
 
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <h4 className="text-sm font-bold uppercase tracking-wide text-slate-500">Tiến trình đơn hàng</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-wide ">Tiến trình đơn hàng</h4>
                     <span className={clsx('rounded-full px-3 py-1 text-xs font-semibold', statusMeta[selectedOrder.status].tone)}>{statusMeta[selectedOrder.status].label}</span>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-4">
@@ -217,16 +217,16 @@ export default function MemberParticipantOrdersPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <div className="rounded-2xl border border-slate-200  p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold ">
                     <Info className="h-4 w-4 text-indigo-600" />
                     Bạn cần làm gì tiếp?
                   </div>
-                  <p className="text-sm leading-6 text-slate-500">{selectedOrder.nextAction}</p>
+                  <p className="text-sm leading-6 ">{selectedOrder.nextAction}</p>
                 </div>
 
                 <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-                  <button type="button" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">
+                  <button type="button" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200  px-4 py-3 text-sm font-semibold  transition hover:border-slate-300">
                     <FileText className="h-4 w-4" />
                     Xem biên nhận
                   </button>
@@ -234,7 +234,7 @@ export default function MemberParticipantOrdersPage() {
                     <ShieldCheck className="h-4 w-4" />
                     Xác minh trạng thái
                   </button>
-                  <button type="button" onClick={() => setSelectedOrder(null)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300">
+                  <button type="button" onClick={() => setSelectedOrder(null)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200  px-4 py-3 text-sm font-semibold  transition hover:border-slate-300">
                     Đóng
                   </button>
                 </div>

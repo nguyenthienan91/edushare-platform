@@ -75,11 +75,11 @@ export default function MemberSettingsPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">
+        <h1 className="text-3xl font-bold ">
           Cài đặt tài khoản
         </h1>
 
-        <p className="text-slate-600 mt-2">
+        <p className=" mt-2">
           Quản lý thông tin cá nhân và bảo mật
         </p>
       </div>
@@ -127,7 +127,7 @@ export default function MemberSettingsPage() {
                   {user.name.charAt(0)}
                 </div>
 
-                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border flex items-center justify-center">
+                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full  border flex items-center justify-center">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
@@ -137,7 +137,7 @@ export default function MemberSettingsPage() {
                   {user.name}
                 </h3>
 
-                <p className="text-slate-500">
+                <p className="">
                   {user.email}
                 </p>
 
@@ -330,7 +330,7 @@ export default function MemberSettingsPage() {
                     Xác thực 2 lớp
                   </h3>
 
-                  <p className="text-slate-500 text-sm mt-1">
+                  <p className=" text-sm mt-1">
                     Tăng cường bảo mật tài khoản
                   </p>
                 </div>
@@ -347,8 +347,8 @@ export default function MemberSettingsPage() {
               </div>
 
               {privacy.twoFactorAuth && (
-                <div className="mt-5 border rounded-lg p-5 bg-slate-50">
-                  <div className="w-40 h-40 bg-white border rounded-lg mx-auto flex items-center justify-center">
+                <div className="mt-5 border rounded-lg p-5 ">
+                  <div className="w-40 h-40  border rounded-lg mx-auto flex items-center justify-center">
                     QR CODE
                   </div>
 
@@ -376,7 +376,7 @@ export default function MemberSettingsPage() {
                     Cập nhật đơn hàng
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Email khi có thay đổi đơn hàng
                   </p>
                 </div>
@@ -400,7 +400,7 @@ export default function MemberSettingsPage() {
                     Khuyến mãi
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Nhận thông báo ưu đãi
                   </p>
                 </div>
@@ -426,7 +426,7 @@ export default function MemberSettingsPage() {
                     Tin nhắn
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Nhận thông báo tin nhắn mới
                   </p>
                 </div>
@@ -467,7 +467,7 @@ export default function MemberSettingsPage() {
                     Hiển thị hồ sơ
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Người khác có thể xem hồ sơ
                   </p>
                 </div>
@@ -491,7 +491,7 @@ export default function MemberSettingsPage() {
                     Hiển thị đánh giá
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Công khai đánh giá của bạn
                   </p>
                 </div>
@@ -546,7 +546,7 @@ export default function MemberSettingsPage() {
 
               <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12  rounded-lg flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-emerald-600" />
                   </div>
 
@@ -555,7 +555,7 @@ export default function MemberSettingsPage() {
                       Ví ShareHub
                     </p>
 
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm ">
                       Số dư:{' '}
                       {user.walletBalance.toLocaleString(
                         'vi-VN'
@@ -565,7 +565,7 @@ export default function MemberSettingsPage() {
                   </div>
                 </div>
 
-                <span className="text-xs bg-white px-3 py-1 rounded-full text-emerald-600 font-medium">
+                <span className="text-xs  px-3 py-1 rounded-full text-emerald-600 font-medium">
                   Mặc định
                 </span>
               </div>

@@ -15,6 +15,11 @@ import MemberWalletPage from '@/pages/member/MemberWalletPage'
 import MemberReviewsPage from '@/pages/member/MemberReviewsPage'
 import MemberDisputesPage from '@/pages/member/MemberDisputesPage'
 import MemberSettingsPage from '@/pages/member/MemberSettingsPage'
+import MemberDashboard from '@/pages/member/MemberDashboard'
+import MemberCreateGroup from '@/pages/member/MemberCreateGroup'
+import MemberManageGroup from '@/pages/member/MemberManageGroup'
+import MemberEvidence from '@/pages/member/MemberEvidence'
+import MemberRenewals from '@/pages/member/MemberRenewals'
 import OwnerCreateGroup from '@/pages/owner/OwnerCreateGroup'
 import OwnerDashboard from '@/pages/owner/OwnerDashboard'
 import OwnerEvidence from '@/pages/owner/OwnerEvidence'
@@ -26,9 +31,9 @@ import type { DashboardRole } from '@/components/role-sidebar'
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <div className='rounded-2xl border bg-white p-6 shadow-sm'>
+    <div className='rounded-2xl border  p-6 shadow-sm'>
       <h1 className='text-2xl font-semibold'>{title}</h1>
-      <p className='mt-2 text-slate-600'>Trang đang được phát triển.</p>
+      <p className='mt-2 '>Trang đang được phát triển.</p>
     </div>
   )
 }
@@ -37,7 +42,7 @@ function DashboardRoute({
   role,
   title,
   description,
-  children
+  children,
 }: {
   role: DashboardRole
   title: string
@@ -59,13 +64,53 @@ export default function AppRoutes() {
       </Route>
 
       <Route path='/login' element={<LoginPage />} />
-      <Route path='/member' element={<Navigate to='/dashboard/participant' replace />} />
-      <Route path='/member/overview' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
+      <Route path='/member/overview' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/wallet' element={<Navigate to='/dashboard/wallet' replace />} />
-      <Route path='/member/groups' element={<Navigate to='/dashboard/participant' replace />} />
-      <Route path='/member/renewals' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/member/groups' element={<Navigate to='/dashboard/groups' replace />} />
+      <Route path='/member/renewals' element={<Navigate to='/dashboard/renewals' replace />} />
       <Route path='/member/transactions' element={<Navigate to='/dashboard/participant/orders' replace />} />
-      <Route path='/dashboard' element={<Navigate to='/dashboard/participant' replace />} />
+      <Route path='/dashboard' element={<Navigate to='/dashboard/overview' replace />} />
+      <Route
+        path='/dashboard/overview'
+        element={
+          <DashboardRoute role='member' title='Tổng quan' description='Tổng quan hoạt động của bạn.'>
+            <MemberDashboard />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/groups/create'
+        element={
+          <DashboardRoute role='member' title='Tạo nhóm' description='Tạo nhóm chia sẻ mới.'>
+            <MemberCreateGroup />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/groups'
+        element={
+          <DashboardRoute role='member' title='Quản lý nhóm' description='Quản lý các nhóm của bạn.'>
+            <MemberManageGroup />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/evidence'
+        element={
+          <DashboardRoute role='member' title='Tải bằng chứng' description='Tải lên bằng chứng và tài liệu.'>
+            <MemberEvidence />
+          </DashboardRoute>
+        }
+      />
+      <Route
+        path='/dashboard/renewals'
+        element={
+          <DashboardRoute role='member' title='Nhắc gia hạn' description='Quản lý các hoạt động gia hạn.'>
+            <MemberRenewals />
+          </DashboardRoute>
+        }
+      />
       <Route
         path='/dashboard/participant'
         element={

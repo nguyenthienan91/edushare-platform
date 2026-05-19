@@ -89,13 +89,13 @@ export default function OwnerManageGroup() {
       title="Quản lý nhóm của tôi"
       description="Theo dõi trạng thái nhóm, tiến độ slot và thực hiện hành động nhanh."
     >
-      <div className="space-y-8 bg-[#f0f9ff]">
-        <div className="rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/40">
+      <div className="space-y-8 ">
+        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/40">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-medium text-emerald-600">Manage Group</p>
-              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Quản lý nhóm của tôi</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              <h2 className="text-3xl font-semibold tracking-tight ">Quản lý nhóm của tôi</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 ">
                 Xem nhanh trạng thái từng nhóm, tiến độ lấp đầy slot và các thao tác quan trọng ngay dưới card.
               </p>
             </div>
@@ -106,7 +106,7 @@ export default function OwnerManageGroup() {
           </div>
         </div>
 
-        <Card className="rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
+        <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
           <CardContent className="p-4 md:p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               <div className="relative w-full md:max-w-md">
@@ -115,13 +115,13 @@ export default function OwnerManageGroup() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Tìm nhóm..."
-                  className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-11"
+                  className="h-12 rounded-2xl border-slate-200  pl-11"
                 />
               </div>
 
               <div className="w-full md:w-64">
                 <Select value={productType} onValueChange={setProductType}>
-                  <SelectTrigger className="!h-12 w-full rounded-2xl border-slate-200 bg-slate-50 px-4 text-slate-700">
+                  <SelectTrigger className="!h-12 w-full rounded-2xl border-slate-200  px-4 ">
                     <SelectValue placeholder="Lọc theo loại sản phẩm" />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,12 +142,12 @@ export default function OwnerManageGroup() {
             const progress = Math.round((group.members / group.total) * 100)
 
             return (
-              <Card key={group.id} className="rounded-2xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
+              <Card key={group.id} className="rounded-2xl border-slate-200/70  shadow-sm shadow-sky-100/30">
                 <CardHeader className="space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <CardTitle className="text-xl text-slate-900">{group.name}</CardTitle>
-                      <CardDescription className="mt-1 text-sm text-slate-500">
+                      <CardTitle className="text-xl ">{group.name}</CardTitle>
+                      <CardDescription className="mt-1 text-sm ">
                         {group.members}/{group.total} thành viên
                       </CardDescription>
                     </div>
@@ -157,23 +157,23 @@ export default function OwnerManageGroup() {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm text-slate-500">
+                    <div className="flex items-center justify-between text-sm ">
                       <span>Độ lấp đầy</span>
-                      <span className="font-medium text-slate-900">{progress}%</span>
+                      <span className="font-medium ">{progress}%</span>
                     </div>
                     <Progress value={progress} className="h-2.5 bg-slate-100" />
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                    <div className="rounded-2xl bg-slate-50 p-3">
+                  <div className="grid grid-cols-2 gap-3 text-sm ">
+                    <div className="rounded-2xl  p-3">
                       <p className="text-xs text-slate-400">Slot còn lại</p>
-                      <p className="mt-1 font-semibold text-slate-900">{group.total - group.members} slot</p>
+                      <p className="mt-1 font-semibold ">{group.total - group.members} slot</p>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 p-3">
+                    <div className="rounded-2xl  p-3">
                       <p className="text-xs text-slate-400">Trạng thái</p>
-                      <p className="mt-1 font-semibold text-slate-900">{group.status}</p>
+                      <p className="mt-1 font-semibold ">{group.status}</p>
                     </div>
                   </div>
 
@@ -269,11 +269,11 @@ export default function OwnerManageGroup() {
                   </Dialog>
 
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <Button size="sm" variant="outline" className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                    <Button size="sm" variant="outline" className="rounded-full border-slate-200   hover:">
                       <Users className="mr-2 size-4" />
                       Member List
                     </Button>
-                    <Button size="sm" variant="outline" className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                    <Button size="sm" variant="outline" className="rounded-full border-slate-200   hover:">
                       <Trash2 className="mr-2 size-4" />
                       Remove Group
                     </Button>

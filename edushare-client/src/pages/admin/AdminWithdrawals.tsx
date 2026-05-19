@@ -101,54 +101,56 @@ export default function AdminWithdrawals() {
 
   return (
     <div className='space-y-6'>
-      <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50'>
-        <p className='text-sm font-medium text-emerald-600'>Quản lý Tài chính</p>
-        <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Phê duyệt rút tiền</h2>
-        <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
-          Kiểm tra tài khoản và xác nhận chuyển tiền hoa hồng cho các Chủ nhóm (Owner).
-        </p>
-      </div>
+      <Card>
+        <CardContent>
+          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Quản lý Tài chính</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Phê duyệt rút tiền</h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6'>
+            Kiểm tra tài khoản và xác nhận chuyển tiền hoa hồng cho các Chủ nhóm (Owner).
+          </p>
+        </CardContent>
+      </Card>
 
-      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30 overflow-hidden'>
+      <Card >
         <CardHeader className='pb-4'>
-          <CardTitle className='text-slate-900'>Danh sách yêu cầu mới nhất</CardTitle>
+          <CardTitle>Danh sách yêu cầu mới nhất</CardTitle>
           <CardDescription>Danh sách tự động cập nhật khi có Owner yêu cầu rút tiền về ví.</CardDescription>
         </CardHeader>
         <CardContent className='p-0'>
           <Table>
-            <TableHeader className='bg-slate-50/50'>
+            <TableHeader className='/50'>
               <TableRow className='hover:bg-transparent border-slate-100'>
-                <TableHead className='py-4 pl-6 font-medium text-slate-500'>Chủ nhóm (Owner)</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Số tiền yêu cầu</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Thông tin Ngân hàng</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Thời gian duyệt</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Trạng thái</TableHead>
-                <TableHead className='py-4 pr-6 text-right font-medium text-slate-500'>Hành động</TableHead>
+                <TableHead className='py-4 pl-6 font-medium '>Chủ nhóm (Owner)</TableHead>
+                <TableHead className='py-4 font-medium '>Số tiền yêu cầu</TableHead>
+                <TableHead className='py-4 font-medium '>Thông tin Ngân hàng</TableHead>
+                <TableHead className='py-4 font-medium '>Thời gian duyệt</TableHead>
+                <TableHead className='py-4 font-medium '>Trạng thái</TableHead>
+                <TableHead className='py-4 pr-6 text-right font-medium '>Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {withdrawals.map((item) => (
-                <TableRow key={item.id} className='hover:bg-slate-50/50 border-slate-100 transition-colors'>
+                <TableRow key={item.id} className='hover:/50 border-slate-100 transition-colors'>
                   <TableCell className='py-4 pl-6'>
                     <div className='flex items-center gap-3'>
                       <Avatar className='h-9 w-9 border border-slate-100 shadow-sm'>
                         <AvatarImage src={item.owner.avatar} alt={item.owner.name} />
                         <AvatarFallback className='bg-sky-100 text-sky-700'>{item.owner.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <div className='font-medium text-slate-900'>{item.owner.name}</div>
+                      <div className='font-medium '>{item.owner.name}</div>
                     </div>
                   </TableCell>
                   <TableCell className='py-4'>
-                    <div className='font-semibold text-slate-900'>{formatCurrency(item.amount)}</div>
+                    <div className='font-semibold '>{formatCurrency(item.amount)}</div>
                   </TableCell>
                   <TableCell className='py-4'>
-                    <div className='flex items-center gap-2 text-slate-600 text-sm'>
+                    <div className='flex items-center gap-2  text-sm'>
                       <Building className='w-4 h-4 text-slate-400' />
                       {item.bank}
                     </div>
                   </TableCell>
                   <TableCell className='py-4'>
-                    <div className='text-sm text-slate-500'>{item.date}</div>
+                    <div className='text-sm '>{item.date}</div>
                   </TableCell>
                   <TableCell className='py-4'>{getStatusBadge(item.status)}</TableCell>
                   <TableCell className='py-4 pr-6 text-right'>
