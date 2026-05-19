@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
 import { UsersService } from '../users/users.service'
+import { WalletsService } from '../wallets/wallets.service'
 import { StringUtilService } from '../../common/utils/string-util/string-util.service'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
 import { SignInDto, SignUpDto } from './dto/sign.dto'
@@ -13,6 +14,7 @@ import { MailService } from '../../common/utils/mail-util/mail.service'
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private walletsService: WalletsService,
     private stringUtilService: StringUtilService,
     private jwtService: JwtService,
     private mailService: MailService,
@@ -51,6 +53,7 @@ export class AuthService {
       password: passwordHashed,
       ...otherInfo,
     })
+    await this.walletsService.createWallet(userCreated._id as any)
     const { password: _pw, ...userResponse } = userCreated.toObject({
       virtuals: true,
     })
