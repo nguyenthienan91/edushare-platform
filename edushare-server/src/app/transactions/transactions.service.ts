@@ -1,0 +1,240 @@
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { InjectConnection, InjectModel } from '@nestjs/mongoose'
+import { Connection, Model, Types } from 'mongoose'
+import { Transaction, TransactionDocument } from './schemas/transaction.schema'
+import { Wallet, WalletDocument } from '../wallets/schemas/wallet.schema'
+import { EscrowStatus } from './enums/escrow-status.enum'
+import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
+
+@Injectable()
+export class TransactionsService {
+  private readonly logger = new Logger(TransactionsService.name)
+
+  constructor(
+    @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
+    @InjectConnection() private readonly connection: Connection, // Dùng để quản lý ACID Transaction
+    @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
+    @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+  ) {}
+
+  async findAll(): Promise<TransactionDocument[]> {
+    return this.transactionModel.find().exec()
+  }
+
+  async requestJoinGroup(userId: string, groupId: string) {
+    // 1. Khởi tạo một phiên làm việc (session) bảo mật dữ liệu
+    const session = await this.connection.startSession()
+    session.startTransaction()
+
+    try {
+      const userObjectId = new Types.ObjectId(userId)
+      const groupObjectId = new Types.ObjectId(groupId)
+
+      // 1. Lấy thông tin nhóm từ DB và kiểm tra trạng thái
+      const group = await this.groupModel.findById(groupObjectId).session(session)
+      if (!group) {
+        throw new NotFoundException('Group not found.')
+      }
+
+      // Kiểm tra xem nhóm còn slot trống hay không hoặc có đang bị khóa/hết hạn không
+      if (group.status !== GroupStatus.AVAILABLE || group.occupiedSlots >= group.totalSlots) {
+        throw new BadRequestException('Group is full or no longer available to join.')
+      }
+
+      // ĐỒNG BỘ: Sử dụng trực tiếp trường group.price từ Schema của bạn cùng team
+      const price = group.price
+
+      // 2. Tìm ví của Member và kiểm tra số dư khả dụng (balance)
+      const wallet = await this.walletModel.findOne({ userId: userObjectId }).session(session)
+      if (!wallet || wallet.balance < price) {
+        throw new BadRequestException(`Insufficient balance. You need at least ${price} to join this group.`)
+      }
+
+      // 3. THỰC HIỆN LOCK TIỀN: Trừ balance khả dụng, cộng vào frozenBalance (ví treo)
+      await this.walletModel.findOneAndUpdate(
+        { userId: userObjectId },
+        {
+          $inc: {
+            balance: -price, // Trừ số tiền tương ứng với group.price
+            frozenBalance: price, // Đẩy vào ví treo
+          },
+        },
+        { session },
+      )
+
+      // 4. Tạo bản ghi lịch sử giao dịch ở trạng thái HELD (Hệ thống đang giữ tiền)
+      const lockDuration = 48 * 60 * 60 * 1000 // 48 giờ
+      const escrowTransaction = await this.transactionModel.create(
+        [
+          {
+            senderId: userObjectId,
+            groupId: groupObjectId,
+            amount: price, // Đồng bộ lưu số tiền bằng biến price
+            status: EscrowStatus.HELD_IN_ESCROW,
+            expiresAt: new Date(Date.now() + lockDuration),
+          },
+        ],
+        { session },
+      )
+
+      await session.commitTransaction()
+
+      return {
+        message: 'Request submitted successfully. Your funds have been securely held in escrow.',
+        transaction: escrowTransaction[0],
+      }
+    } catch (error) {
+      await session.abortTransaction()
+      throw error
+    } finally {
+      session.endSession()
+    }
+  }
+
+  /**
+   * Chủ nhóm nộp minh chứng đã add member vào gói
+   */
+  async submitProof(transactionId: string, ownerId: string, proofUrl: string) {
+    const session = await this.connection.startSession()
+    session.startTransaction()
+
+    try {
+      // 1. Tìm giao dịch và kiểm tra tính hợp lệ
+      const transaction = await this.transactionModel.findById(transactionId).session(session)
+
+      if (!transaction) throw new NotFoundException('Transaction not found.')
+      if (transaction.status !== EscrowStatus.APPROVED_WAITING_PROOF) {
+        throw new BadRequestException('Transaction is not in a state awaiting proof submission (Must approved before).')
+      }
+
+      // 2. Tìm nhóm liên quan để xác thực xem người gọi API có phải là Chủ nhóm không
+      const group = await this.groupModel.findById(transaction.groupId).session(session)
+      if (!group) throw new NotFoundException('Associated group not found.')
+
+      if (!(group.ownerId as unknown as Types.ObjectId).equals(new Types.ObjectId(ownerId))) {
+        throw new BadRequestException('You are not the owner of this group and cannot submit proof.')
+      }
+
+      // 3. Cập nhật minh chứng và chuyển trạng thái sang PROOF_SUBMITTED
+      transaction.proofUrl = proofUrl
+      transaction.status = EscrowStatus.PROOF_SUBMITTED
+
+      // Reset lại đồng hồ 48h: Member có đúng 48 tiếng để kiểm tra kể từ lúc có ảnh bằng chứng
+      transaction.expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
+
+      await transaction.save({ session })
+      await session.commitTransaction()
+
+      return {
+        message: 'Proof submitted successfully. The system has notified the buyer to confirm.',
+        transaction,
+      }
+    } catch (error) {
+      await session.abortTransaction()
+      throw error
+    } finally {
+      session.endSession()
+    }
+  }
+
+  /**
+   * Người mua xác nhận đã vào nhóm thành công -> Giải ngân tiền cho Chủ nhóm
+   */
+  async confirmTransaction(transactionId: string, memberId: string) {
+    const session = await this.connection.startSession()
+    session.startTransaction()
+
+    try {
+      // 1. Tìm giao dịch và kiểm tra quyền sở hữu
+      const transaction = await this.transactionModel.findById(transactionId).session(session)
+      if (!transaction) throw new NotFoundException('Transaction not found.')
+
+      const senderObjectId = transaction.senderId
+      if (!senderObjectId.equals(new Types.ObjectId(memberId))) {
+        throw new BadRequestException('You are not the buyer of this transaction.')
+      }
+
+      if (transaction.status !== EscrowStatus.PROOF_SUBMITTED) {
+        throw new BadRequestException('Transaction has no proof submitted or has already been processed.')
+      }
+
+      // 2. Tìm nhóm để lấy thông tin Owner và kiểm tra Slot trống một lần nữa cho chắc
+      const group = await this.groupModel.findById(transaction.groupId).session(session)
+      if (!group) throw new NotFoundException('Group not found.')
+      if (group.occupiedSlots >= group.totalSlots) {
+        throw new BadRequestException('Group is already full. A refund will be processed for you.')
+      }
+
+      const price = transaction.amount
+      const ownerObjectId = group.ownerId as unknown as Types.ObjectId
+
+      // 3. XỬ LÝ DÒNG TIỀN: Trừ tiền đóng băng của Member -> Cộng tiền xài được cho Owner
+      await this.walletModel.findOneAndUpdate(
+        { userId: senderObjectId },
+        { $inc: { frozenBalance: -price } },
+        { session },
+      )
+
+      await this.walletModel.findOneAndUpdate(
+        { userId: ownerObjectId },
+        { $inc: { balance: price } }, // Tiền sạch, chủ nhóm rút được ngay
+        { session, upsert: true },
+      )
+
+      // 4. CẬP NHẬT THÀNH VIÊN VÀO NHÓM (Đồng bộ với phần 5.2 của bạn cùng team)
+      group.members.push(senderObjectId as unknown as (typeof group.members)[number])
+      group.occupiedSlots += 1
+
+      // Nếu nhóm hết slot thì tự động đổi trạng thái sang FULL
+      if (group.occupiedSlots >= group.totalSlots) {
+        group.status = GroupStatus.FULL // Import GroupStatus từ file entity của bạn cùng team
+      }
+      await group.save({ session })
+
+      // 5. Đổi trạng thái giao dịch thành COMPLETED
+      transaction.status = EscrowStatus.COMPLETED
+      await transaction.save({ session })
+
+      await session.commitTransaction()
+
+      return {
+        message: 'Transaction completed. You are now an official member of the group and the owner has been paid.',
+      }
+    } catch (error) {
+      await session.abortTransaction()
+      throw error
+    } finally {
+      session.endSession()
+    }
+  }
+
+  async approveJoinRequest(transactionId: string, ownerId: string) {
+    // 1. Tìm giao dịch kiểm tra hợp lệ
+    const transaction = await this.transactionModel.findById(transactionId)
+    if (!transaction) throw new NotFoundException('Transaction not found.')
+
+    if (transaction.status !== EscrowStatus.HELD_IN_ESCROW) {
+      throw new BadRequestException('This request has already been processed or is invalid.')
+    }
+
+    // 2. Kiểm tra quyền của người bấm nút xem có phải Owner của Group không
+    const group = await this.groupModel.findById(transaction.groupId)
+    if (!group) throw new NotFoundException('Associated group not found.')
+    if (!(group.ownerId as unknown as Types.ObjectId).equals(new Types.ObjectId(ownerId))) {
+      throw new BadRequestException('You are not the owner of this group and cannot approve this request.')
+    }
+
+    // 3. Cập nhật trạng thái sang APPROVED_WAITING_PROOF
+    transaction.status = EscrowStatus.APPROVED_WAITING_PROOF
+    // Lưu thay đổi vào Database
+    await transaction.save()
+    // Ở đây chúng ta ghi nhận Owner đã chấp nhận, sẵn sàng chờ họ up ảnh ở bước tiếp theo
+    this.logger.log(`Owner ${ownerId} approved transaction ${transactionId}`)
+
+    return {
+      status: 'success',
+      message: 'Request approved. Please add the member to the account and upload proof of completion.',
+      transaction,
+    }
+  }
+}

@@ -10,6 +10,9 @@ import { AuthGuard } from './auth/auth.guard'
 import { RolesGuard } from '../common/security/roles/roles.guard'
 import { GroupsModule } from './groups/groups.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { WalletsModule } from './wallets/wallets.module'
+import { TransactionsModule } from './transactions/transactions.module'
+import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module'
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { ScheduleModule } from '@nestjs/schedule'
     AuthModule,
     UsersModule,
     GroupsModule,
+    WalletsModule,
+    TransactionsModule,
+    PaymentGatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],

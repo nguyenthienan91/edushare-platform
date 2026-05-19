@@ -8,7 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from '../users/entities/user.entity'
 
 @Controller('groups')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.GROUP_OWNER)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 

@@ -9,6 +9,6 @@ import { UsersModule } from '../users/users.module'
   imports: [MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]), UsersModule],
   controllers: [GroupsController],
   providers: [GroupsService],
-  exports: [GroupsService],
+  exports: [GroupsService, MongooseModule],
 })
 export class GroupsModule {}
