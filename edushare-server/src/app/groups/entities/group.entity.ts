@@ -8,6 +8,12 @@ export enum GroupStatus {
   EXPIRED = 'expired',
 }
 
+export enum GroupCategory {
+  PRODUCTIVITY = 'Productivity',
+  DESIGN = 'Design',
+  AI_TOOLS = 'AI Tools',
+}
+
 export type GroupDocument = HydratedDocument<Group>
 
 @Schema({ timestamps: true })
@@ -17,6 +23,13 @@ export class Group {
 
   @Prop({ trim: true, default: '' })
   description!: string
+
+  @Prop({
+    type: String,
+    enum: GroupCategory,
+    required: true,
+  })
+  category!: GroupCategory
 
   @Prop({ required: true, min: 1 })
   totalSlots!: number
@@ -62,3 +75,4 @@ export const GroupSchema = SchemaFactory.createForClass(Group)
 
 GroupSchema.index({ ownerId: 1 })
 GroupSchema.index({ status: 1 })
+GroupSchema.index({ category: 1 })
