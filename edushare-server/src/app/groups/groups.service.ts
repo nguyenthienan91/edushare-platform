@@ -7,6 +7,8 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { UsersService } from '../users/users.service'
 import type { UserDocument } from '../users/entities/user.entity'
+import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Injectable()
 export class GroupsService {
@@ -14,6 +16,7 @@ export class GroupsService {
     @InjectModel(Group.name)
     private readonly groupModel: Model<Group>,
     private readonly usersService: UsersService,
+    private readonly paginationUtilService: PaginationUtilService,
   ) {}
 
   private calculateStatus(params: { occupiedSlots: number; totalSlots: number; expiredAt: Date | null }): GroupStatus {
@@ -188,45 +191,76 @@ export class GroupsService {
     }
   }
 
-  async findAll(): Promise<{ message: string; data: GroupDocument[] }> {
+  async findAll(pagination: Pagination) {
+    const totalItems = await this.groupModel.countDocuments().exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const data = await this.groupModel
+      .find()
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .populate('ownerId', 'id email displayName')
+      .populate('members', 'id email displayName')
+      .exec()
+
     return {
       message: 'Groups retrieved successfully',
-      data: await this.groupModel
-        .find()
-        .populate('ownerId', 'id email displayName')
-        .populate('members', 'id email displayName')
-        .exec(),
+      ...this.paginationUtilService.format(data),
     }
   }
 
-  async sortByPrice(order: 'asc' | 'desc' = 'asc'): Promise<{ message: string; data: GroupDocument[] }> {
+  async sortByPrice(order: 'asc' | 'desc' = 'asc', pagination: Pagination) {
     if (order !== 'asc' && order !== 'desc') {
       throw new BadRequestException('order must be asc or desc')
     }
 
     const direction = order === 'desc' ? -1 : 1
+    const totalItems = await this.groupModel.countDocuments().exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const data = await this.groupModel
+      .find()
+      .sort({ price: direction })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .populate('ownerId', 'id email displayName')
+      .populate('members', 'id email displayName')
+      .exec()
+
     return {
       message: 'Groups retrieved successfully',
-      data: await this.groupModel
-        .find()
-        .sort({ price: direction })
-        .populate('ownerId', 'id email displayName')
-        .populate('members', 'id email displayName')
-        .exec(),
+      ...this.paginationUtilService.format(data),
     }
   }
 
-  async search(
-    query: Record<string, string | string[] | undefined>,
-  ): Promise<{ message: string; data: GroupDocument[] }> {
+  async search(query: Record<string, string | string[] | undefined>, pagination: Pagination) {
     const filter = this.buildSearchFilter(query)
+    const totalItems = await this.groupModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const data = await this.groupModel
+      .find(filter)
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .populate('ownerId', 'id email displayName')
+      .populate('members', 'id email displayName')
+      .exec()
+
     return {
       message: 'Groups retrieved successfully',
-      data: await this.groupModel
-        .find(filter)
-        .populate('ownerId', 'id email displayName')
-        .populate('members', 'id email displayName')
-        .exec(),
+      ...this.paginationUtilService.format(data),
     }
   }
 
