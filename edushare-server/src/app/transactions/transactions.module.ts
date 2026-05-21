@@ -8,6 +8,7 @@ import { GroupsModule } from '../groups/groups.module'
 import { AuthModule } from '../auth/auth.module'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
 import { TransactionsCronService } from './transactions-cron.service'
+import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { TransactionsCronService } from './transactions-cron.service'
     AuthModule,
   ],
   controllers: [TransactionsController],
-  providers: [TransactionsService, CloudinaryService, TransactionsCronService],
+  providers: [TransactionsService, CloudinaryService, TransactionsCronService, PaginationUtilService],
 })
 export class TransactionsModule {}
