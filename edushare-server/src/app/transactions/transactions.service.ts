@@ -5,6 +5,7 @@ import { Transaction, TransactionDocument } from './schemas/transaction.schema'
 import { Wallet, WalletDocument } from '../wallets/schemas/wallet.schema'
 import { EscrowStatus } from './enums/escrow-status.enum'
 import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
+import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
 
 @Injectable()
 export class TransactionsService {
@@ -15,6 +16,7 @@ export class TransactionsService {
     @InjectConnection() private readonly connection: Connection, // Dùng để quản lý ACID Transaction
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    private readonly paginationUtil: PaginationUtilService,
   ) {}
 
   async findAll(): Promise<TransactionDocument[]> {
@@ -235,6 +237,40 @@ export class TransactionsService {
       status: 'success',
       message: 'Request approved. Please add the member to the account and upload proof of completion.',
       transaction,
+    }
+  }
+
+  async findAllTransactionsForAdmin(query: { status?: string; page?: number; itemPerPage?: number }) {
+    const { status, page, itemPerPage } = query
+    /// 1. Tạo object filter điều kiện tìm kiếm
+    const filter: any = {}
+    if (status) {
+      filter.status = status
+    }
+
+    // 2. Đếm tổng số lượng item thỏa mãn điều kiện lọc (Bắt buộc phải có để tính totalPages)
+    const totalItems = await this.transactionModel.countDocuments(filter).exec()
+
+    // 3. Kích hoạt tính toán phân trang từ Class Util của bạn
+    // Hàm này sẽ tự động tính ra `this.paginationUtil.skip` và `this.paginationUtil.totalPages`
+    this.paginationUtil.paging({
+      page: page,
+      itemPerPage: itemPerPage,
+      totalItems: totalItems,
+    })
+
+    // Query dữ liệu từ MongoDB
+    const transactions = await this.transactionModel
+      .find(filter)
+      .select('_id senderId groupId amount status proofUrl createdAt') // Chỉ lấy các trường cần thiết theo yêu cầu thiết kế
+      .sort({ createdAt: -1 }) // Thằng nào mới nhất thì xếp lên đầu
+      .skip(this.paginationUtil.skip)
+      .limit(this.paginationUtil.itemPerPage)
+      .exec()
+
+    return {
+      status: 'success',
+      ...this.paginationUtil.format(transactions),
     }
   }
 }
