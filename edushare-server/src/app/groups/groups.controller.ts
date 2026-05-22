@@ -8,6 +8,8 @@ import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from '../users/entities/user.entity'
+import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('groups')
 @Roles(UserRole.ADMIN, UserRole.GROUP_OWNER)
@@ -20,15 +22,22 @@ export class GroupsController {
   }
 
   @Get()
-  findAll() {
-    return this.groupsService.findAll()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  findAll(@Query(new ParseParamsPaginationPipe()) pagination: Pagination) {
+    return this.groupsService.findAll(pagination)
   }
 
   @Get('sort/price')
   @Roles()
   @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'] })
-  sortByPrice(@Query('order') order?: 'asc' | 'desc') {
-    return this.groupsService.sortByPrice(order)
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  sortByPrice(
+    @Query('order') order: 'asc' | 'desc' | undefined,
+    @Query(new ParseParamsPaginationPipe()) pagination: Pagination,
+  ) {
+    return this.groupsService.sortByPrice(order, pagination)
   }
 
   @Get('search')
@@ -44,8 +53,13 @@ export class GroupsController {
   @ApiQuery({ name: 'totalPrice', required: false, type: Number })
   @ApiQuery({ name: 'price', required: false, type: Number })
   @ApiQuery({ name: 'expiredAt', required: false, type: String, format: 'date-time' })
-  search(@Query() query: Record<string, string | string[] | undefined>) {
-    return this.groupsService.search(query)
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  search(
+    @Query() query: Record<string, string | string[] | undefined>,
+    @Query(new ParseParamsPaginationPipe()) pagination: Pagination,
+  ) {
+    return this.groupsService.search(query, pagination)
   }
 
   @Get(':id')
