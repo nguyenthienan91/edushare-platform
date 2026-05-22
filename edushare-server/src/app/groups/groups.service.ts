@@ -193,7 +193,8 @@ export class GroupsService {
       message: 'Groups retrieved successfully',
       data: await this.groupModel
         .find()
-        .populate('ownerId', 'id email displayName')
+        .sort({ 'ownerId.trustScore': -1, createdAt: -1 })
+        .populate('ownerId', 'username displayName avatar trustScore')
         .populate('members', 'id email displayName')
         .exec(),
     }
@@ -209,8 +210,8 @@ export class GroupsService {
       message: 'Groups retrieved successfully',
       data: await this.groupModel
         .find()
-        .sort({ price: direction })
-        .populate('ownerId', 'id email displayName')
+        .sort({ price: direction, 'ownerId.trustScore': -1, createdAt: -1 })
+        .populate('ownerId', 'username displayName avatar trustScore')
         .populate('members', 'id email displayName')
         .exec(),
     }
@@ -224,7 +225,8 @@ export class GroupsService {
       message: 'Groups retrieved successfully',
       data: await this.groupModel
         .find(filter)
-        .populate('ownerId', 'id email displayName')
+        .sort({ 'ownerId.trustScore': -1, createdAt: -1 })
+        .populate('ownerId', 'username displayName avatar trustScore')
         .populate('members', 'id email displayName')
         .exec(),
     }
@@ -233,7 +235,7 @@ export class GroupsService {
   async findOne(filter: Record<string, unknown>): Promise<GroupDocument> {
     const group = await this.groupModel
       .findOne(filter)
-      .populate('ownerId', 'id email displayName')
+      .populate('ownerId', 'username displayName avatar trustScore')
       .populate('members', 'id email displayName')
       .exec()
 
@@ -379,7 +381,6 @@ export class GroupsService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   @Cron(CronExpression.EVERY_MINUTE)
   async markExpiredGroups(): Promise<void> {
     const now = new Date()

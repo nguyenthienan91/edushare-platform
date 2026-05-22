@@ -13,6 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { WalletsModule } from './wallets/wallets.module'
 import { TransactionsModule } from './transactions/transactions.module'
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module'
+import { RatingsModule } from './ratings/ratings.module'
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module'
     WalletsModule,
     TransactionsModule,
     PaymentGatewayModule,
+    RatingsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],

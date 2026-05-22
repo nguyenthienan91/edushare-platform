@@ -50,6 +50,9 @@ export class User {
   @Prop({ default: false })
   isVerified!: boolean
 
+  @Prop({ default: 5.0 })
+  trustScore!: number
+
   // --- LUỒNG MEMBERSHIP ---
 
   @Prop({ type: Date, default: null })
