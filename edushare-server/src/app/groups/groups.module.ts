@@ -4,9 +4,10 @@ import { GroupsController } from './groups.controller'
 import { Group, GroupSchema } from './entities/group.entity'
 import { MongooseModule } from '@nestjs/mongoose/dist/mongoose.module'
 import { UsersModule } from '../users/users.module'
+import { PaginationUtilModule } from '../../common/utils/pagination-util/pagination-util.module'
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]), UsersModule],
+  imports: [MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]), UsersModule, PaginationUtilModule],
   controllers: [GroupsController],
   providers: [GroupsService],
   exports: [GroupsService, MongooseModule],
