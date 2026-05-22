@@ -211,7 +211,7 @@ export class GroupsService {
       message: 'Groups retrieved successfully',
       data: await this.groupModel
         .find()
-        .sort({ 'ownerId.trustScore': -1, createdAt: -1 })
+        .sort({ 'ownerId.trustScore': -1 })
         .populate('ownerId', 'username displayName avatar trustScore')
         .populate('members', 'id email displayName')
         .exec(),
