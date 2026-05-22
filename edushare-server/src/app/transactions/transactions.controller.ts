@@ -10,14 +10,18 @@ import {
   Param,
   UploadedFile,
   UseInterceptors,
+  Get,
+  Query,
+  ForbiddenException,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import 'multer'
 import { TransactionsService } from './transactions.service'
 import { AuthGuard } from '../auth/auth.guard'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
-import { ApiBody, ApiConsumes } from '@nestjs/swagger'
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { JoinRequestDto } from './dto/join-request.dto'
+import { AdminTransactionQueryDto } from './dto/admin-transaction-query.dto'
 
 @Controller('transactions')
 @UseGuards(AuthGuard)
@@ -92,5 +96,21 @@ export class TransactionsController {
   async ownerApproveMember(@Param('id') transactionId: string, @Req() req: any) {
     const ownerId = req.user.userID // Lấy ID chủ nhóm từ Token
     return await this.transactionsService.approveJoinRequest(transactionId, ownerId)
+  }
+
+  @Get()
+  @ApiOperation({ summary: '[ADMIN] Xem danh sách toàn bộ giao dịch và minh chứng ảnh' })
+  @ApiResponse({ status: 200, description: 'Lấy danh sách thành công.' })
+  @ApiResponse({ status: 403, description: 'Quyền truy cập bị từ chối - Bạn không phải Admin.' })
+  async getTransactionsForAdmin(
+    @Req() req: any,
+    @Query() query: AdminTransactionQueryDto, // Hứng bộ lọc status từ URL query string
+  ) {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenException('Access denied. This feature is restricted to administrators only.')
+    }
+
+    // Nếu qua được màng lọc, tiến hành gọi service
+    return await this.transactionsService.findAllTransactionsForAdmin(query)
   }
 }
