@@ -1,6 +1,8 @@
 import { Outlet, Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
 
 const NAV_ITEMS = [
   { label: 'Trang chủ', href: '#' },
@@ -10,6 +12,8 @@ const NAV_ITEMS = [
 ];
 
 export default function MainLayout() {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -42,6 +46,28 @@ export default function MainLayout() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggler
+              theme={theme as ThemeSelection}
+              resolvedTheme={(resolvedTheme ?? 'light') as Resolved}
+              setTheme={setTheme}
+              direction='btt'
+            >
+              {({ effective, toggleTheme }) => {
+                const nextTheme = effective === 'dark' ? 'light' : 'dark'
+
+                return (
+                  <button
+                    type='button'
+                    onClick={() => toggleTheme(nextTheme)}
+                    className='relative flex size-9 items-center justify-center rounded-full transition-colors'
+                    aria-label='Toggle theme'
+                  >
+                    {effective === 'dark' ? <Moon className='size-4' /> : <Sun className='size-4' />}
+                  </button>
+                )
+              }}
+            </ThemeToggler>
+
             <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
               <Link to="/login">Đăng nhập</Link>
             </Button>
