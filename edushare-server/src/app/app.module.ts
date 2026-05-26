@@ -15,6 +15,7 @@ import { TransactionsModule } from './transactions/transactions.module'
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module'
 import { RatingsModule } from './ratings/ratings.module'
 import { NotificationsModule } from './notifications/notification.module'
+import { DashboardModule } from './dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { NotificationsModule } from './notifications/notification.module'
     PaymentGatewayModule,
     RatingsModule,
     NotificationsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],

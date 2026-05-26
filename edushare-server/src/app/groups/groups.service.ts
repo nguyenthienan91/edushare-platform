@@ -148,6 +148,10 @@ export class GroupsService {
   }
 
   private async syncStatus(group: GroupDocument): Promise<GroupDocument> {
+    if (group.status === GroupStatus.CLOSED || group.status === GroupStatus.HIDDEN) {
+      return group
+    }
+
     const nextStatus = this.calculateStatus({
       occupiedSlots: group.occupiedSlots,
 
@@ -338,6 +342,7 @@ export class GroupsService {
     const now = new Date()
     const joinFilter: Record<string, unknown> = {
       _id: groupObjectId,
+      status: GroupStatus.AVAILABLE,
       members: { $ne: userObjectId },
       $expr: { $lt: ['$occupiedSlots', '$totalSlots'] },
       $or: [{ expiredAt: null }, { expiredAt: { $gt: now } }],
@@ -355,6 +360,14 @@ export class GroupsService {
       const group = await this.groupModel.findById(groupId).exec()
       if (!group) {
         throw new NotFoundException('Group not found')
+      }
+
+      if (group.status === GroupStatus.CLOSED) {
+        throw new BadRequestException('Group is closed')
+      }
+
+      if (group.status === GroupStatus.HIDDEN) {
+        throw new BadRequestException('Group is hidden')
       }
 
       const currentStatus = this.calculateStatus({
@@ -437,9 +450,64 @@ export class GroupsService {
     await this.groupModel.updateMany(
       {
         expiredAt: { $ne: null, $lte: now },
-        status: { $ne: GroupStatus.EXPIRED },
+        status: { $nin: [GroupStatus.EXPIRED, GroupStatus.CLOSED, GroupStatus.HIDDEN] },
       },
       { $set: { status: GroupStatus.EXPIRED } },
     )
+  }
+
+  async updateStatusAdmin(groupId: string, status: GroupStatus): Promise<{ message: string; data: GroupDocument }> {
+    if (status !== GroupStatus.CLOSED && status !== GroupStatus.HIDDEN) {
+      throw new BadRequestException('Status must be closed or hidden')
+    }
+
+    const group = await this.groupModel.findById(groupId).exec()
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    if (group.status !== GroupStatus.CLOSED && group.status !== GroupStatus.HIDDEN) {
+      group.adminStatusBeforeLock = group.status
+    }
+
+    group.status = status
+    const updatedGroup = await group.save()
+
+    return {
+      message: 'Group status updated successfully',
+      data: updatedGroup,
+    }
+  }
+
+  async restoreStatusAdmin(groupId: string): Promise<{ message: string; data: GroupDocument }> {
+    const group = await this.groupModel.findById(groupId).exec()
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    if (group.status !== GroupStatus.CLOSED && group.status !== GroupStatus.HIDDEN) {
+      throw new BadRequestException('Group is not closed or hidden')
+    }
+
+    const previousStatus = group.adminStatusBeforeLock
+    const nextStatus =
+      previousStatus && previousStatus !== GroupStatus.CLOSED && previousStatus !== GroupStatus.HIDDEN
+        ? previousStatus
+        : this.calculateStatus({
+            occupiedSlots: group.occupiedSlots,
+            totalSlots: group.totalSlots,
+            expiredAt: group.expiredAt ?? null,
+          })
+
+    group.status = nextStatus
+    group.adminStatusBeforeLock = null
+    const updatedGroup = await group.save()
+
+    return {
+      message: 'Group status restored successfully',
+      data: updatedGroup,
+    }
   }
 }

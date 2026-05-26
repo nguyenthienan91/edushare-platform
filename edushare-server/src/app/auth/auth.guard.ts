@@ -1,10 +1,11 @@
 import type { Request } from 'express'
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common'
 import { IS_SKIP_AUTH } from './auth.decorator'
 import { Reflector } from '@nestjs/core'
 import { AuthService } from './auth.service'
 import { UserInfo } from '../../common/decorators/user.decorator'
 import { TokenKeys } from './consts/jwt.const'
+import { UsersService } from '../users/users.service'
 
 interface AuthenticatedRequest extends Request {
   user?: UserInfo
@@ -15,6 +16,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private authService: AuthService,
+    private usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -32,7 +34,21 @@ export class AuthGuard implements CanActivate {
 
     try {
       const { iat: _iat, exp: _exp, ...user } = await this.authService.verifyToken(token)
-      req.user = user
+      const userRecord = await this.usersService.findById(user.userID)
+
+      if (!userRecord) {
+        throw new UnauthorizedException('User not found')
+      }
+
+      if (!userRecord.isActive) {
+        throw new ForbiddenException('Account is locked')
+      }
+
+      req.user = {
+        userID: userRecord.id,
+        userEmail: userRecord.email,
+        role: userRecord.role,
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unauthorized'
       throw new UnauthorizedException(message)
