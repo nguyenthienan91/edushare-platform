@@ -52,10 +52,9 @@ const FEATURE_CARDS = [
 ]
 
 const GROUPS = [
-  { name: 'Cursor Pro 6000 request - 30 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '180.000 đ', description: 'Gói Cursor Pro 30 ngày, có 6000 request trong 30 ngày, phù hợp nhóm học tập và làm việc cần request lớn.' },
-  { name: 'Cursor Pro 1200 request - 7 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '250.000 đ', description: 'Gói Cursor Pro 7 ngày, có 1200 request trong 7 ngày. Cân bằng giữa giá và hiệu năng.' },
-  { name: 'Cursor Pro 200 request/ngày - 30 ngày', tag: 'Sắp hết hàng', category: 'Cursor', rating: 4.9, price: '370.000 đ', description: 'Gói Cursor Pro 30 ngày, mỗi ngày 200 request. Phù hợp người dùng thường xuyên.' },
-  { name: 'Cursor Pro 200 request/ngày - 7 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '499.000 đ', description: 'Gói Cursor Pro 7 ngày, mỗi ngày 200 request. Phù hợp dùng ngắn hạn, dễ mua nhanh.' },
+  { name: 'Cursor Pro 6000 request - 30 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '180.000 đ', description: 'Gói Cursor Pro 30 ngày, có 6000 request trong 30 ngày.' },
+  { name: 'Cursor Pro 1200 request - 7 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '250.000 đ', description: 'Gói Cursor Pro 7 ngày, có 1200 request trong 7 ngày.' },
+  { name: 'Cursor Pro 200 request/ngày - 30 ngày', tag: 'Sắp hết hàng', category: 'Cursor', rating: 4.9, price: '370.000 đ', description: 'Gói Cursor Pro 30 ngày, mỗi ngày 200 request.' },
 ]
 
 const BENEFITS = [
@@ -230,13 +229,13 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {categories.map((item) => (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {categories.slice(0, 6).map((item) => (
                 <Card key={item.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
                   <CardContent className="flex items-center gap-4 p-4">
-                    <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-sm font-bold ${item.accent}`}>{item.name.slice(0, 1)}</div>
-                    <div>
-                      <p className="font-semibold">{item.name}</p>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold ${item.accent}`}>{item.name.slice(0, 1)}</div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{item.name}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{item.count}</p>
                     </div>
                   </CardContent>
@@ -257,37 +256,41 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             {GROUPS.map((group) => (
-              <Card key={group.name} className="rounded-[1.75rem] border-border/60 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="aspect-[1/1] rounded-[1.5rem] bg-slate-950 p-4 text-white">
-                    <div className="flex items-start justify-between">
-                      <Badge variant={group.tag === 'Còn slot' ? 'default' : 'secondary'} className="rounded-full">
-                        {group.tag}
-                      </Badge>
-                      <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">{group.category}</Badge>
+              <Card key={group.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <Badge variant={group.tag === 'Còn slot' ? 'default' : 'secondary'} className="rounded-full px-3 py-1 text-xs">
+                      {group.tag}
+                    </Badge>
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                      {group.category}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">
+                      E
                     </div>
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-3xl bg-white/10 text-4xl font-black">E</div>
-                        <p className="text-sm text-white/70">Nhóm EduShare</p>
+                    <div className="min-w-0">
+                      <h3 className="truncate text-base font-semibold leading-6">{group.name}</h3>
+                      <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {group.rating}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {group.rating}
-                    </div>
-                    <h3 className="mt-2 text-lg font-semibold leading-7">{group.name}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{group.description}</p>
-                    <div className="mt-4 border-t border-border pt-4">
+                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">{group.description}</p>
+
+                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Giá</p>
                       <div className="text-lg font-bold">{group.price}</div>
-                      <Button className="mt-4 w-full rounded-full bg-slate-900 text-white hover:bg-slate-800">
-                        <CreditCard className="mr-2 h-4 w-4" /> Thêm vào giỏ
-                      </Button>
                     </div>
+                    <Button size="sm" className="rounded-full bg-slate-900 text-white hover:bg-slate-800">
+                      Xem
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
