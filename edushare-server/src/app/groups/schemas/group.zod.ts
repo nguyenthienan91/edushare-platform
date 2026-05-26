@@ -15,6 +15,7 @@ export const GroupSchema = z.object({
   totalPrice: z.number().finite().min(0),
   price: z.number().finite().min(0),
   status: GroupStatusEnum,
+  adminStatusBeforeLock: GroupStatusEnum.nullable().optional(),
   ownerId: objectIdSchema,
   members: z.array(objectIdSchema),
   expiredAt: z.string().datetime({ offset: true }).nullable().optional(),

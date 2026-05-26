@@ -456,21 +456,57 @@ export class GroupsService {
     )
   }
 
-  async updateStatusAdmin(groupId: string, status: GroupStatus) {
+  async updateStatusAdmin(groupId: string, status: GroupStatus): Promise<{ message: string; data: GroupDocument }> {
     if (status !== GroupStatus.CLOSED && status !== GroupStatus.HIDDEN) {
       throw new BadRequestException('Status must be closed or hidden')
     }
 
-    const updatedGroup = await this.groupModel
-      .findByIdAndUpdate(groupId, { status }, { new: true, runValidators: true })
-      .exec()
+    const group = await this.groupModel.findById(groupId).exec()
 
-    if (!updatedGroup) {
+    if (!group) {
       throw new NotFoundException('Group not found')
     }
 
+    if (group.status !== GroupStatus.CLOSED && group.status !== GroupStatus.HIDDEN) {
+      group.adminStatusBeforeLock = group.status
+    }
+
+    group.status = status
+    const updatedGroup = await group.save()
+
     return {
       message: 'Group status updated successfully',
+      data: updatedGroup,
+    }
+  }
+
+  async restoreStatusAdmin(groupId: string): Promise<{ message: string; data: GroupDocument }> {
+    const group = await this.groupModel.findById(groupId).exec()
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    if (group.status !== GroupStatus.CLOSED && group.status !== GroupStatus.HIDDEN) {
+      throw new BadRequestException('Group is not closed or hidden')
+    }
+
+    const previousStatus = group.adminStatusBeforeLock
+    const nextStatus =
+      previousStatus && previousStatus !== GroupStatus.CLOSED && previousStatus !== GroupStatus.HIDDEN
+        ? previousStatus
+        : this.calculateStatus({
+            occupiedSlots: group.occupiedSlots,
+            totalSlots: group.totalSlots,
+            expiredAt: group.expiredAt ?? null,
+          })
+
+    group.status = nextStatus
+    group.adminStatusBeforeLock = null
+    const updatedGroup = await group.save()
+
+    return {
+      message: 'Group status restored successfully',
       data: updatedGroup,
     }
   }

@@ -53,6 +53,13 @@ export class Group {
   status!: GroupStatus
 
   @Prop({
+    type: String,
+    enum: GroupStatus,
+    default: null,
+  })
+  adminStatusBeforeLock!: GroupStatus | null
+
+  @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: User.name,
     required: true,

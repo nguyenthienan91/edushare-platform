@@ -12,4 +12,9 @@ export class AdminUsersController {
   banUser(@Param('id') id: string) {
     return this.usersService.banUser(id)
   }
+
+  @Patch(':id/unban')
+  unbanUser(@Param('id') id: string) {
+    return this.usersService.unbanUser(id)
+  }
 }

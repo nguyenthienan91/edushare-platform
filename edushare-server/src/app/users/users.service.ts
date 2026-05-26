@@ -69,6 +69,22 @@ export class UsersService {
     }
   }
 
+  async unbanUser(id: string) {
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { isActive: true }, { returnDocument: 'after' })
+      .select('-password')
+      .exec()
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found')
+    }
+
+    return {
+      message: 'User unbanned successfully',
+      data: updatedUser,
+    }
+  }
+
   async upgradeToMember(userId: string): Promise<User> {
     const durationInDays = 30
     const startedAt = new Date()
