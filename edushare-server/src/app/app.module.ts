@@ -14,6 +14,7 @@ import { WalletsModule } from './wallets/wallets.module'
 import { TransactionsModule } from './transactions/transactions.module'
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module'
 import { RatingsModule } from './ratings/ratings.module'
+import { NotificationsModule } from './notifications/notification.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RatingsModule } from './ratings/ratings.module'
     TransactionsModule,
     PaymentGatewayModule,
     RatingsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],

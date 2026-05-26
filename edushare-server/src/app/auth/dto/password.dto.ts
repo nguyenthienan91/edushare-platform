@@ -10,8 +10,15 @@ const forgotPasswordSchema = z.object({
 
 export class ForgotPasswordDto extends createZodDto(forgotPasswordSchema) {}
 
+const changePasswordSchema = z.object({
+  oldPassword: UserSchema.shape.password,
+  newPassword: UserSchema.shape.password,
+})
+
+export class ChangePasswordDto extends createZodDto(changePasswordSchema) {}
+
 const resetPasswordSchema = z.object({
-  password: UserSchema.shape.password,
+  newPassword: UserSchema.shape.password,
 })
 
 export class ResetPasswordDto extends createZodDto(resetPasswordSchema) {}

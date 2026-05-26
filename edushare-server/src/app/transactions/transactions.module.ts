@@ -9,6 +9,8 @@ import { AuthModule } from '../auth/auth.module'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
 import { TransactionsCronService } from './transactions-cron.service'
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { NotificationsModule } from '../notifications/notification.module'
+import { UsersModule } from '../users/users.module'
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { PaginationUtilService } from '../../common/utils/pagination-util/pagina
     WalletsModule,
     GroupsModule,
     AuthModule,
+    NotificationsModule,
+    UsersModule,
   ],
   controllers: [TransactionsController],
   providers: [TransactionsService, CloudinaryService, TransactionsCronService, PaginationUtilService],

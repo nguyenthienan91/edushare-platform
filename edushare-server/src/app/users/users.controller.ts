@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -6,6 +6,8 @@ import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from './entities/user.entity'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
+import { AuthGuard } from '../auth/auth.guard'
+import { ApiOperation } from '@nestjs/swagger'
 
 @Controller('users')
 @Roles(UserRole.ADMIN)
@@ -22,6 +24,15 @@ export class UsersController {
   @Roles()
   getMe(@User() user: UserInfo) {
     return this.usersService.findById(user.userID)
+  }
+
+  @Post('upgrade-vip')
+  @Roles()
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Dùng 29k trong ví để mua/gia hạn gói VIP hệ thống' })
+  async upgradeVip(@Req() req: any) {
+    const userId = req.user.userID
+    return await this.usersService.purchaseVipSubscription(userId)
   }
 
   @Post()

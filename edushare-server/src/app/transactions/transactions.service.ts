@@ -6,6 +6,11 @@ import { Wallet, WalletDocument } from '../wallets/schemas/wallet.schema'
 import { EscrowStatus } from './enums/escrow-status.enum'
 import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { NotificationsService } from '../notifications/notification.service'
+import { async } from 'rxjs'
+import { query } from 'winston'
+import { string, number } from 'zod'
+import { User, UserDocument } from '../users/entities/user.entity'
 
 @Injectable()
 export class TransactionsService {
@@ -16,7 +21,9 @@ export class TransactionsService {
     @InjectConnection() private readonly connection: Connection, // Dùng để quản lý ACID Transaction
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly paginationUtil: PaginationUtilService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<TransactionDocument[]> {
@@ -24,7 +31,13 @@ export class TransactionsService {
   }
 
   async requestJoinGroup(userId: string, groupId: string) {
-    // 1. Khởi tạo một phiên làm việc (session) bảo mật dữ liệu
+    // Gate check: Kiểm tra trước khi mở session để tránh tạo transaction không cần thiết
+    const user = await this.userModel.findById(userId).exec()
+    if (!user || !user.isSubscriptionActive) {
+      throw new BadRequestException('An active VIP membership is required to join a group.')
+    }
+
+    // Khởi tạo một phiên làm việc (session) bảo mật dữ liệu
     const session = await this.connection.startSession()
     session.startTransaction()
 
@@ -81,6 +94,16 @@ export class TransactionsService {
 
       await session.commitTransaction()
 
+      // Gửi thông báo SAU KHI commit thành công - fire-and-forget, lỗi noti không ảnh hưởng giao dịch
+      this.notificationsService
+        .createNotification(
+          group.ownerId as unknown as Types.ObjectId, // Người nhận là Chủ nhóm
+          'Yêu cầu tham gia nhóm mới',
+          `Thành viên vừa gửi yêu cầu tham gia vào nhóm [${group.name}]. Vui lòng phê duyệt!`,
+          'transaction',
+        )
+        .catch((err) => this.logger.error(`Failed to send notification to group owner: ${err.message}`))
+
       return {
         message: 'Request submitted successfully. Your funds have been securely held in escrow.',
         transaction: escrowTransaction[0],
@@ -126,6 +149,16 @@ export class TransactionsService {
 
       await transaction.save({ session })
       await session.commitTransaction()
+
+      // Gửi thông báo SAU KHI commit thành công - fire-and-forget, lỗi noti không ảnh hưởng giao dịch
+      this.notificationsService
+        .createNotification(
+          transaction.senderId, // Người nhận là Thành viên mua slot
+          'Chủ nhóm đã nộp minh chứng tài khoản',
+          `Minh chứng tài khoản đã được tải lên. Bạn có 48h để kiểm tra và bấm xác nhận hoàn tất giao dịch.`,
+          'transaction',
+        )
+        .catch((err) => this.logger.error(`Failed to send notification to member: ${err.message}`))
 
       return {
         message: 'Proof submitted successfully. The system has notified the buyer to confirm.',
@@ -231,6 +264,17 @@ export class TransactionsService {
     // Lưu thay đổi vào Database
     await transaction.save()
     // Ở đây chúng ta ghi nhận Owner đã chấp nhận, sẵn sàng chờ họ up ảnh ở bước tiếp theo
+
+    // Gửi thông báo - fire-and-forget, lỗi noti không ảnh hưởng giao dịch
+    this.notificationsService
+      .createNotification(
+        transaction.senderId, // Người nhận là Thành viên mua slot
+        'Yêu cầu đã được phê duyệt',
+        `Chủ nhóm đã chấp nhận yêu cầu vào nhóm của bạn. Vui lòng đợi chủ nhóm cấp tài khoản và nộp minh chứng!`,
+        'transaction',
+      )
+      .catch((err) => this.logger.error(`Failed to send notification to member: ${err.message}`))
+
     this.logger.log(`Owner ${ownerId} approved transaction ${transactionId}`)
 
     return {
