@@ -1,13 +1,13 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 interface FormatResponseParams {
-  errors?: null | Record<string, any>[];
-  data?: null | any;
-  message?: string;
-  [key: string]: any;
+  errors?: null | Record<string, any>[]
+  data?: null | any
+  message?: string
+  [key: string]: any
 }
 
-export type { FormatResponseParams };
+export type { FormatResponseParams }
 
 export const FormatResponseSchema = z
   .object({
@@ -15,4 +15,4 @@ export const FormatResponseSchema = z
     data: z.any().nullable().optional(),
     message: z.string().optional(),
   })
-  .catchall(z.any());
+  .catchall(z.any())

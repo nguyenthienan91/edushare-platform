@@ -15,6 +15,7 @@ export const UserSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
   isVerified: z.boolean().optional(),
+  trustScore: z.number().min(0).max(5).optional(),
   membershipStartedAt: z.string().datetime({ offset: true }).nullable().optional(),
   membershipExpiresAt: z.string().datetime({ offset: true }).nullable().optional(),
   isSubscriptionActive: z.boolean().optional(),

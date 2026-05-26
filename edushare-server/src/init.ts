@@ -16,7 +16,7 @@ const removeFieldsAndRelations = (document: any) => {
 
     const newProps: Record<string, any> = {}
     for (const [propName, prop] of Object.entries<any>(props)) {
-      if (auditFields.has(propName) || propName === 'data') continue
+      if (auditFields.has(propName)) continue
 
       const isRelation = prop?.type === 'object'
       if (!isRelation) {
@@ -35,7 +35,7 @@ const removeFieldsAndRelations = (document: any) => {
 
     const schemaRequired = schema.required
     if (Array.isArray(schemaRequired)) {
-      schema.required = schemaRequired.filter((field) => !auditFields.has(field) && field !== 'data')
+      schema.required = schemaRequired.filter((field) => !auditFields.has(field))
     }
   }
 

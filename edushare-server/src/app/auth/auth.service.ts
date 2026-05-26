@@ -1,11 +1,18 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { UsersService } from '../users/users.service'
+import { WalletsService } from '../wallets/wallets.service'
 import { StringUtilService } from '../../common/utils/string-util/string-util.service'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
 import { SignInDto, SignUpDto } from './dto/sign.dto'
 import { UserInfo, WithUser } from '../../common/decorators/user.decorator'
 import { JwtPayload, JWTToken, TokenKeys } from './consts/jwt.const'
-import { ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto'
+import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto'
 import { randomUUID } from 'crypto'
 import { MailService } from '../../common/utils/mail-util/mail.service'
 
@@ -13,6 +20,7 @@ import { MailService } from '../../common/utils/mail-util/mail.service'
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private walletsService: WalletsService,
     private stringUtilService: StringUtilService,
     private jwtService: JwtService,
     private mailService: MailService,
@@ -51,6 +59,7 @@ export class AuthService {
       password: passwordHashed,
       ...otherInfo,
     })
+    await this.walletsService.createWallet(userCreated._id)
     const { password: _pw, ...userResponse } = userCreated.toObject({
       virtuals: true,
     })
@@ -61,6 +70,10 @@ export class AuthService {
     const { email, password } = signInDto
     const user = await this.usersService.getUser({ email })
     if (!user) throw new UnauthorizedException()
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Account has been banned')
+    }
 
     const isMatch = await this.stringUtilService.compare(password, user.password)
     if (!isMatch) throw new UnauthorizedException()
@@ -113,11 +126,36 @@ export class AuthService {
     }
   }
 
-  async resetPassword(resetPasswordDto: WithUser<ResetPasswordDto>) {
-    const { password, user } = resetPasswordDto
-    const passwordHashed = await this.stringUtilService.hash(password)
-    return await this.usersService.updateById(user.userID, {
+  async resetPassword(token: string, dto: ResetPasswordDto) {
+    const { newPassword } = dto
+
+    const user = await this.usersService.getUser({ resetPasswordToken: token })
+    if (!user) throw new BadRequestException('Invalid or expired token')
+
+    const isExpired = !user.resetPasswordExpiresAt || new Date(user.resetPasswordExpiresAt) < new Date()
+    if (isExpired) throw new BadRequestException('Token has expired')
+
+    const passwordHashed = await this.stringUtilService.hash(newPassword)
+    await this.usersService.update(user.id, {
       password: passwordHashed,
+      resetPasswordToken: null,
+      resetPasswordExpiresAt: null,
     })
+
+    return { message: 'Mật khẩu đã được đặt lại thành công' }
+  }
+
+  async changePassword(changePasswordDto: WithUser<ChangePasswordDto>) {
+    const { oldPassword, user, newPassword } = changePasswordDto
+
+    const existingUser = await this.usersService.getUser({ _id: user.userID })
+    if (!existingUser) throw new UnauthorizedException('User not found')
+
+    const isMatch = await this.stringUtilService.compare(oldPassword, existingUser.password)
+    if (!isMatch) throw new BadRequestException('Old password is incorrect')
+
+    const passwordHashed = await this.stringUtilService.hash(newPassword)
+    await this.usersService.updateById(user.userID, { password: passwordHashed })
+    return { message: 'Password have changed successfully.' }
   }
 }

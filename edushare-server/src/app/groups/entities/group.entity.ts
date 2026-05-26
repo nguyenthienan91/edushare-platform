@@ -6,6 +6,14 @@ export enum GroupStatus {
   AVAILABLE = 'available',
   FULL = 'full',
   EXPIRED = 'expired',
+  CLOSED = 'closed',
+  HIDDEN = 'hidden',
+}
+
+export enum GroupCategory {
+  PRODUCTIVITY = 'Productivity',
+  DESIGN = 'Design',
+  AI_TOOLS = 'AI Tools',
 }
 
 export type GroupDocument = HydratedDocument<Group>
@@ -17,6 +25,13 @@ export class Group {
 
   @Prop({ trim: true, default: '' })
   description!: string
+
+  @Prop({
+    type: String,
+    enum: GroupCategory,
+    required: true,
+  })
+  category!: GroupCategory
 
   @Prop({ required: true, min: 1 })
   totalSlots!: number
@@ -36,6 +51,13 @@ export class Group {
     default: GroupStatus.AVAILABLE,
   })
   status!: GroupStatus
+
+  @Prop({
+    type: String,
+    enum: GroupStatus,
+    default: null,
+  })
+  adminStatusBeforeLock!: GroupStatus | null
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -62,3 +84,4 @@ export const GroupSchema = SchemaFactory.createForClass(Group)
 
 GroupSchema.index({ ownerId: 1 })
 GroupSchema.index({ status: 1 })
+GroupSchema.index({ category: 1 })

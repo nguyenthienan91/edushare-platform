@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
+import { ApiQuery } from '@nestjs/swagger'
+import { GroupCategory, GroupStatus } from './entities/group.entity'
 import { GroupsService } from './groups.service'
 import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
@@ -6,9 +8,11 @@ import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from '../users/entities/user.entity'
+import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('groups')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.GROUP_OWNER)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
@@ -18,8 +22,44 @@ export class GroupsController {
   }
 
   @Get()
-  findAll() {
-    return this.groupsService.findAll()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  findAll(@Query(new ParseParamsPaginationPipe()) pagination: Pagination) {
+    return this.groupsService.findAll(pagination)
+  }
+
+  @Get('sort/price')
+  @Roles()
+  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  sortByPrice(
+    @Query('order') order: 'asc' | 'desc' | undefined,
+    @Query(new ParseParamsPaginationPipe()) pagination: Pagination,
+  ) {
+    return this.groupsService.sortByPrice(order, pagination)
+  }
+
+  @Get('search')
+  @Roles()
+  @ApiQuery({ name: 'name', required: false, type: String })
+  @ApiQuery({ name: 'description', required: false, type: String })
+  @ApiQuery({ name: 'category', required: false, enum: GroupCategory })
+  @ApiQuery({ name: 'status', required: false, enum: GroupStatus })
+  @ApiQuery({ name: 'ownerId', required: false, type: String })
+  @ApiQuery({ name: 'members', required: false, type: String })
+  @ApiQuery({ name: 'totalSlots', required: false, type: Number })
+  @ApiQuery({ name: 'occupiedSlots', required: false, type: Number })
+  @ApiQuery({ name: 'totalPrice', required: false, type: Number })
+  @ApiQuery({ name: 'price', required: false, type: Number })
+  @ApiQuery({ name: 'expiredAt', required: false, type: String, format: 'date-time' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  search(
+    @Query() query: Record<string, string | string[] | undefined>,
+    @Query(new ParseParamsPaginationPipe()) pagination: Pagination,
+  ) {
+    return this.groupsService.search(query, pagination)
   }
 
   @Get(':id')
