@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { UsersService } from '../users/users.service'
 import { WalletsService } from '../wallets/wallets.service'
 import { StringUtilService } from '../../common/utils/string-util/string-util.service'
@@ -64,6 +70,10 @@ export class AuthService {
     const { email, password } = signInDto
     const user = await this.usersService.getUser({ email })
     if (!user) throw new UnauthorizedException()
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Account has been banned')
+    }
 
     const isMatch = await this.stringUtilService.compare(password, user.password)
     if (!isMatch) throw new UnauthorizedException()

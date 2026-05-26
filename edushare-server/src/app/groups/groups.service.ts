@@ -148,6 +148,10 @@ export class GroupsService {
   }
 
   private async syncStatus(group: GroupDocument): Promise<GroupDocument> {
+    if (group.status === GroupStatus.CLOSED || group.status === GroupStatus.HIDDEN) {
+      return group
+    }
+
     const nextStatus = this.calculateStatus({
       occupiedSlots: group.occupiedSlots,
 
@@ -338,6 +342,7 @@ export class GroupsService {
     const now = new Date()
     const joinFilter: Record<string, unknown> = {
       _id: groupObjectId,
+      status: GroupStatus.AVAILABLE,
       members: { $ne: userObjectId },
       $expr: { $lt: ['$occupiedSlots', '$totalSlots'] },
       $or: [{ expiredAt: null }, { expiredAt: { $gt: now } }],
@@ -355,6 +360,14 @@ export class GroupsService {
       const group = await this.groupModel.findById(groupId).exec()
       if (!group) {
         throw new NotFoundException('Group not found')
+      }
+
+      if (group.status === GroupStatus.CLOSED) {
+        throw new BadRequestException('Group is closed')
+      }
+
+      if (group.status === GroupStatus.HIDDEN) {
+        throw new BadRequestException('Group is hidden')
       }
 
       const currentStatus = this.calculateStatus({
@@ -437,9 +450,28 @@ export class GroupsService {
     await this.groupModel.updateMany(
       {
         expiredAt: { $ne: null, $lte: now },
-        status: { $ne: GroupStatus.EXPIRED },
+        status: { $nin: [GroupStatus.EXPIRED, GroupStatus.CLOSED, GroupStatus.HIDDEN] },
       },
       { $set: { status: GroupStatus.EXPIRED } },
     )
+  }
+
+  async updateStatusAdmin(groupId: string, status: GroupStatus) {
+    if (status !== GroupStatus.CLOSED && status !== GroupStatus.HIDDEN) {
+      throw new BadRequestException('Status must be closed or hidden')
+    }
+
+    const updatedGroup = await this.groupModel
+      .findByIdAndUpdate(groupId, { status }, { new: true, runValidators: true })
+      .exec()
+
+    if (!updatedGroup) {
+      throw new NotFoundException('Group not found')
+    }
+
+    return {
+      message: 'Group status updated successfully',
+      data: updatedGroup,
+    }
   }
 }

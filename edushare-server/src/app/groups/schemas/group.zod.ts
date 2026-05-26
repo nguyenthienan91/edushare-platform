@@ -1,6 +1,6 @@
 import z from 'zod'
 
-export const GroupStatusEnum = z.enum(['available', 'full', 'expired'])
+export const GroupStatusEnum = z.enum(['available', 'full', 'expired', 'closed', 'hidden'])
 export const GroupCategoryEnum = z.enum(['Productivity', 'Design', 'AI Tools'])
 
 const objectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/)

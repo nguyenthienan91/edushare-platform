@@ -7,6 +7,7 @@ import { WalletsService } from './wallets.service'
 import { Topup, TopupSchema } from './schemas/topup.schema'
 import { Withdrawal, WithdrawalSchema } from './schemas/withdrawal.schema'
 import { AuthModule } from '../auth/auth.module'
+import { UsersModule } from '../users/users.module'
 import { PaginationUtilModule } from '../../common/utils/pagination-util/pagination-util.module'
 
 @Module({
@@ -17,6 +18,7 @@ import { PaginationUtilModule } from '../../common/utils/pagination-util/paginat
       { name: Withdrawal.name, schema: WithdrawalSchema },
     ]),
     forwardRef(() => AuthModule),
+    forwardRef(() => UsersModule),
     PaginationUtilModule,
   ],
   controllers: [WalletsController, AdminWithdrawalsController],

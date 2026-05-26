@@ -6,6 +6,8 @@ export enum GroupStatus {
   AVAILABLE = 'available',
   FULL = 'full',
   EXPIRED = 'expired',
+  CLOSED = 'closed',
+  HIDDEN = 'hidden',
 }
 
 export enum GroupCategory {
