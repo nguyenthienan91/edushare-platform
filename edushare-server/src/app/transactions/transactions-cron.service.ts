@@ -7,6 +7,7 @@ import { Transaction, TransactionDocument } from './schemas/transaction.schema'
 import { Wallet, WalletDocument } from '../wallets/schemas/wallet.schema'
 import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
 import { EscrowStatus } from './enums/escrow-status.enum'
+import { NotificationsService } from '../notifications/notification.service'
 
 @Injectable()
 export class TransactionsCronService {
@@ -17,6 +18,7 @@ export class TransactionsCronService {
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -26,11 +28,17 @@ export class TransactionsCronService {
   async handleAutoDisbursement() {
     this.logger.log('--- Bắt đầu quét hệ thống ví treo tìm giao dịch quá hạn 48h ---')
 
-    // 1. Tìm tất cả các giao dịch đã nộp minh chứng (proof) VÀ đã quá thời gian chờ (expiresAt <= hiện tại)
-    const expiredTransactions = await this.transactionModel.find({
-      status: EscrowStatus.PROOF_SUBMITTED,
-      expiresAt: { $lte: new Date() }, // Nhỏ hơn hoặc bằng thời gian hiện tại
-    })
+    // Outer try-catch: bảo vệ query ban đầu, tránh crash cron nếu DB lỗi
+    let expiredTransactions: TransactionDocument[]
+    try {
+      expiredTransactions = await this.transactionModel.find({
+        status: EscrowStatus.PROOF_SUBMITTED,
+        expiresAt: { $lte: new Date() },
+      })
+    } catch (error) {
+      this.logger.error(`Lỗi khi query giao dịch quá hạn: ${error instanceof Error ? error.message : String(error)}`)
+      return
+    }
 
     if (expiredTransactions.length === 0) {
       this.logger.log('Không có giao dịch nào quá hạn. Kết thúc phiên quét.')
@@ -50,9 +58,8 @@ export class TransactionsCronService {
         // Lấy thông tin nhóm để biết ai là Chủ nhóm (Owner)
         const group = await this.groupModel.findById(transaction.groupId).session(session)
         if (!group) {
-          this.logger.error(`Giao dịch ${String(transaction._id)} bị lỗi: Không tìm thấy Nhóm.`)
-          await session.abortTransaction()
-          continue // Bỏ qua giao dịch lỗi này, chuyển sang giao dịch tiếp theo
+          // Throw để catch xử lý abort đồng nhất, tránh double-abort
+          throw new Error(`Không tìm thấy Nhóm cho giao dịch ${String(transaction._id)}`)
         }
 
         const ownerObjectId = group.ownerId as unknown as Types.ObjectId
@@ -76,7 +83,7 @@ export class TransactionsCronService {
         group.members.push(transaction.senderId as unknown as (typeof group.members)[number])
         group.occupiedSlots += 1
         if (group.occupiedSlots >= group.totalSlots) {
-          group.status = GroupStatus.FULL // Tự động đóng nhóm nếu hết slot
+          group.status = GroupStatus.FULL
         }
         await group.save({ session })
 
@@ -84,11 +91,28 @@ export class TransactionsCronService {
         transaction.status = EscrowStatus.COMPLETED
         await transaction.save({ session })
 
-        // Hoàn thành lưu thay đổi cho giao dịch này
         await session.commitTransaction()
         this.logger.log(`Tự động giải ngân thành công cho giao dịch ID: ${String(transaction._id)}`)
+
+        // Gửi thông báo SAU KHI commit - fire-and-forget
+        this.notificationsService
+          .createNotification(
+            transaction.senderId,
+            'Giao dịch đã được tự động hoàn tất',
+            `Hệ thống đã tự động xác nhận bạn gia nhập nhóm [${group.name}] sau 48h không có phản hồi. Chúc bạn trải nghiệm vui vẻ!`,
+            'transaction',
+          )
+          .catch((err) => this.logger.error(`Failed to notify member: ${err.message}`))
+
+        this.notificationsService
+          .createNotification(
+            ownerObjectId,
+            'Tiền đã được giải ngân tự động',
+            `Hệ thống đã tự động giải ngân ${price.toLocaleString()}đ vào ví của bạn cho nhóm [${group.name}] sau 48h thành viên không phản hồi.`,
+            'transaction',
+          )
+          .catch((err) => this.logger.error(`Failed to notify owner: ${err.message}`))
       } catch (error) {
-        // Nếu một giao dịch bị lỗi mạng/lag, hủy bỏ giao dịch đó để chạy lại lượt sau, không làm sập cả hệ thống Cron
         await session.abortTransaction()
         this.logger.error(
           `Lỗi nghiêm trọng khi tự động giải ngân giao dịch ${String(transaction._id)}:`,

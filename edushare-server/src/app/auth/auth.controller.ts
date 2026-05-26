@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Res } from '@nestjs/common'
+import { Controller, Post, Body, Get, Res, UseGuards, Query } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { SignInDto, SignInResponseDto, SignUpDto } from './dto/sign.dto'
 import { SkipAuth } from './auth.decorator'
@@ -8,9 +8,10 @@ import ms from 'ms'
 import { COOKIE_CONFIG_DEFAULT, CookiesToken } from '../../common/decorators/cookie/cookie.const'
 import { ZodResponse } from 'nestjs-zod'
 import { TokenKeys } from './consts/jwt.const'
-import { ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto'
+import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
+import { AuthGuard } from './auth.guard'
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -75,7 +76,14 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @User() user: UserInfo) {
-    return await this.authService.resetPassword({ ...resetPasswordDto, user })
+  @SkipAuth()
+  async resetPassword(@Query('token') token: string, @Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(token, resetPasswordDto)
+  }
+
+  @Post('change-password')
+  @UseGuards(AuthGuard)
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @User() user: UserInfo) {
+    return await this.authService.changePassword({ ...changePasswordDto, user })
   }
 }
