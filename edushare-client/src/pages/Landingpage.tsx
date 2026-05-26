@@ -8,9 +8,6 @@ import {
   ChevronDown,
   Clock3,
   CreditCard,
-  FileCheck2,
-  Home,
-  LayoutGrid,
   Search,
   ShieldCheck,
   Sparkles,
@@ -25,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const NAV_ITEMS = [
   { label: 'Trang chủ', href: '#' },
   { label: 'Danh mục', href: '#categories' },
-  { label: 'Nhóm đang chờ ghép', href: '#groups' },
+  { label: 'Nhóm', href: '#groups' },
   { label: 'Bảo vệ', href: '#trust' },
   { label: 'FAQ', href: '#faq' },
 ]
@@ -43,6 +40,18 @@ const CATEGORIES = [
   { name: 'Khác', count: '02 nhóm', accent: 'bg-slate-100 text-slate-700' },
 ]
 
+const MEMBERSHIP_PLAN = {
+  title: 'Member / Standard User',
+  price: '29.000 đ / tháng',
+  desc: 'Sinh viên đã đóng phí thành viên 29k/tháng.',
+  benefits: [
+    'Được tham gia nhóm đang chờ ghép',
+    'Dùng escrow để bảo vệ giao dịch',
+    'Xem Trust Score và lịch sử rõ ràng',
+    'Được hỗ trợ khi phát sinh tranh chấp',
+  ],
+}
+
 const FEATURE_CARDS = [
   { title: 'Giá rõ trước khi tham gia', desc: 'Mỗi nhóm đều hiển thị giá, thời hạn, slot còn trống và trạng thái rõ ràng.' },
   { title: 'Thanh toán an toàn', desc: 'Escrow giữ tiền đến khi giao dịch hoàn tất và có xác nhận hợp lệ.' },
@@ -58,10 +67,10 @@ const GROUPS = [
 ]
 
 const BENEFITS = [
-  'Thanh toán an toàn',
-  'Giao hàng tức thì',
-  'Hỗ trợ 24/7',
-  'Thanh toán VietQR',
+  { icon: ShieldCheck, text: 'Thanh toán an toàn' },
+  { icon: Users, text: 'Giao hàng tức thì' },
+  { icon: Bell, text: 'Hỗ trợ 24/7' },
+  { icon: Wallet, text: 'Thanh toán VietQR' },
 ]
 
 const SUPPORT_ITEMS = [
@@ -90,38 +99,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-lg font-bold tracking-tight">EduShare</div>
-              <div className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">Dùng chung thông minh</div>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
-            {NAV_ITEMS.map((item) => (
-              <a key={item.label} href={item.href} className="transition-colors hover:text-primary">
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
-              <Link to="/login">Đăng nhập</Link>
-            </Button>
-            <Button asChild className="rounded-full px-5">
-              <Link to="/login">
-                Bắt đầu ngay <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -152,9 +129,9 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                {BENEFITS.map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" /> {item}
+                {BENEFITS.map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-2">
+                    <Icon className="h-4 w-4" /> {text}
                   </div>
                 ))}
               </div>
@@ -214,29 +191,66 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="categories" className="mt-16">
+        <section id="pricing" className="mt-16">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Danh mục</h2>
-              <p className="mt-2 text-muted-foreground">Bố cục card giống ảnh mẫu nhưng nội dung vẫn là của EduShare.</p>
+              <h2 className="text-3xl font-bold tracking-tight">Gói 29k / tháng</h2>
+              <p className="mt-2 text-muted-foreground">Member / Standard User dành cho sinh viên đã đóng phí thành viên.</p>
             </div>
             <Button variant="ghost" className="rounded-full">
-              Xem tất cả <ArrowRight className="ml-2 h-4 w-4" />
+              Xem quyền lợi <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {categories.map((item) => (
-              <Card key={item.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-sm font-bold ${item.accent}`}>{item.name.slice(0, 1)}</div>
-                  <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.count}</p>
+          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+            <Card className="rounded-[2rem] border-border/60 shadow-sm">
+              <CardHeader>
+                <Badge variant="secondary" className="w-fit rounded-full">Member / Standard User</Badge>
+                <CardTitle className="text-2xl">{MEMBERSHIP_PLAN.title}</CardTitle>
+                <CardDescription>{MEMBERSHIP_PLAN.desc}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-[1.75rem] border border-border bg-primary/5 p-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Phí thành viên</p>
+                      <div className="mt-1 text-3xl font-bold">{MEMBERSHIP_PLAN.price}</div>
+                    </div>
+                    <Badge className="rounded-full">29k / tháng</Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="mt-6 space-y-3">
+                    {MEMBERSHIP_PLAN.benefits.map((item) => (
+                      <div key={item} className="flex items-center gap-3 rounded-[1.25rem] border border-border bg-background px-4 py-3 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild className="rounded-full">
+                      <Link to="/login">Đăng ký membership</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="rounded-full">
+                      <a href="#groups">Xem nhóm đang chờ ghép</a>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {categories.map((item) => (
+                <Card key={item.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-sm font-bold ${item.accent}`}>{item.name.slice(0, 1)}</div>
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.count}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
