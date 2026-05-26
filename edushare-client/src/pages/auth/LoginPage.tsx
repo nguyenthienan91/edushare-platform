@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -30,18 +29,16 @@ export default function LoginPage() {
       {/* Logo */}
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <Link to='/' className='flex items-center justify-center gap-3 group'>
-          <div className='relative'>
-            <div className='absolute inset-0 bg-indigo-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity'></div>
-
-            <div className='relative r from-indigo-500 to-sky-500 p-3 rounded-2xl shadow-lg'>
-              <Sparkles className='w-8 h-8 text-white' />
-            </div>
-          </div>
+          <img
+            src='/images/logo.jpg'
+            alt='EduShare logo'
+            className='size-14 rounded-2xl object-cover shadow-lg ring-1 ring-black/5 transition-transform group-hover:scale-[1.02]'
+          />
 
           <div className='text-left'>
-            <h1 className='text-2xl font-bold  tracking-tight'>Share Hub</h1>
+            <h1 className='text-2xl font-bold tracking-tight'>EduShare</h1>
 
-            <p className='text-xs text-sky-600 font-medium'>An toàn, thân thiện, dành cho sinh viên</p>
+            <p className='text-xs font-medium text-sky-600'>An toàn, thân thiện, dành cho sinh viên</p>
           </div>
         </Link>
 

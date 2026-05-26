@@ -1,5 +1,5 @@
 import { Outlet, Link } from 'react-router-dom';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const NAV_ITEMS = [
@@ -12,21 +12,17 @@ const NAV_ITEMS = [
 export default function MainLayout() {
   return (
     <div className="min-h-screen bg-background">
-
-      {/* Navbar */}
       <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-              <Sparkles className="h-5 w-5" />
-            </div>
+            <img
+              src="/images/logo.jpg"
+              alt="EduShare logo"
+              className="h-11 w-11 rounded-2xl object-cover shadow-sm"
+            />
 
             <div className="leading-tight">
-              <div className="text-lg font-bold tracking-tight">
-                EduShare
-              </div>
-
+              <div className="text-lg font-bold tracking-tight">EduShare</div>
               <div className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
                 Dùng chung thông minh
               </div>
@@ -46,11 +42,7 @@ export default function MainLayout() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button
-              asChild
-              variant="ghost"
-              className="hidden rounded-full sm:inline-flex"
-            >
+            <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
               <Link to="/login">Đăng nhập</Link>
             </Button>
 
@@ -61,14 +53,11 @@ export default function MainLayout() {
               </Link>
             </Button>
           </div>
-
         </div>
       </header>
 
-      {/* Page render */}
       <Outlet />
 
-      {/* Footer */}
       <footer className="border-t border-slate-200 py-12 text-center text-sm">
         <div className="mb-6 flex justify-center space-x-6">
           <a href="#">Điều khoản dịch vụ</a>
@@ -79,7 +68,6 @@ export default function MainLayout() {
 
         <p>© 2026 Share Hub. Tất cả các quyền được bảo lưu.</p>
       </footer>
-
     </div>
   );
 }

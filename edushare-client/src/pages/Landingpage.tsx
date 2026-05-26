@@ -10,7 +10,6 @@ import {
   CreditCard,
   Search,
   ShieldCheck,
-  Sparkles,
   Star,
   Users,
   Wallet,
@@ -19,13 +18,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-const NAV_ITEMS = [
-  { label: 'Trang chủ', href: '#' },
-  { label: 'Danh mục', href: '#categories' },
-  { label: 'Nhóm', href: '#groups' },
-  { label: 'Bảo vệ', href: '#trust' },
-  { label: 'FAQ', href: '#faq' },
-]
 
 const CATEGORIES = [
   { name: 'Cursor', count: '08 nhóm', accent: 'bg-slate-950 text-white' },

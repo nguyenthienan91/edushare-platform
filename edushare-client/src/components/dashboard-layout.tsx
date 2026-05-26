@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Moon, Sparkles, Sun, UserCircle2 } from 'lucide-react'
+import { Bell, Moon, Sun, UserCircle2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { RoleSidebar, type DashboardRole } from '@/components/role-sidebar'
 import { Sidebar, SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -27,11 +27,13 @@ export function DashboardLayout({
         <div className='flex h-full flex-col'>
           <div className=' border-sidebar-border p-4'>
             <Link to='/' className='flex items-center gap-3'>
-              <div className='flex size-10 items-center justify-center rounded-xl bg-emerald-500 text-white'>
-                <Sparkles className='size-5' />
-              </div>
+              <img
+                src='/images/logo.jpg'
+                alt='EduShare logo'
+                className='size-10 rounded-xl object-cover shadow-sm'
+              />
               <div>
-                <p className='text-sm font-semibold'>Share Hub</p>
+                <p className='text-sm font-semibold'>EduShare</p>
                 <p className='text-xs text-sidebar-foreground/70'>Chia sẻ thông minh</p>
               </div>
             </Link>
