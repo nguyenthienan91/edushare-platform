@@ -8,6 +8,7 @@ import { User, UserSchema } from '../users/entities/user.entity'
 import { MembershipCronService } from './membership-cron.service'
 import { AuthModule } from '../auth/auth.module'
 import { UsersModule } from '../users/users.module'
+import { NotificationsGateway } from './notifications.gateway'
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { UsersModule } from '../users/users.module'
     forwardRef(() => UsersModule),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService, PaginationUtilService, MembershipCronService],
+  providers: [NotificationsService, PaginationUtilService, MembershipCronService, NotificationsGateway],
   exports: [NotificationsService],
 })
 export class NotificationsModule {}
