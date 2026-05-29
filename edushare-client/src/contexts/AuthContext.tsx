@@ -1,6 +1,6 @@
-// src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { decodeToken } from '../utils/jwt'
+import { AuthService } from '../services/auth.service'
 
 export interface UserContext {
   userID: string
@@ -13,7 +13,7 @@ interface AuthContextType {
   user: UserContext | null
   isAuthenticated: boolean
   login: (accessToken: string, refreshToken: string) => UserContext | null
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -45,10 +45,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return null
   }
 
-  const logout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    setUser(null)
+  const logout = async () => {
+    try {
+      await AuthService.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      setUser(null)
+    }
   }
 
   return (

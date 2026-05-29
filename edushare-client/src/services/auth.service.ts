@@ -15,5 +15,10 @@ export const AuthService = {
       body: JSON.stringify(data),
       requireAuth: false
     })
+  },
+  logout: async () => {
+    return fetchClient('/auth/logout', {
+      method: 'GET'
+    })
   }
 }
