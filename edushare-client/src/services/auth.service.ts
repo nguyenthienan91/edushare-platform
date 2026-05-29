@@ -1,22 +1,19 @@
 // src/services/auth.service.ts
-const baseUrl = import.meta.env.VITE_API_BASE_URL
-const API_URL = `${baseUrl}/api`
+import { fetchClient } from '../utils/fetchClient'
 
 export const AuthService = {
   signUp: async (data: any) => {
-    const response = await fetch(`${API_URL}/auth/sign-up`, {
+    return fetchClient('/auth/sign-up', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      requireAuth: false
     })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || 'Có lỗi xảy ra khi đăng ký')
-    }
-
-    return response.json()
+  },
+  signIn: async (data: any) => {
+    return fetchClient('/auth/sign-in', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      requireAuth: false
+    })
   }
 }

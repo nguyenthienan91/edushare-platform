@@ -2,16 +2,17 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AuthService } from '../../services/auth.service'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
-  const [role, setRole] = useState('member')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const roleRoutes: Record<string, string> = {
     admin: '/admin',
@@ -49,8 +50,22 @@ export default function LoginPage() {
       return
     }
 
-    // Login mockup
-    navigate(roleRoutes[role] ?? '/')
+    setIsLoading(true)
+    try {
+      const data = await AuthService.signIn({ email, password })
+      const decodedUser = login(data.accessToken, data.refreshToken)
+      
+      if (decodedUser?.role) {
+        toast.success('Đăng nhập thành công')
+        navigate(roleRoutes[decodedUser.role] ?? '/')
+      } else {
+        toast.error('Token không hợp lệ')
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -97,24 +112,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Login only: Role Dropdown */}
-            {isLogin && (
-              <div>
-                <label className='block text-sm font-medium'>Vai trò</label>
-                <div className='mt-1'>
-                  <select
-                    value={role}
-                    onChange={(event) => setRole(event.target.value)}
-                    className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                  >
-                    <option value='member'>Member</option>
-                    <option value='owner'>Owner</option>
-                    <option value='admin'>Admin</option>
-                    <option value='public'>Public</option>
-                  </select>
-                </div>
-              </div>
-            )}
+
 
             {/* Email */}
             <div>
