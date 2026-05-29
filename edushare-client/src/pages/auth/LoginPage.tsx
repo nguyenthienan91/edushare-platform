@@ -16,9 +16,8 @@ export default function LoginPage() {
 
   const roleRoutes: Record<string, string> = {
     admin: '/admin',
-    owner: '/owner',
     member: '/dashboard',
-    public: '/'
+    guest: '/'
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
