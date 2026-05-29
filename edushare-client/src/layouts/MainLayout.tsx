@@ -1,8 +1,9 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Trang chủ', href: '#' },
@@ -13,6 +14,13 @@ const NAV_ITEMS = [
 
 export default function MainLayout() {
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,16 +76,24 @@ export default function MainLayout() {
               }}
             </ThemeToggler>
 
-            <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
-              <Link to="/login">Đăng nhập</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
+                Đăng xuất
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
+                  <Link to="/login">Đăng nhập</Link>
+                </Button>
 
-            <Button asChild className="rounded-full px-5">
-              <Link to="/login">
-                Bắt đầu ngay
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+                <Button asChild className="rounded-full px-5">
+                  <Link to="/login">
+                    Bắt đầu ngay
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
