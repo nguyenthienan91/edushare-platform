@@ -29,6 +29,9 @@ import OwnerWallet from '@/pages/owner/OwnerWallet'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import type { DashboardRole } from '@/components/role-sidebar'
 
+import { useAuth } from '@/contexts/AuthContext'
+import ForbiddenPage from '@/pages/error/ForbiddenPage'
+
 function PlaceholderPage({ title }: { title: string }) {
   return (
     <div className='rounded-2xl border  p-6 shadow-sm'>
@@ -54,6 +57,13 @@ function DashboardRoute({
       {children}
     </DashboardLayout>
   )
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.role?.toLowerCase() !== 'admin') return <ForbiddenPage />
+  return <>{children}</>
 }
 
 export default function AppRoutes() {
@@ -160,53 +170,65 @@ export default function AppRoutes() {
         }
       />
 
-      <Route path='/admin' element={<Navigate to='/admin/overview' replace />} />
+      <Route path='/admin' element={<AdminRoute><Navigate to='/admin/overview' replace /></AdminRoute>} />
       <Route
         path='/admin/overview'
         element={
-          <DashboardRoute role='admin' title='Tổng quan Admin' description='Tổng quan hệ thống quản trị.'>
-            <AdminDashboard />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Tổng quan Admin' description='Tổng quan hệ thống quản trị.'>
+              <AdminDashboard />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
       <Route
         path='/admin/users'
         element={
-          <DashboardRoute role='admin' title='Quản lý người dùng' description='Quản lý tài khoản người dùng.'>
-            <AdminUsers />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Quản lý người dùng' description='Quản lý tài khoản người dùng.'>
+              <AdminUsers />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
       <Route
         path='/admin/groups'
         element={
-          <DashboardRoute role='admin' title='Quản lý nhóm' description='Quản lý các nhóm chia sẻ.'>
-            <AdminGroups />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Quản lý nhóm' description='Quản lý các nhóm chia sẻ.'>
+              <AdminGroups />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
       <Route
         path='/admin/disputes'
         element={
-          <DashboardRoute role='admin' title='Quản lý tranh chấp' description='Xử lý các khiếu nại và tranh chấp.'>
-            <AdminDisputes />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Quản lý tranh chấp' description='Xử lý các khiếu nại và tranh chấp.'>
+              <AdminDisputes />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
       <Route
         path='/admin/withdrawals'
         element={
-          <DashboardRoute role='admin' title='Phê duyệt rút tiền' description='Duyệt các yêu cầu rút tiền.'>
-            <AdminWithdrawals />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Phê duyệt rút tiền' description='Duyệt các yêu cầu rút tiền.'>
+              <AdminWithdrawals />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
       <Route
         path='/admin/revenue'
         element={
-          <DashboardRoute role='admin' title='Thống kê doanh thu' description='Theo dõi doanh thu hệ thống.'>
-            <AdminRevenue />
-          </DashboardRoute>
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Thống kê doanh thu' description='Theo dõi doanh thu hệ thống.'>
+              <AdminRevenue />
+            </DashboardRoute>
+          </AdminRoute>
         }
       />
 

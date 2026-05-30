@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Search,
   Filter,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Listing {
   id: string;
@@ -26,6 +28,10 @@ export default function MemberParticipantPage() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showVipPopup, setShowVipPopup] = useState(false);
 
   const [listings, setListings] = useState<Listing[]>([
     {
@@ -70,6 +76,10 @@ export default function MemberParticipantPage() {
   );
 
   const handleJoin = (listing: Listing) => {
+    if (user?.role?.toLowerCase() === 'guest') {
+      setShowVipPopup(true);
+      return;
+    }
     setSelectedListing(listing);
     setShowPopup(true);
     setAcceptedTerms(false);
@@ -274,6 +284,54 @@ export default function MemberParticipantPage() {
                   >
                     Thanh toán
                     <ShieldCheck className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* VIP Popup */}
+      <AnimatePresence>
+        {showVipPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setShowVipPopup(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <Star className="h-8 w-8" />
+                </div>
+                <h3 className="mb-2 text-2xl font-bold text-slate-900">Nâng cấp gói VIP</h3>
+                <p className="mb-6 text-sm text-slate-600">
+                  Tính năng này chỉ dành cho thành viên VIP. Bạn cần nâng cấp lên gói VIP (29.000đ) để có thể tham gia vào các nhóm chia sẻ tài khoản.
+                </p>
+                <div className="flex w-full flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      setShowVipPopup(false);
+                      navigate('/dashboard/wallet');
+                    }}
+                    className="flex w-full items-center justify-center rounded-2xl bg-emerald-500 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                  >
+                    Nâng cấp VIP ngay
+                  </button>
+                  <button
+                    onClick={() => setShowVipPopup(false)}
+                    className="flex w-full items-center justify-center rounded-2xl border border-slate-200 py-3 text-sm font-semibold transition hover:bg-slate-50"
+                  >
+                    Để sau
                   </button>
                 </div>
               </div>
