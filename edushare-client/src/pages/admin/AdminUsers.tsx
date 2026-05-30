@@ -63,34 +63,36 @@ const users = [
 
 export default function AdminUsers() {
   return (
-    <div className='space-y-6 bg-[#f0f9ff]'>
-      <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50'>
-        <p className='text-sm font-medium text-emerald-600'>Quản lý thành viên</p>
-        <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Danh sách người dùng</h2>
-        <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
-          Quản lý, hỗ trợ và theo dõi mức độ uy tín của các thành viên trong cộng đồng ShareBuddy.
-        </p>
-      </div>
+    <div className='space-y-6 '>
+      <Card>
+        <CardContent>
+          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Users</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Danh sách người dùng</h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6'>
+            Quản lý, hỗ trợ và theo dõi mức độ uy tín của các thành viên trong cộng đồng ShareBuddy.
+          </p>
+        </CardContent>
+      </Card>
 
-      <Card className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30 overflow-hidden'>
+      <Card className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden'>
         <CardHeader className='pb-4'>
-          <CardTitle className='text-slate-900'>Tất cả người dùng</CardTitle>
+          <CardTitle className=''>Tất cả người dùng</CardTitle>
           <CardDescription>Danh sách chi tiết các công dân của cộng đồng.</CardDescription>
         </CardHeader>
         <CardContent className='p-0'>
           <Table>
-            <TableHeader className='bg-slate-50/50'>
+            <TableHeader className='/50'>
               <TableRow className='hover:bg-transparent border-slate-100'>
-                <TableHead className='py-4 pl-6 font-medium text-slate-500'>Người dùng</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Vai trò</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500 w-50'>Độ uy tín (Trust Score)</TableHead>
-                <TableHead className='py-4 font-medium text-slate-500'>Trạng thái</TableHead>
-                <TableHead className='py-4 pr-6 text-right font-medium text-slate-500'>Thao tác</TableHead>
+                <TableHead className='py-4 pl-6 font-medium '>Người dùng</TableHead>
+                <TableHead className='py-4 font-medium '>Vai trò</TableHead>
+                <TableHead className='py-4 font-medium  w-50'>Độ uy tín (Trust Score)</TableHead>
+                <TableHead className='py-4 font-medium '>Trạng thái</TableHead>
+                <TableHead className='py-4 pr-6 text-right font-medium '>Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id} className='hover:bg-sky-50/30 border-slate-100 transition-colors'>
+                <TableRow key={user.id} className='hover:/30 border-slate-100 transition-colors'>
                   <TableCell className='py-4 pl-6'>
                     <div className='flex items-center gap-4'>
                       <Avatar className='h-10 w-10 border border-slate-100 shadow-sm'>
@@ -98,15 +100,15 @@ export default function AdminUsers() {
                         <AvatarFallback className='bg-sky-100 text-sky-700'>{user.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className='font-medium text-slate-900'>{user.name}</div>
-                        <div className='text-sm text-slate-500'>{user.email}</div>
+                        <div className='font-medium'>{user.name}</div>
+                        <div className='text-sm '>{user.email}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className='py-4'>
                     <Badge
                       variant='secondary'
-                      className={`rounded-xl px-2.5 py-1 text-xs font-medium ${user.role === 'Owner' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-700'}`}
+                      className={`rounded-xl px-2.5 py-1 text-xs font-medium ${user.role === 'Owner' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 '}`}
                     >
                       {user.role}
                     </Badge>
@@ -119,7 +121,7 @@ export default function AdminUsers() {
                           style={{ width: `${user.trustScore}%` }}
                         />
                       </div>
-                      <span className='text-sm font-medium text-slate-600 w-8'>{user.trustScore}</span>
+                      <span className='text-sm font-medium  w-8'>{user.trustScore}</span>
                     </div>
                   </TableCell>
                   <TableCell className='py-4'>
@@ -140,7 +142,7 @@ export default function AdminUsers() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant='ghost'
-                          className='h-8 w-8 p-0 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full'
+                          className='h-8 w-8 p-0 text-slate-400 hover: hover:bg-slate-100 rounded-full'
                         >
                           <span className='sr-only'>Mở menu</span>
                           <MoreHorizontal className='h-5 w-5' />
@@ -152,11 +154,11 @@ export default function AdminUsers() {
                       >
                         <DropdownMenuLabel className='text-xs font-medium text-slate-400'>Hành động</DropdownMenuLabel>
                         <DropdownMenuSeparator className='bg-slate-100' />
-                        <DropdownMenuItem className='p-2.5 rounded-xl cursor-pointer hover:bg-sky-50 focus:bg-sky-50 text-sky-700 transition-colors'>
+                        <DropdownMenuItem className='p-2.5 rounded-xl cursor-pointer hover: focus: text-sky-700 transition-colors'>
                           <LifeBuoy className='mr-2 h-4 w-4' />
                           <span>Hỗ trợ người dùng</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className='p-2.5 rounded-xl cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-slate-700 transition-colors'>
+                        <DropdownMenuItem className='p-2.5 rounded-xl cursor-pointer hover: focus:  transition-colors'>
                           <Mail className='mr-2 h-4 w-4' />
                           <span>Gửi thông báo</span>
                         </DropdownMenuItem>

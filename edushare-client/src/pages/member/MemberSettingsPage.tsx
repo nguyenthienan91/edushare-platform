@@ -5,14 +5,14 @@ import {
   Shield,
   CreditCard,
   Globe,
-  Mail,
-  Phone,
   Camera,
   Eye,
   EyeOff,
 } from 'lucide-react';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { AuthService } from '@/services/auth.service';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,11 +39,39 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 export default function MemberSettingsPage() {
-  const [showCurrentPassword, setShowCurrentPassword] =
-    useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [showNewPassword, setShowNewPassword] =
-    useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return toast.error('Vui lòng điền đầy đủ thông tin mật khẩu.');
+    }
+    if (newPassword.length < 8) {
+      return toast.error('Mật khẩu mới phải từ 8 ký tự trở lên.');
+    }
+    if (newPassword !== confirmPassword) {
+      return toast.error('Mật khẩu xác nhận không khớp.');
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const response = await AuthService.changePassword({ oldPassword, newPassword });
+      toast.success(response.message || 'Mật khẩu đã được cập nhật thành công!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi khi đổi mật khẩu.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   // Fake user data
   const user = {
@@ -75,11 +103,11 @@ export default function MemberSettingsPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">
+        <h1 className="text-3xl font-bold ">
           Cài đặt tài khoản
         </h1>
 
-        <p className="text-slate-600 mt-2">
+        <p className=" mt-2">
           Quản lý thông tin cá nhân và bảo mật
         </p>
       </div>
@@ -127,7 +155,7 @@ export default function MemberSettingsPage() {
                   {user.name.charAt(0)}
                 </div>
 
-                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white border flex items-center justify-center">
+                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full  border flex items-center justify-center">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
@@ -137,7 +165,7 @@ export default function MemberSettingsPage() {
                   {user.name}
                 </h3>
 
-                <p className="text-slate-500">
+                <p className="">
                   {user.email}
                 </p>
 
@@ -241,12 +269,10 @@ export default function MemberSettingsPage() {
 
                   <div className="relative">
                     <Input
-                      type={
-                        showCurrentPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showCurrentPassword ? 'text' : 'password'}
                       placeholder="Nhập mật khẩu"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
                     />
 
                     <button
@@ -273,12 +299,10 @@ export default function MemberSettingsPage() {
 
                   <div className="relative">
                     <Input
-                      type={
-                        showNewPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showNewPassword ? 'text' : 'password'}
                       placeholder="Nhập mật khẩu mới"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                     />
 
                     <button
@@ -302,10 +326,21 @@ export default function MemberSettingsPage() {
                 <div>
                   <Label>Xác nhận mật khẩu</Label>
 
-                  <Input
-                    type="password"
-                    placeholder="Nhập lại mật khẩu"
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Nhập lại mật khẩu"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -315,8 +350,8 @@ export default function MemberSettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button>
-                    Cập nhật mật khẩu
+                  <Button onClick={handlePasswordChange} disabled={isChangingPassword}>
+                    {isChangingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
                   </Button>
                 </div>
               </div>
@@ -330,7 +365,7 @@ export default function MemberSettingsPage() {
                     Xác thực 2 lớp
                   </h3>
 
-                  <p className="text-slate-500 text-sm mt-1">
+                  <p className=" text-sm mt-1">
                     Tăng cường bảo mật tài khoản
                   </p>
                 </div>
@@ -347,8 +382,8 @@ export default function MemberSettingsPage() {
               </div>
 
               {privacy.twoFactorAuth && (
-                <div className="mt-5 border rounded-lg p-5 bg-slate-50">
-                  <div className="w-40 h-40 bg-white border rounded-lg mx-auto flex items-center justify-center">
+                <div className="mt-5 border rounded-lg p-5 ">
+                  <div className="w-40 h-40  border rounded-lg mx-auto flex items-center justify-center">
                     QR CODE
                   </div>
 
@@ -376,7 +411,7 @@ export default function MemberSettingsPage() {
                     Cập nhật đơn hàng
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Email khi có thay đổi đơn hàng
                   </p>
                 </div>
@@ -400,7 +435,7 @@ export default function MemberSettingsPage() {
                     Khuyến mãi
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Nhận thông báo ưu đãi
                   </p>
                 </div>
@@ -426,7 +461,7 @@ export default function MemberSettingsPage() {
                     Tin nhắn
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Nhận thông báo tin nhắn mới
                   </p>
                 </div>
@@ -467,7 +502,7 @@ export default function MemberSettingsPage() {
                     Hiển thị hồ sơ
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Người khác có thể xem hồ sơ
                   </p>
                 </div>
@@ -491,7 +526,7 @@ export default function MemberSettingsPage() {
                     Hiển thị đánh giá
                   </p>
 
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm ">
                     Công khai đánh giá của bạn
                   </p>
                 </div>
@@ -546,7 +581,7 @@ export default function MemberSettingsPage() {
 
               <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12  rounded-lg flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-emerald-600" />
                   </div>
 
@@ -555,7 +590,7 @@ export default function MemberSettingsPage() {
                       Ví ShareHub
                     </p>
 
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm ">
                       Số dư:{' '}
                       {user.walletBalance.toLocaleString(
                         'vi-VN'
@@ -565,7 +600,7 @@ export default function MemberSettingsPage() {
                   </div>
                 </div>
 
-                <span className="text-xs bg-white px-3 py-1 rounded-full text-emerald-600 font-medium">
+                <span className="text-xs  px-3 py-1 rounded-full text-emerald-600 font-medium">
                   Mặc định
                 </span>
               </div>

@@ -14,7 +14,7 @@ import {
   Star,
   ShieldAlert,
   Settings,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react'
 import { SidebarSeparator } from '@/components/ui/sidebar'
 import { NavUser } from '@/components/nav-user'
@@ -35,7 +35,7 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
     sections: [
       {
         label: 'Khám phá',
-        items: [{ title: 'Tổng quan Admin', url: '/admin/overview', icon: Home, isActive: true }]
+        items: [{ title: 'Tổng quan Admin', url: '/admin/overview', icon: Home, isActive: true }],
       },
       {
         label: 'Quản trị',
@@ -44,16 +44,16 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
           { title: 'Quản lý nhóm', url: '/admin/groups', icon: Group },
           { title: 'Quản lý tranh chấp', url: '/admin/disputes', icon: AlertCircle },
           { title: 'Phê duyệt rút tiền', url: '/admin/withdrawals', icon: Banknote },
-          { title: 'Thống kê doanh thu', url: '/admin/revenue', icon: Gauge }
-        ]
-      }
-    ]
+          { title: 'Thống kê doanh thu', url: '/admin/revenue', icon: Gauge },
+        ],
+      },
+    ],
   },
   owner: {
     sections: [
       {
         label: 'Khám phá',
-        items: [{ title: 'Tổng quan Owner', url: '/owner/overview', icon: Home, isActive: true }]
+        items: [{ title: 'Tổng quan Owner', url: '/owner/overview', icon: Home, isActive: true }],
       },
       {
         label: 'Quản lý',
@@ -63,31 +63,41 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
           { title: 'Tải bằng chứng', url: '/owner/evidence', icon: Upload },
           { title: 'Ví ký quỹ', url: '/owner/wallet', icon: Wallet },
           { title: 'Yêu cầu rút tiền', url: '/owner/withdrawals', icon: Banknote },
-          { title: 'Nhắc gia hạn', url: '/owner/renewals', icon: RefreshCw }
-        ]
-      }
-    ]
+          { title: 'Nhắc gia hạn', url: '/owner/renewals', icon: RefreshCw },
+        ],
+      },
+    ],
   },
   member: {
     sections: [
       {
-        label: 'Người tham gia',
+        label: 'Khám phá',
         items: [
-          { title: 'Thị trường', url: '/dashboard/participant', icon: LayoutDashboard, isActive: true },
-          { title: 'Đơn hàng của tôi', url: '/dashboard/participant/orders', icon: CreditCard }
-        ]
+          { title: 'Tổng quan', url: '/dashboard/overview', icon: Home, isActive: true },
+          // { title: 'Thị trường', url: '/dashboard/participant', icon: LayoutDashboard },
+        ],
+      },
+      {
+        label: 'Quản lý',
+        items: [
+          { title: 'Tạo nhóm', url: '/dashboard/groups/create', icon: FolderPlus },
+          { title: 'Quản lý nhóm', url: '/dashboard/groups', icon: Group },
+          { title: 'Tải bằng chứng', url: '/dashboard/evidence', icon: Upload },
+          { title: 'Nhắc gia hạn', url: '/dashboard/renewals', icon: RefreshCw },
+        ],
       },
       {
         label: 'Cá nhân',
         items: [
+          { title: 'Đơn hàng của tôi', url: '/dashboard/participant/orders', icon: CreditCard },
           { title: 'Ví ký quỹ', url: '/dashboard/wallet', icon: Wallet },
           { title: 'Đánh giá', url: '/dashboard/reviews', icon: Star },
           { title: 'Tranh chấp', url: '/dashboard/disputes', icon: ShieldAlert },
-          { title: 'Cài đặt', url: '/dashboard/settings', icon: Settings }
-        ]
-      }
-    ]
-  }
+          { title: 'Cài đặt', url: '/dashboard/settings', icon: Settings },
+        ],
+      },
+    ],
+  },
 }
 
 export function RoleSidebar({ role }: { role: DashboardRole }) {

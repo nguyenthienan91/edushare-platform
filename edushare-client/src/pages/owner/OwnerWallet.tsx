@@ -36,37 +36,37 @@ export default function OwnerWallet() {
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-3xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
-              <p className="text-sm text-slate-500">Số dư khả dụng</p>
-              <p className="mt-2 text-3xl font-semibold text-slate-900">$120.50</p>
+              <p className="text-sm ">Số dư khả dụng</p>
+              <p className="mt-2 text-3xl font-semibold ">$120.50</p>
               <Badge className="mt-3 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Đang hoạt động</Badge>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-3xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
-              <p className="text-sm text-slate-500">Tiền đang giữ</p>
-              <p className="mt-2 text-3xl font-semibold text-slate-900">$48.00</p>
-              <p className="mt-3 text-sm text-slate-500">Đang chờ hoàn tất giao dịch</p>
+              <p className="text-sm ">Tiền đang giữ</p>
+              <p className="mt-2 text-3xl font-semibold ">$48.00</p>
+              <p className="mt-3 text-sm ">Đang chờ hoàn tất giao dịch</p>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-3xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
-              <p className="text-sm text-slate-500">Yêu cầu rút tiền</p>
-              <p className="mt-2 text-3xl font-semibold text-slate-900">2</p>
-              <p className="mt-3 text-sm text-slate-500">Đang chờ duyệt</p>
+              <p className="text-sm ">Yêu cầu rút tiền</p>
+              <p className="mt-2 text-3xl font-semibold ">2</p>
+              <p className="mt-3 text-sm ">Đang chờ duyệt</p>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-3xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
-              <p className="text-sm text-slate-500">Tổng giao dịch</p>
-              <p className="mt-2 text-3xl font-semibold text-slate-900">18</p>
-              <p className="mt-3 text-sm text-slate-500">Trong 30 ngày gần nhất</p>
+              <p className="text-sm ">Tổng giao dịch</p>
+              <p className="mt-2 text-3xl font-semibold ">18</p>
+              <p className="mt-3 text-sm ">Trong 30 ngày gần nhất</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+        <Card className="rounded-3xl border-slate-200  shadow-sm">
           <CardHeader>
             <CardTitle>Trạng thái escrow</CardTitle>
             <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
@@ -77,15 +77,15 @@ export default function OwnerWallet() {
               { title: 'Đã xác nhận', desc: 'Người tham gia đã nhận quyền truy cập.' },
               { title: 'Đã giải phóng', desc: 'Tiền đã chuyển về owner.' },
             ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="font-medium text-slate-900">{item.title}</p>
-                <p className="mt-2 text-sm text-slate-500">{item.desc}</p>
+              <div key={item.title} className="rounded-2xl border border-slate-200  p-5">
+                <p className="font-medium ">{item.title}</p>
+                <p className="mt-2 text-sm ">{item.desc}</p>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
+        <Card className="rounded-3xl border-slate-200  shadow-sm">
           <CardHeader>
             <CardTitle>Hành động nhanh</CardTitle>
             <CardDescription>Thao tác nhanh với ví và giao dịch.</CardDescription>
@@ -105,27 +105,27 @@ export default function OwnerWallet() {
 
                 <Tabs value={depositMethod} onValueChange={setDepositMethod} className="space-y-5">
                   <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-                    <TabsTrigger value="bank" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-indigo-700">
+                    <TabsTrigger value="bank" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
                       Ngân hàng
                     </TabsTrigger>
-                    <TabsTrigger value="qr" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-indigo-700">
+                    <TabsTrigger value="qr" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
                       QR / Ví
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="bank" className="space-y-4">
                     <div className="grid gap-2">
-                      <Label className="text-slate-700">Số tiền nạp</Label>
+                      <Label className="">Số tiền nạp</Label>
                       <Input
                         value={depositAmount}
                         onChange={(e) => setDepositAmount(e.target.value)}
-                        className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4"
+                        className="h-12 rounded-2xl border-slate-200  px-4"
                         placeholder="100000"
                       />
                     </div>
 
                     <div className="grid gap-3">
-                      <Label className="text-slate-700">Nạp nhanh</Label>
+                      <Label className="">Nạp nhanh</Label>
                       <div className="flex flex-wrap gap-2">
                         {depositQuick.map((label, index) => {
                           const value = quickAmounts[index]
@@ -134,7 +134,7 @@ export default function OwnerWallet() {
                               key={label}
                               type="button"
                               variant="secondary"
-                              className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              className="rounded-full bg-slate-100  hover:bg-slate-200"
                               onClick={() => setDepositAmount(String(value))}
                             >
                               {label}
@@ -146,9 +146,9 @@ export default function OwnerWallet() {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="grid gap-2">
-                        <Label className="text-slate-700">Ngân hàng</Label>
+                        <Label className="">Ngân hàng</Label>
                         <Select value={bankName} onValueChange={setBankName}>
-                          <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4">
+                          <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
                             <SelectValue placeholder="Chọn ngân hàng" />
                           </SelectTrigger>
                           <SelectContent>
@@ -160,11 +160,11 @@ export default function OwnerWallet() {
                         </Select>
                       </div>
                       <div className="grid gap-2">
-                        <Label className="text-slate-700">Số tài khoản</Label>
+                        <Label className="">Số tài khoản</Label>
                         <Input
                           value={accountNumber}
                           onChange={(e) => setAccountNumber(e.target.value)}
-                          className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4"
+                          className="h-12 rounded-2xl border-slate-200  px-4"
                           placeholder="Nhập số tài khoản"
                         />
                       </div>
@@ -172,17 +172,17 @@ export default function OwnerWallet() {
                   </TabsContent>
 
                   <TabsContent value="qr" className="space-y-4">
-                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
-                      <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200">
+                    <div className="rounded-3xl border border-dashed border-slate-200  p-6 text-center">
+                      <div className="mx-auto flex size-14 items-center justify-center rounded-full  shadow-sm ring-1 ring-slate-200">
                         <CircleDollarSign className="size-6 text-indigo-500" />
                       </div>
-                      <p className="mt-4 font-medium text-slate-900">Quét QR để nạp tiền</p>
-                      <p className="mt-1 text-sm text-slate-500">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
+                      <p className="mt-4 font-medium ">Quét QR để nạp tiền</p>
+                      <p className="mt-1 text-sm ">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
                     </div>
                   </TabsContent>
                 </Tabs>
 
-                <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                <div className="rounded-2xl  p-4 text-sm leading-6 ">
                   Giao dịch nạp tiền sẽ được xác nhận tự động sau khi hệ thống nhận được thanh toán.
                 </div>
 
@@ -210,13 +210,13 @@ export default function OwnerWallet() {
 
                 <div className="space-y-3">
                   {history.map((item) => (
-                    <div key={`${item.date}-${item.type}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div key={`${item.date}-${item.type}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200  p-4">
                       <div>
-                        <p className="font-medium text-slate-900">{item.type}</p>
-                        <p className="text-sm text-slate-500">{item.date}</p>
+                        <p className="font-medium ">{item.type}</p>
+                        <p className="text-sm ">{item.date}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-slate-900">{item.amount}</p>
+                        <p className="font-semibold ">{item.amount}</p>
                         <Badge className="mt-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
                           {item.status}
                         </Badge>
@@ -247,24 +247,24 @@ export default function OwnerWallet() {
 
                 <div className="space-y-5 py-2">
                   <div className="grid gap-2">
-                    <Label className="text-slate-700">Số tiền rút</Label>
+                    <Label className="">Số tiền rút</Label>
                     <Input
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4"
+                      className="h-12 rounded-2xl border-slate-200  px-4"
                       placeholder="50000"
                     />
                   </div>
 
                   <div className="grid gap-3">
-                    <Label className="text-slate-700">Chọn nhanh</Label>
+                    <Label className="">Chọn nhanh</Label>
                     <div className="flex flex-wrap gap-2">
                       {quickAmounts.map((value) => (
                         <Button
                           key={value}
                           type="button"
                           variant="secondary"
-                          className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          className="rounded-full bg-slate-100  hover:bg-slate-200"
                           onClick={() => setAmount(String(value))}
                         >
                           {value.toLocaleString('vi-VN')} đ
@@ -275,9 +275,9 @@ export default function OwnerWallet() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                      <Label className="text-slate-700">Ngân hàng</Label>
+                      <Label className="">Ngân hàng</Label>
                       <Select value={bankName} onValueChange={setBankName}>
-                        <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4">
+                        <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
                           <SelectValue placeholder="Chọn ngân hàng" />
                         </SelectTrigger>
                         <SelectContent>
@@ -290,27 +290,27 @@ export default function OwnerWallet() {
                     </div>
 
                     <div className="grid gap-2">
-                      <Label className="text-slate-700">Số tài khoản</Label>
+                      <Label className="">Số tài khoản</Label>
                       <Input
                         value={accountNumber}
                         onChange={(e) => setAccountNumber(e.target.value)}
-                        className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4"
+                        className="h-12 rounded-2xl border-slate-200  px-4"
                         placeholder="Nhập số tài khoản"
                       />
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <Label className="text-slate-700">Tên chủ tài khoản</Label>
+                    <Label className="">Tên chủ tài khoản</Label>
                     <Input
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
-                      className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4"
+                      className="h-12 rounded-2xl border-slate-200  px-4"
                       placeholder="Nhập tên chủ tài khoản"
                     />
                   </div>
 
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  <div className="rounded-2xl  p-4 text-sm leading-6 ">
                     Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng ShareBuddy
                   </div>
                 </div>

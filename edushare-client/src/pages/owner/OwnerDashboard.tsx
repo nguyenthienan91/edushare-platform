@@ -61,14 +61,14 @@ export default function OwnerDashboard() {
       description="Theo dõi hoạt động cộng đồng của bạn một cách nhanh gọn và tin cậy."
     >
       <div className="space-y-6 ">
-        <div className="rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50">
+        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <Badge className="rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100">Owner Dashboard</Badge>
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
+              <h2 className="text-2xl font-semibold tracking-tight  md:text-3xl">
                 Chào buổi sáng, f! Cộng đồng của bạn đang hoạt động rất tốt
               </h2>
-              <p className="max-w-2xl text-sm leading-6 text-slate-500">
+              <p className="max-w-2xl text-sm leading-6 ">
                 Giao diện tối giản, nhẹ nhàng và đủ thông tin để bạn theo dõi hoạt động hằng ngày mà không bị rối.
               </p>
             </div>
@@ -83,7 +83,7 @@ export default function OwnerDashboard() {
           {stats.map((item) => {
             const Icon = item.icon
             return (
-              <Card key={item.label} className="rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
+              <Card key={item.label} className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3">
@@ -91,9 +91,9 @@ export default function OwnerDashboard() {
                         <Icon className="size-5" />
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">{item.label}</p>
-                        <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{item.value}</p>
-                        <p className="mt-1 text-xs text-slate-500">{item.note}</p>
+                        <p className="text-sm ">{item.label}</p>
+                        <p className="mt-1 text-3xl font-semibold tracking-tight ">{item.value}</p>
+                        <p className="mt-1 text-xs ">{item.note}</p>
                       </div>
                     </div>
                     <ArrowUpRight className="size-4 text-slate-300" />
@@ -105,13 +105,13 @@ export default function OwnerDashboard() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
+          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
-              <CardTitle className="text-slate-900">Tăng trưởng thành viên trong tuần</CardTitle>
+              <CardTitle className="">Tăng trưởng thành viên trong tuần</CardTitle>
               <CardDescription>Biểu đồ</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-3xl bg-sky-50/70 p-4">
+              <div className="rounded-3xl /70 p-4">
                 <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[260px] w-full overflow-visible">
                   <defs>
                     <linearGradient id="memberArea" x1="0" x2="0" y1="0" y2="1">
@@ -140,22 +140,22 @@ export default function OwnerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30">
+          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
-              <CardTitle className="text-slate-900">Nhóm nổi bật</CardTitle>
+              <CardTitle className="">Nhóm nổi bật</CardTitle>
               <CardDescription>Các nhóm có nhiều tương tác nhất trong tuần.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {featuredGroups.map((group) => (
-                <div key={group.name} className="rounded-3xl border border-slate-200/70 bg-slate-50 p-4 transition-colors hover:bg-sky-50/60">
+                <div key={group.name} className="rounded-3xl border border-slate-200/70  p-4 transition-colors hover:/60">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-slate-900">{group.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">{group.members}</p>
+                      <p className="font-medium ">{group.name}</p>
+                      <p className="mt-1 text-sm ">{group.members}</p>
                     </div>
                     <Badge className="rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100">{group.trend}</Badge>
                   </div>
-                  <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+                  <div className="mt-4 flex items-center justify-between text-sm ">
                     <span>{group.interactions}</span>
                     <Button variant="ghost" size="sm" className="rounded-full px-3 text-sky-700 hover:bg-sky-100 hover:text-sky-800">
                       Xem chi tiết

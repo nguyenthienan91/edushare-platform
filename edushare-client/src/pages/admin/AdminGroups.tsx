@@ -64,7 +64,7 @@ const getServiceTone = (service: string) => {
     case 'Disney+':
       return 'bg-indigo-100 text-indigo-700 border-indigo-200'
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200'
+      return 'bg-slate-100  border-slate-200'
   }
 }
 
@@ -74,7 +74,7 @@ export default function AdminGroups() {
 
     if (filteredGroups.length === 0) {
       return (
-        <div className='flex flex-col items-center justify-center p-12 text-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200'>
+        <div className='flex flex-col items-center justify-center p-12 text-center text-slate-400  rounded-3xl border border-dashed border-slate-200'>
           <PlayCircle className='h-12 w-12 mb-4 text-slate-200' />
           <p>Không có nhóm nào trong danh mục này.</p>
         </div>
@@ -86,7 +86,7 @@ export default function AdminGroups() {
         {filteredGroups.map((group) => (
           <Card
             key={group.id}
-            className='rounded-3xl border-slate-200/70 bg-white shadow-sm shadow-sky-100/30 overflow-hidden flex flex-col hover:border-sky-200 hover:shadow-md transition-all'
+            className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden flex flex-col hover:border-sky-200 hover:shadow-md transition-all'
           >
             <CardHeader className='pb-4'>
               <div className='flex items-start justify-between'>
@@ -105,7 +105,7 @@ export default function AdminGroups() {
                   </Badge>
                 )}
               </div>
-              <CardTitle className='text-lg text-slate-900 mt-3 line-clamp-1'>{group.name}</CardTitle>
+              <CardTitle className='text-lg  mt-3 line-clamp-1'>{group.name}</CardTitle>
               <CardDescription className='text-xs'>{group.id}</CardDescription>
             </CardHeader>
             <CardContent className='pb-4 flex-1'>
@@ -117,17 +117,17 @@ export default function AdminGroups() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className='text-xs text-slate-500'>Chủ nhóm</p>
-                  <p className='text-sm font-medium text-slate-800'>{group.owner.name}</p>
+                  <p className='text-xs '>Chủ nhóm</p>
+                  <p className='text-sm font-medium '>{group.owner.name}</p>
                 </div>
               </div>
 
-              <div className='flex items-center justify-between text-sm text-slate-600 bg-slate-50 p-3 rounded-2xl'>
+              <div className='flex items-center justify-between text-sm   p-3 rounded-2xl'>
                 <div className='flex items-center gap-1.5'>
                   <Users className='w-4 h-4 text-slate-400' />
                   <span>Thành viên</span>
                 </div>
-                <span className='font-medium text-slate-900'>
+                <span className='font-medium '>
                   {group.members} / {group.maxMembers}
                 </span>
               </div>
@@ -136,7 +136,7 @@ export default function AdminGroups() {
               <Button
                 variant='outline'
                 size='sm'
-                className='rounded-xl text-sky-700 border-sky-200 hover:bg-sky-50 mt-4 w-full'
+                className='rounded-xl text-sky-700 border-sky-200 hover: mt-4 w-full'
               >
                 <Eye className='w-4 h-4 mr-2' /> XEM BẰNG CHỨNG
               </Button>
@@ -148,38 +148,40 @@ export default function AdminGroups() {
   }
 
   return (
-    <div className='space-y-6 bg-[#f0f9ff]'>
-      <div className='rounded-3xl border border-sky-100/80 bg-white p-6 shadow-sm shadow-sky-100/50'>
+    <div className='space-y-6 '>
+      <Card>
+        <CardContent>
         <p className='text-sm font-medium text-emerald-600'>Quản lý hoạt động</p>
-        <h2 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Danh sách Nhóm</h2>
-        <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
+        <h2 className='mt-2 text-3xl font-semibold tracking-tight '>Danh sách Nhóm</h2>
+        <p className='mt-2 max-w-2xl text-sm leading-6 '>
           Theo dõi các nhóm chia sẻ, kiểm tra bằng chứng giao dịch và xử lý các vấn đề nội bộ.
         </p>
-      </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue='active' className='w-full'>
         <div className='flex items-center justify-between mb-6'>
-          <TabsList className='bg-white border border-slate-200/60 p-1 rounded-2xl shadow-sm h-auto'>
+          <TabsList className=' border border-slate-200/60 p-1 rounded-2xl shadow-sm h-auto'>
             <TabsTrigger
               value='active'
-              className='rounded-xl px-5 py-2.5 text-sm data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-sm'
+              className='rounded-xl px-5 py-2.5 text-sm data-[state=active]:0 data-[state=active]:text-white data-[state=active]:shadow-sm'
             >
               Đang hoạt động{' '}
-              <Badge className='ml-2 bg-white/20 text-white hover:bg-white/20 border-none px-1.5 rounded-md'>2</Badge>
+              <Badge className='ml-2 /20 text-white hover:/20 border-none px-1.5 rounded-md'>2</Badge>
             </TabsTrigger>
             <TabsTrigger
               value='flagged'
               className='rounded-xl px-5 py-2.5 text-sm data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm'
             >
               Bị báo cáo (Flagged){' '}
-              <Badge className='ml-2 bg-white/20 text-white hover:bg-white/20 border-none px-1.5 rounded-md'>2</Badge>
+              <Badge className='ml-2 /20 text-white hover:/20 border-none px-1.5 rounded-md'>2</Badge>
             </TabsTrigger>
             <TabsTrigger
               value='completed'
               className='rounded-xl px-5 py-2.5 text-sm data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm'
             >
               Đã hoàn thành{' '}
-              <Badge className='ml-2 bg-white/20 text-white hover:bg-white/20 border-none px-1.5 rounded-md'>1</Badge>
+              <Badge className='ml-2 /20 text-white hover:/20 border-none px-1.5 rounded-md'>1</Badge>
             </TabsTrigger>
           </TabsList>
         </div>

@@ -1,310 +1,327 @@
 import { useMemo, useState } from 'react'
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  CheckCircle2,
-  Clock,
-  Download,
-  Eye,
-  FileText,
-  ReceiptText,
-  ShieldCheck,
-  Wallet as WalletIcon,
-  X,
-} from 'lucide-react'
+import { BanknoteArrowUp, CalendarClock, CircleDollarSign, Landmark, ShieldCheck } from 'lucide-react'
+import { DashboardLayout } from '@/components/dashboard-layout'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-type OrderStatus = 'confirmed' | 'pending_access' | 'released' | 'disputed' | 'refunded'
-
-type Order = {
-  id: string
-  platform: string
-  participantId: string
-  ownerId: string
-  price: number
-  status: OrderStatus
-  createdAt: string
-}
-
-type OrderStep = {
-  label: string
-  done: boolean
-}
-
-const statusLabel: Record<OrderStatus, string> = {
-  confirmed: 'Đã xác nhận',
-  pending_access: 'Chờ truy cập',
-  released: 'Đã giải ngân',
-  disputed: 'Đang tranh chấp',
-  refunded: 'Đã hoàn tiền',
-}
-
-const statusTone: Record<OrderStatus, string> = {
-  confirmed: 'bg-blue-100 text-blue-700',
-  pending_access: 'bg-amber-100 text-amber-700',
-  released: 'bg-emerald-100 text-emerald-700',
-  disputed: 'bg-rose-100 text-rose-700',
-  refunded: 'bg-violet-100 text-violet-700',
-}
-
-const orderSteps: Record<OrderStatus, OrderStep[]> = {
-  confirmed: [
-    { label: 'Tiền được giữ', done: true },
-    { label: 'Chủ nhóm xác nhận', done: true },
-    { label: 'Chờ thêm quyền truy cập', done: true },
-    { label: 'Giải ngân', done: false },
-  ],
-  pending_access: [
-    { label: 'Tiền được giữ', done: true },
-    { label: 'Chủ nhóm xác nhận', done: true },
-    { label: 'Chờ thêm quyền truy cập', done: false },
-    { label: 'Giải ngân', done: false },
-  ],
-  released: [
-    { label: 'Tiền được giữ', done: true },
-    { label: 'Chủ nhóm xác nhận', done: true },
-    { label: 'Chờ thêm quyền truy cập', done: true },
-    { label: 'Giải ngân', done: true },
-  ],
-  disputed: [
-    { label: 'Tiền được giữ', done: true },
-    { label: 'Chủ nhóm xác nhận', done: true },
-    { label: 'Chờ thêm quyền truy cập', done: false },
-    { label: 'Giải ngân', done: false },
-  ],
-  refunded: [
-    { label: 'Tiền được giữ', done: true },
-    { label: 'Chủ nhóm xác nhận', done: true },
-    { label: 'Chờ thêm quyền truy cập', done: false },
-    { label: 'Hoàn tiền', done: true },
-  ],
-}
-
-const receiptNotes: Record<OrderStatus, string> = {
-  confirmed: 'Giao dịch đang chờ bạn xác nhận quyền truy cập.',
-  pending_access: 'Hệ thống đang giữ tiền cho đến khi truy cập được xác nhận.',
-  released: 'Tiền đã được giải ngân cho chủ nhóm.',
-  disputed: 'Giao dịch đang bị đóng băng để xử lý khiếu nại.',
-  refunded: 'Giao dịch đã hoàn tiền về ví của bạn.',
-}
+const history = [
+  { date: '12/05/2026', type: 'Nạp tiền', amount: '+500.000đ', status: 'Thành công' },
+  { date: '11/05/2026', type: 'Rút tiền', amount: '-100.000đ', status: 'Đang xử lý' },
+  { date: '10/05/2026', type: 'Escrow hoàn tất', amount: '+250.000đ', status: 'Thành công' },
+]
 
 export default function MemberWalletPage() {
-  const currentUser = {
-    id: 'user_1',
-    name: 'Bạn',
-    walletBalance: 120500,
-  }
+  const [amount, setAmount] = useState('50000')
+  const [bankName, setBankName] = useState('mbbank')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [accountName, setAccountName] = useState('')
+  const [depositAmount, setDepositAmount] = useState('100000')
+  const [depositMethod, setDepositMethod] = useState('bank')
 
-  const [orders] = useState<Order[]>([
-    { id: 'ORD001', platform: 'Canva', participantId: 'user_1', ownerId: 'owner_1', price: 39000, status: 'confirmed', createdAt: '2025-09-12' },
-    { id: 'ORD002', platform: 'ChatGPT', participantId: 'owner_2', ownerId: 'user_1', price: 59000, status: 'pending_access', createdAt: '2025-09-10' },
-    { id: 'ORD003', platform: 'Adobe', participantId: 'user_1', ownerId: 'owner_3', price: 69000, status: 'released', createdAt: '2025-09-07' },
-    { id: 'ORD004', platform: 'Microsoft 365', participantId: 'user_1', ownerId: 'owner_4', price: 32000, status: 'disputed', createdAt: '2025-09-05' },
-    { id: 'ORD005', platform: 'Notion', participantId: 'owner_5', ownerId: 'user_1', price: 29000, status: 'refunded', createdAt: '2025-09-01' },
-    { id: 'ORD006', platform: 'Figma', participantId: 'user_1', ownerId: 'owner_6', price: 32000, status: 'confirmed', createdAt: '2025-08-29' },
-  ])
+  const quickAmounts = [50000, 100000, 500000]
 
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-
-  const myEscrowOrders = useMemo(
-    () =>
-      orders.filter(
-        (order) =>
-          (order.ownerId === currentUser.id || order.participantId === currentUser.id) &&
-          (order.status === 'confirmed' || order.status === 'pending_access' || order.status === 'disputed')
-      ),
-    [orders, currentUser.id]
-  )
-
-  const totalEscrow = myEscrowOrders.reduce((sum, order) => sum + order.price, 0)
-  const formatVnd = (value: number) => `${new Intl.NumberFormat('vi-VN').format(value)}đ`
-
-  const activeOrder = selectedOrder ?? orders[0]
-  const selectedSteps = orderSteps[activeOrder.status]
+  const depositQuick = useMemo(() => ['50.000đ', '100.000đ', '500.000đ'], [])
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
-          <WalletIcon className="h-5 w-5" />
+   
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Card >
+            <CardContent className="p-5">
+              <p className="text-sm ">Số dư khả dụng</p>
+              <p className="mt-2 text-3xl font-semibold ">$120.50</p>
+              <Badge className="mt-3 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Đang hoạt động</Badge>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-sm ">Tiền đang giữ</p>
+              <p className="mt-2 text-3xl font-semibold ">$48.00</p>
+              <p className="mt-3 text-sm ">Đang chờ hoàn tất giao dịch</p>
+            </CardContent>
+          </Card>
+          <Card >
+            <CardContent className="p-5">
+              <p className="text-sm ">Yêu cầu rút tiền</p>
+              <p className="mt-2 text-3xl font-semibold ">2</p>
+              <p className="mt-3 text-sm ">Đang chờ duyệt</p>
+            </CardContent>
+          </Card>
+          <Card >
+            <CardContent className="p-5">
+              <p className="text-sm ">Tổng giao dịch</p>
+              <p className="mt-2 text-3xl font-semibold ">18</p>
+              <p className="mt-3 text-sm ">Trong 30 ngày gần nhất</p>
+            </CardContent>
+          </Card>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ví ký quỹ</h1>
-          <p className="mt-1 text-sm text-slate-500">Quản lý số dư và tiền đang giữ cho các nhóm thuê bao EduShare.</p>
-        </div>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white shadow-sm">
-          <div className="absolute right-0 top-0 h-32 w-32 translate-x-16 -translate-y-16 rounded-full bg-white/5" />
-          <div className="relative z-10">
-            <div className="mb-2 text-sm text-slate-400">Số dư khả dụng</div>
-            <div className="mb-8 text-4xl font-extrabold">{formatVnd(currentUser.walletBalance)}</div>
-            <div className="flex gap-3">
-              <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
-                <ArrowDownLeft className="h-4 w-4" />
-                Nạp tiền
-              </button>
-              <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold transition hover:bg-white/20">
-                <ArrowUpRight className="h-4 w-4" />
-                Rút tiền
-              </button>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Trạng thái escrow</CardTitle>
+            <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 lg:grid-cols-3">
+            {[
+              { title: 'Chờ cấp quyền', desc: 'Đang chờ chủ nhóm xác nhận.' },
+              { title: 'Đã xác nhận', desc: 'Người tham gia đã nhận quyền truy cập.' },
+              { title: 'Đã giải phóng', desc: 'Tiền đã chuyển về owner.' },
+            ].map((item) => (
+              <div key={item.title} className="rounded-2xl border border-slate-200  p-5">
+                <p className="font-medium ">{item.title}</p>
+                <p className="mt-2 text-sm ">{item.desc}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
-        <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              Tiền đang giữ trong ký quỹ
-            </div>
-            <div className="mb-2 text-4xl font-extrabold text-slate-900">{formatVnd(totalEscrow)}</div>
-            <p className="text-sm leading-6 text-slate-500">
-              Khoản này đang được giữ an toàn cho các giao dịch subscription sharing và sẽ được giải ngân khi hoàn tất xác nhận.
-            </p>
-          </div>
-          <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-6 text-sm">
-            <span className="text-slate-500">Giao dịch chờ xử lý</span>
-            <span className="font-semibold text-slate-900">{myEscrowOrders.length} giao dịch</span>
-          </div>
-        </div>
-      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Hành động nhanh</CardTitle>
+            <CardDescription>Thao tác nhanh với ví và giao dịch.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Nạp thêm</Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-3xl sm:max-w-[560px]">
+                <DialogHeader>
+                  <DialogTitle>Nạp tiền vào ví</DialogTitle>
+                  <DialogDescription>
+                    Chọn phương thức và số tiền muốn nạp.
+                  </DialogDescription>
+                </DialogHeader>
 
-      <div>
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
-          <Clock className="h-5 w-5 text-slate-400" />
-          Lịch sử giao dịch
-        </h2>
+                <Tabs value={depositMethod} onValueChange={setDepositMethod} className="space-y-5">
+                  <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                    <TabsTrigger value="bank" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
+                      Ngân hàng
+                    </TabsTrigger>
+                    <TabsTrigger value="qr" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
+                      QR / Ví
+                    </TabsTrigger>
+                  </TabsList>
 
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          {orders.length > 0 ? (
-            <div className="divide-y divide-slate-100">
-              {orders.map((order) => {
-                const isOutgoing = order.participantId === currentUser.id
-                const isSelected = selectedOrder?.id === order.id
-                return (
-                  <button
-                    key={order.id}
-                    type="button"
-                    onClick={() => setSelectedOrder(order)}
-                    className={`w-full p-4 text-left transition hover:bg-slate-50 ${isSelected ? 'bg-slate-50' : ''}`}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex min-w-0 items-center gap-4">
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isOutgoing ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                          {isOutgoing ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownLeft className="h-5 w-5" />}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold text-slate-900">
-                            {isOutgoing ? `Thanh toán nhóm ${order.platform}` : `Tiền vào ví từ nhóm ${order.platform}`}
-                          </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                            <span>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span>
-                            <span className="h-1 w-1 rounded-full bg-slate-300" />
-                            <span className={`rounded-full px-2 py-0.5 font-semibold ${statusTone[order.status]}`}>{statusLabel[order.status]}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={`shrink-0 font-bold ${isOutgoing ? 'text-slate-900' : 'text-emerald-600'}`}>
-                        {isOutgoing ? '-' : '+'}{formatVnd(order.price)}
+                  <TabsContent value="bank" className="space-y-4">
+                    <div className="grid gap-2">
+                      <Label className="">Số tiền nạp</Label>
+                      <Input
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        className="h-12 rounded-2xl border-slate-200  px-4"
+                        placeholder="100000"
+                      />
+                    </div>
+
+                    <div className="grid gap-3">
+                      <Label className="">Nạp nhanh</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {depositQuick.map((label, index) => {
+                          const value = quickAmounts[index]
+                          return (
+                            <Button
+                              key={label}
+                              type="button"
+                              variant="secondary"
+                              className="rounded-full bg-slate-100  hover:bg-slate-200"
+                              onClick={() => setDepositAmount(String(value))}
+                            >
+                              {label}
+                            </Button>
+                          )
+                        })}
                       </div>
                     </div>
-                  </button>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="p-8 text-center text-slate-500">Chưa có giao dịch nào</div>
-          )}
-        </div>
-      </div>
 
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-6">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100">
-                  <Eye className="h-3.5 w-3.5" />
-                  Chi tiết giao dịch
-                </div>
-                <h3 className="mt-3 text-2xl font-bold text-slate-950">{selectedOrder.platform} · {selectedOrder.id}</h3>
-                <p className="mt-1 text-sm text-slate-500">{receiptNotes[selectedOrder.status]}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="grid gap-6 p-6">
-              <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
-                <div className="flex items-center justify-between"><span className="text-slate-500">Mã giao dịch</span><span className="font-semibold text-slate-900">{selectedOrder.id}</span></div>
-                <div className="flex items-center justify-between"><span className="text-slate-500">Ngày tạo</span><span className="font-semibold text-slate-900">{new Date(selectedOrder.createdAt).toLocaleDateString('vi-VN')}</span></div>
-                <div className="flex items-center justify-between"><span className="text-slate-500">Số tiền</span><span className="font-semibold text-slate-900">{formatVnd(selectedOrder.price)}</span></div>
-                <div className="flex items-center justify-between"><span className="text-slate-500">Trạng thái</span><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone[selectedOrder.status]}`}>{statusLabel[selectedOrder.status]}</span></div>
-                <div className="flex items-center justify-between"><span className="text-slate-500">Vai trò</span><span className="font-semibold text-slate-900">{selectedOrder.participantId === currentUser.id ? 'Người tham gia' : 'Chủ nhóm'}</span></div>
-                <div className="flex items-center justify-between"><span className="text-slate-500">Loại ví</span><span className="font-semibold text-slate-900">Ký quỹ EduShare</span></div>
-              </div>
-
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <h4 className="text-sm font-bold uppercase tracking-wide text-slate-500">Tiến trình giao dịch</h4>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusTone[selectedOrder.status]}`}>{statusLabel[selectedOrder.status]}</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-4">
-                  {selectedSteps.map((step, index) => (
-                    <div key={step.label} className="rounded-2xl border border-slate-200 p-4">
-                      <div className={`mb-3 flex h-8 w-8 items-center justify-center rounded-full ${step.done ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
-                        <CheckCircle2 className="h-4 w-4" />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-2">
+                        <Label className="">Ngân hàng</Label>
+                        <Select value={bankName} onValueChange={setBankName}>
+                          <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
+                            <SelectValue placeholder="Chọn ngân hàng" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mbbank">MB Bank</SelectItem>
+                            <SelectItem value="vcb">Vietcombank</SelectItem>
+                            <SelectItem value="acb">ACB</SelectItem>
+                            <SelectItem value="tcb">Techcombank</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <div className="text-sm font-semibold text-slate-900">Bước {index + 1}</div>
-                      <div className="mt-1 text-sm text-slate-500">{step.label}</div>
+                      <div className="grid gap-2">
+                        <Label className="">Số tài khoản</Label>
+                        <Input
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value)}
+                          className="h-12 rounded-2xl border-slate-200  px-4"
+                          placeholder="Nhập số tài khoản"
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="qr" className="space-y-4">
+                    <div className="rounded-3xl border border-dashed border-slate-200  p-6 text-center">
+                      <div className="mx-auto flex size-14 items-center justify-center rounded-full  shadow-sm ring-1 ring-slate-200">
+                        <CircleDollarSign className="size-6 text-indigo-500" />
+                      </div>
+                      <p className="mt-4 font-medium ">Quét QR để nạp tiền</p>
+                      <p className="mt-1 text-sm ">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <div className="rounded-2xl  p-4 text-sm leading-6 ">
+                  Giao dịch nạp tiền sẽ được xác nhận tự động sau khi hệ thống nhận được thanh toán.
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" className="rounded-full">Hủy</Button>
+                  <Button className="rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Landmark className="mr-2 size-4" />
+                    Xác nhận nạp
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">Xem lịch sử</Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-3xl sm:max-w-[720px]">
+                <DialogHeader>
+                  <DialogTitle>Lịch sử giao dịch</DialogTitle>
+                  <DialogDescription>
+                    Theo dõi các giao dịch nạp tiền, rút tiền và escrow gần đây.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-3">
+                  {history.map((item) => (
+                    <div key={`${item.date}-${item.type}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200  p-4">
+                      <div>
+                        <p className="font-medium ">{item.type}</p>
+                        <p className="text-sm ">{item.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold ">{item.amount}</p>
+                        <Badge className="mt-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                          {item.status}
+                        </Badge>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <ReceiptText className="h-4 w-4 text-indigo-600" />
-                  Biên nhận nhanh
+                <DialogFooter>
+                  <Button className="rounded-full bg-slate-950 text-white hover:bg-slate-800">
+                    Đóng
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Yêu cầu rút</Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-3xl sm:max-w-[560px]">
+                <DialogHeader>
+                  <DialogTitle>Rút tiền</DialogTitle>
+                  <DialogDescription>
+                    Nhập thông tin ngân hàng để gửi yêu cầu rút tiền.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-5 py-2">
+                  <div className="grid gap-2">
+                    <Label className="">Số tiền rút</Label>
+                    <Input
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="h-12 rounded-2xl border-slate-200  px-4"
+                      placeholder="50000"
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <Label className="">Chọn nhanh</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {quickAmounts.map((value) => (
+                        <Button
+                          key={value}
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full bg-slate-100  hover:bg-slate-200"
+                          onClick={() => setAmount(String(value))}
+                        >
+                          {value.toLocaleString('vi-VN')} đ
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label className="">Ngân hàng</Label>
+                      <Select value={bankName} onValueChange={setBankName}>
+                        <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
+                          <SelectValue placeholder="Chọn ngân hàng" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mbbank">MB Bank</SelectItem>
+                          <SelectItem value="vcb">Vietcombank</SelectItem>
+                          <SelectItem value="acb">ACB</SelectItem>
+                          <SelectItem value="tcb">Techcombank</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label className="">Số tài khoản</Label>
+                      <Input
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        className="h-12 rounded-2xl border-slate-200  px-4"
+                        placeholder="Nhập số tài khoản"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label className="">Tên chủ tài khoản</Label>
+                    <Input
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      className="h-12 rounded-2xl border-slate-200  px-4"
+                      placeholder="Nhập tên chủ tài khoản"
+                    />
+                  </div>
+
+                  <div className="rounded-2xl  p-4 text-sm leading-6 ">
+                    Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng ShareBuddy
+                  </div>
                 </div>
-                <p className="text-sm leading-6 text-slate-500">
-                  {selectedOrder.platform} · {statusLabel[selectedOrder.status]} · {formatVnd(selectedOrder.price)}
-                </p>
-              </div>
 
-              <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
-                >
-                  <Download className="h-4 w-4" />
-                  Tải hóa đơn
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  <FileText className="h-4 w-4" />
-                  Xem biên nhận
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedOrder(null)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
-                >
-                  Đóng
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                <DialogFooter>
+                  <Button variant="outline" className="rounded-full">Hủy</Button>
+                  <Button className="rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
+                    <BanknoteArrowUp className="mr-2 size-4" />
+                    Gửi yêu cầu
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      </div>
   )
 }

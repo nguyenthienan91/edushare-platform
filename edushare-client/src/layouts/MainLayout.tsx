@@ -1,43 +1,115 @@
-import { Outlet, Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
+import { useAuth } from '@/contexts/AuthContext';
+
+const NAV_ITEMS = [
+  { label: 'Trang chủ', href: '#' },
+  { label: 'Tính năng', href: '#' },
+  { label: 'FAQ', href: '#' },
+  { label: 'Liên hệ', href: '#' },
+];
+
 export default function MainLayout() {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="/images/logo.jpg"
+              alt="EduShare logo"
+              className="h-11 w-11 rounded-2xl object-cover shadow-sm"
+            />
 
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b border-slate-100">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
-            <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 p-2 rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="leading-tight">
+              <div className="text-lg font-bold tracking-tight">EduShare</div>
+              <div className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
+                Dùng chung thông minh
+              </div>
             </div>
-          </div>
-          <div className="text-left">
-            <span className="text-xl font-bold text-slate-900 tracking-tight block leading-tight">Share Hub</span>
-            <span className="text-xs text-emerald-600 font-medium">Chia sẻ thông minh hơn</span>
-          </div>
-        </Link>
-        <div className="space-x-4">
-          <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Log in</Link>
-          <Link to="/login" className="px-5 py-2.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-colors">Get Started</Link>
-        </div>
-      </nav>
+          </Link>
 
-      {/* Page sẽ render ở đây */}
+          <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
+            {NAV_ITEMS.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="transition-colors hover:text-primary"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <ThemeToggler
+              theme={theme as ThemeSelection}
+              resolvedTheme={(resolvedTheme ?? 'light') as Resolved}
+              setTheme={setTheme}
+              direction='btt'
+            >
+              {({ effective, toggleTheme }) => {
+                const nextTheme = effective === 'dark' ? 'light' : 'dark'
+
+                return (
+                  <button
+                    type='button'
+                    onClick={() => toggleTheme(nextTheme)}
+                    className='relative flex size-9 items-center justify-center rounded-full transition-colors'
+                    aria-label='Toggle theme'
+                  >
+                    {effective === 'dark' ? <Moon className='size-4' /> : <Sun className='size-4' />}
+                  </button>
+                )
+              }}
+            </ThemeToggler>
+
+            {isAuthenticated ? (
+              <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
+                Đăng xuất
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
+                  <Link to="/login">Đăng nhập</Link>
+                </Button>
+
+                <Button asChild className="rounded-full px-5">
+                  <Link to="/login">
+                    Bắt đầu ngay
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
       <Outlet />
 
-       {/* Footer */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-12 text-center text-sm text-slate-500">
-        <div className="flex justify-center space-x-6 mb-6">
-          <a href="#" className="hover:text-slate-900 transition-colors">Điều khoản dịch vụ</a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Chính sách bảo mật</a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Tuyên bố miễn trừ</a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Liên hệ</a>
+      <footer className="border-t border-slate-200 py-12 text-center text-sm">
+        <div className="mb-6 flex justify-center space-x-6">
+          <a href="#">Điều khoản dịch vụ</a>
+          <a href="#">Chính sách bảo mật</a>
+          <a href="#">Tuyên bố miễn trừ</a>
+          <a href="#">Liên hệ</a>
         </div>
+
         <p>© 2026 Share Hub. Tất cả các quyền được bảo lưu.</p>
       </footer>
-
     </div>
   );
 }

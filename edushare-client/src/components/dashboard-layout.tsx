@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Sparkles, UserCircle2 } from 'lucide-react'
+import { Bell, Moon, Sun, UserCircle2 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { RoleSidebar, type DashboardRole } from '@/components/role-sidebar'
 import { Sidebar, SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler'
 
 export function DashboardLayout({
   role,
@@ -17,6 +19,7 @@ export function DashboardLayout({
 }) {
   const userName = role === 'admin' ? 'Admin' : role === 'owner' ? 'John Doe' : 'Member'
   const userBalance = role === 'admin' ? '$0.00' : role === 'owner' ? '$120.50' : '$45.20'
+  const { theme, resolvedTheme, setTheme } = useTheme()
 
   return (
     <SidebarProvider>
@@ -24,11 +27,13 @@ export function DashboardLayout({
         <div className='flex h-full flex-col'>
           <div className=' border-sidebar-border p-4'>
             <Link to='/' className='flex items-center gap-3'>
-              <div className='flex size-10 items-center justify-center rounded-xl bg-emerald-500 text-white'>
-                <Sparkles className='size-5' />
-              </div>
+              <img
+                src='/images/logo.jpg'
+                alt='EduShare logo'
+                className='size-10 rounded-xl object-cover shadow-sm'
+              />
               <div>
-                <p className='text-sm font-semibold'>Share Hub</p>
+                <p className='text-sm font-semibold'>EduShare</p>
                 <p className='text-xs text-sidebar-foreground/70'>Chia sẻ thông minh</p>
               </div>
             </Link>
@@ -43,21 +48,42 @@ export function DashboardLayout({
           <div className='flex items-center gap-4'>
             <SidebarTrigger />
             <div>
-              <h1 className='text-base font-semibold text-slate-900'>{title}</h1>
-              <p className='text-sm text-slate-500'>{description}</p>
+              <h1 className='text-base font-semibold '>{title}</h1>
+              <p className='text-sm '>{description}</p>
             </div>
           </div>
           <div className='flex items-center gap-4'>
+            <ThemeToggler
+              theme={theme as ThemeSelection}
+              resolvedTheme={(resolvedTheme ?? 'light') as Resolved}
+              setTheme={setTheme}
+              direction='btt'
+            >
+              {({ effective, toggleTheme }) => {
+                const nextTheme = effective === 'dark' ? 'light' : 'dark'
+
+                return (
+                  <button
+                    type='button'
+                    onClick={() => toggleTheme(nextTheme)}
+                    className='relative flex size-9 items-center justify-center rounded-full transition-colors'
+                    aria-label='Toggle theme'
+                  >
+                    {effective === 'dark' ? <Moon className='size-4' /> : <Sun className='size-4' />}
+                  </button>
+                )
+              }}
+            </ThemeToggler>
             <button
               type='button'
-              className='relative flex size-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700'
+              className='relative flex size-9 items-center justify-center rounded-full transition-colors '
               aria-label='Notifications'
             >
               <Bell className='size-4' />
               <span className='absolute right-2 top-2 size-2 rounded-full bg-rose-500 ring-2 ring-white' />
             </button>
             <div className='text-right leading-tight'>
-              <p className='text-sm font-medium text-slate-900'>{userName}</p>
+              <p className='text-sm font-medium'>{userName}</p>
               <p className='text-xs text-emerald-600'>{userBalance}</p>
             </div>
             <button
@@ -69,7 +95,7 @@ export function DashboardLayout({
             </button>
           </div>
         </header>
-        <main className='flex-1 bg-[#f0f9ff] p-6'>{children}</main>
+        <main className='flex-1  p-6'>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

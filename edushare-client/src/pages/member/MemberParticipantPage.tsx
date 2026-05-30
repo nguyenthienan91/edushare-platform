@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Search,
   Filter,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Listing {
   id: string;
@@ -26,6 +28,10 @@ export default function MemberParticipantPage() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showVipPopup, setShowVipPopup] = useState(false);
 
   const [listings, setListings] = useState<Listing[]>([
     {
@@ -70,6 +76,10 @@ export default function MemberParticipantPage() {
   );
 
   const handleJoin = (listing: Listing) => {
+    if (user?.role?.toLowerCase() === 'guest') {
+      setShowVipPopup(true);
+      return;
+    }
     setSelectedListing(listing);
     setShowPopup(true);
     setAcceptedTerms(false);
@@ -100,11 +110,11 @@ export default function MemberParticipantPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold ">
             Thị trường đăng ký
           </h1>
 
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm  mt-1">
             Tìm và tham gia nhóm chia sẻ tài khoản an toàn
           </p>
         </div>
@@ -123,7 +133,7 @@ export default function MemberParticipantPage() {
             />
           </div>
 
-          <button className="px-3 py-2 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 flex items-center gap-2">
+          <button className="px-3 py-2 border border-slate-200 rounded-lg  hover: flex items-center gap-2">
             <Filter className="w-4 h-4" />
             <span className="hidden sm:block text-sm">Bộ lọc</span>
           </button>
@@ -140,7 +150,7 @@ export default function MemberParticipantPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className=" rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
             >
               <div className="p-5">
                 {/* Top */}
@@ -158,17 +168,17 @@ export default function MemberParticipantPage() {
                 {/* Info */}
                 <div className="space-y-2 text-sm mb-4">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Loại</span>
+                    <span className="">Loại</span>
                     <span>{listing.type}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Kỳ hạn</span>
+                    <span className="">Kỳ hạn</span>
                     <span>{listing.duration}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Slot</span>
+                    <span className="">Slot</span>
                     <span className="text-emerald-600 font-semibold">
                       {listing.availableSlots}/{listing.totalSlots}
                     </span>
@@ -176,7 +186,7 @@ export default function MemberParticipantPage() {
                 </div>
 
                 {/* Rules */}
-                <div className="bg-slate-50 p-3 rounded-lg text-xs text-slate-600">
+                <div className=" p-3 rounded-lg text-xs ">
                   <span className="font-semibold block mb-1">
                     Quy tắc:
                   </span>
@@ -186,9 +196,9 @@ export default function MemberParticipantPage() {
               </div>
 
               {/* Bottom */}
-              <div className="border-t border-slate-100 p-4 flex items-center justify-between bg-slate-50">
+              <div className="border-t border-slate-100 p-4 flex items-center justify-between ">
                 <div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs ">
                     Giá mỗi slot
                   </div>
 
@@ -222,7 +232,7 @@ export default function MemberParticipantPage() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className="bg-white rounded-2xl w-full max-w-md overflow-hidden"
+              className=" rounded-2xl w-full max-w-md overflow-hidden"
             >
               {/* Header */}
               <div className="bg-amber-50 p-6 text-center border-b border-amber-100">
@@ -237,7 +247,7 @@ export default function MemberParticipantPage() {
 
               {/* Body */}
               <div className="p-6">
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 mb-5">
+                <div className=" border border-slate-200 rounded-lg p-4 text-sm  mb-5">
                   Share Hub chỉ là nền tảng hỗ trợ chia sẻ chi phí,
                   không bán tài khoản.
                 </div>
@@ -253,7 +263,7 @@ export default function MemberParticipantPage() {
                     className="mt-1"
                   />
 
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm ">
                     Tôi đồng ý với điều khoản sử dụng.
                   </p>
                 </div>
@@ -274,6 +284,54 @@ export default function MemberParticipantPage() {
                   >
                     Thanh toán
                     <ShieldCheck className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* VIP Popup */}
+      <AnimatePresence>
+        {showVipPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setShowVipPopup(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <Star className="h-8 w-8" />
+                </div>
+                <h3 className="mb-2 text-2xl font-bold text-slate-900">Nâng cấp gói VIP</h3>
+                <p className="mb-6 text-sm text-slate-600">
+                  Tính năng này chỉ dành cho thành viên VIP. Bạn cần nâng cấp lên gói VIP (29.000đ) để có thể tham gia vào các nhóm chia sẻ tài khoản.
+                </p>
+                <div className="flex w-full flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      setShowVipPopup(false);
+                      navigate('/dashboard/wallet');
+                    }}
+                    className="flex w-full items-center justify-center rounded-2xl bg-emerald-500 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                  >
+                    Nâng cấp VIP ngay
+                  </button>
+                  <button
+                    onClick={() => setShowVipPopup(false)}
+                    className="flex w-full items-center justify-center rounded-2xl border border-slate-200 py-3 text-sm font-semibold transition hover:bg-slate-50"
+                  >
+                    Để sau
                   </button>
                 </div>
               </div>
