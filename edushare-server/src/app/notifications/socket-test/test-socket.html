@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Real-time Notification EduShare</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Đài Nghe Thông Báo Real-time</h2>
+    <div id="status" style="color: red; font-weight: bold;">Đang ngắt kết nối...</div>
+    <h3>Danh sách thông báo nhận được:</h3>
+    <ul id="notifications"></ul>
+
+    <script>
+        const currentUserId = "6a1522e0c680892e37830e4c"; 
+
+        const socket = io('http://localhost:8888', { 
+            query: { userId: currentUserId } 
+        });
+
+        const statusDiv = document.getElementById('status');
+        const list = document.getElementById('notifications');
+
+        socket.on('connect', () => {
+            statusDiv.innerText = "🟢 Đã kết nối Real-time thành công!";
+            statusDiv.style.color = "green";
+        });
+
+        socket.on('new_notification', (data) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<b>[${data.type.toUpperCase()}] ${data.title}</b>: ${data.content} <br><small>Vừa xong</small>`;
+            li.style.marginBottom = "10px";
+            list.insertBefore(li, list.firstChild); // Đẩy thông báo mới nhất lên đầu
+        });
+
+        socket.on('disconnect', () => {
+            statusDiv.innerText = "🔴 Đã ngắt kết nối.";
+            statusDiv.style.color = "red";
+        });
+    </script>
+</body>
+</html>

@@ -4,12 +4,14 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { Notification, NotificationDocument } from './schemas/notification.schema'
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { NotificationsGateway } from './notifications.gateway'
 
 @Injectable()
 export class NotificationsService {
   constructor(
     @InjectModel(Notification.name) private notificationModel: Model<NotificationDocument>,
     private readonly paginationUtil: PaginationUtilService, // Inject class phân trang của bạn
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   /**
@@ -22,7 +24,13 @@ export class NotificationsService {
       content,
       type,
     })
-    return await newNotification.save()
+
+    const savedNotification = await newNotification.save()
+
+    // 2. TRIGGER REAL-TIME KÍCH HOẠT
+    // Chuyển userId về dạng string và đẩy nguyên object thông báo vừa tạo xuống cho Frontend
+    this.notificationsGateway.sendNotificationToUser(userId.toString(), savedNotification)
+    return savedNotification
   }
 
   /**
