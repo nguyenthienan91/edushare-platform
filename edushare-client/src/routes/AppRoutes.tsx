@@ -9,6 +9,8 @@ import AdminUsers from '@/pages/admin/AdminUsers'
 import AdminWithdrawals from '@/pages/admin/AdminWithdrawals'
 import LandingPage from '@/pages/Landingpage'
 import LoginPage from '@/pages/auth/LoginPage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import MemberParticipantPage from '@/pages/member/MemberParticipantPageNew'
 import MemberParticipantOrdersPage from '@/pages/member/MemberParticipantOrdersPage'
 import MemberWalletPage from '@/pages/member/MemberWalletPage'
@@ -74,6 +76,8 @@ export default function AppRoutes() {
       </Route>
 
       <Route path='/login' element={<LoginPage />} />
+      <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+      <Route path='/reset-password' element={<ResetPasswordPage />} />
       <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/overview' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/wallet' element={<Navigate to='/dashboard/wallet' replace />} />

@@ -5,14 +5,14 @@ import {
   Shield,
   CreditCard,
   Globe,
-  Mail,
-  Phone,
   Camera,
   Eye,
   EyeOff,
 } from 'lucide-react';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { AuthService } from '@/services/auth.service';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,11 +39,39 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 export default function MemberSettingsPage() {
-  const [showCurrentPassword, setShowCurrentPassword] =
-    useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [showNewPassword, setShowNewPassword] =
-    useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return toast.error('Vui lòng điền đầy đủ thông tin mật khẩu.');
+    }
+    if (newPassword.length < 8) {
+      return toast.error('Mật khẩu mới phải từ 8 ký tự trở lên.');
+    }
+    if (newPassword !== confirmPassword) {
+      return toast.error('Mật khẩu xác nhận không khớp.');
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const response = await AuthService.changePassword({ oldPassword, newPassword });
+      toast.success(response.message || 'Mật khẩu đã được cập nhật thành công!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi khi đổi mật khẩu.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   // Fake user data
   const user = {
@@ -241,12 +269,10 @@ export default function MemberSettingsPage() {
 
                   <div className="relative">
                     <Input
-                      type={
-                        showCurrentPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showCurrentPassword ? 'text' : 'password'}
                       placeholder="Nhập mật khẩu"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
                     />
 
                     <button
@@ -273,12 +299,10 @@ export default function MemberSettingsPage() {
 
                   <div className="relative">
                     <Input
-                      type={
-                        showNewPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showNewPassword ? 'text' : 'password'}
                       placeholder="Nhập mật khẩu mới"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                     />
 
                     <button
@@ -302,10 +326,21 @@ export default function MemberSettingsPage() {
                 <div>
                   <Label>Xác nhận mật khẩu</Label>
 
-                  <Input
-                    type="password"
-                    placeholder="Nhập lại mật khẩu"
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Nhập lại mật khẩu"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -315,8 +350,8 @@ export default function MemberSettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button>
-                    Cập nhật mật khẩu
+                  <Button onClick={handlePasswordChange} disabled={isChangingPassword}>
+                    {isChangingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
                   </Button>
                 </div>
               </div>

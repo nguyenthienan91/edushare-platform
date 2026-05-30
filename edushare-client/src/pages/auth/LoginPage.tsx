@@ -156,9 +156,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className='text-sm'>
-                  <button type='button' className='font-medium text-emerald-600 hover:text-emerald-500'>
+                  <Link to='/forgot-password' className='font-medium text-emerald-600 hover:text-emerald-500'>
                     Quên mật khẩu?
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}

@@ -20,5 +20,26 @@ export const AuthService = {
     return fetchClient('/auth/logout', {
       method: 'GET'
     })
+  },
+  forgotPassword: async (data: any) => {
+    return fetchClient('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      requireAuth: false
+    })
+  },
+  resetPassword: async (token: string, data: any) => {
+    return fetchClient(`/auth/reset-password?token=${token}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      requireAuth: false
+    })
+  },
+  changePassword: async (data: any) => {
+    return fetchClient('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      requireAuth: true
+    })
   }
 }
