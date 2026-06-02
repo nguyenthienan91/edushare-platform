@@ -317,4 +317,30 @@ export class TransactionsService {
       ...this.paginationUtil.format(transactions),
     }
   }
+
+  async findMyTransactions(userId: string, pagination: { page?: number; itemPerPage?: number }) {
+    const userObjectId = new Types.ObjectId(userId)
+    const filter: any = { senderId: userObjectId }
+
+    const totalItems = await this.transactionModel.countDocuments(filter).exec()
+
+    this.paginationUtil.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems: totalItems,
+    })
+
+    const transactions = await this.transactionModel
+      .find(filter)
+      .select('_id senderId groupId amount status proofUrl createdAt')
+      .sort({ createdAt: -1 })
+      .skip(this.paginationUtil.skip)
+      .limit(this.paginationUtil.itemPerPage)
+      .exec()
+
+    return {
+      status: 'success',
+      ...this.paginationUtil.format(transactions),
+    }
+  }
 }

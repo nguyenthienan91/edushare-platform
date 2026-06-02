@@ -22,6 +22,8 @@ import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.s
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { JoinRequestDto } from './dto/join-request.dto'
 import { AdminTransactionQueryDto } from './dto/admin-transaction-query.dto'
+import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('transactions')
 @UseGuards(AuthGuard)
@@ -96,6 +98,14 @@ export class TransactionsController {
   async ownerApproveMember(@Param('id') transactionId: string, @Req() req: any) {
     const ownerId = req.user.userID // Lấy ID chủ nhóm từ Token
     return await this.transactionsService.approveJoinRequest(transactionId, ownerId)
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Xem danh sách giao dịch do user đang đăng nhập tạo' })
+  @ApiResponse({ status: 200, description: 'Lấy danh sách thành công.' })
+  async getMyTransactions(@Req() req: any, @Query(new ParseParamsPaginationPipe()) pagination: Pagination) {
+    const userId = req.user.userID
+    return await this.transactionsService.findMyTransactions(userId, pagination)
   }
 
   @Get()

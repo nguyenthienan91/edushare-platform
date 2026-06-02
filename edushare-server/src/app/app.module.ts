@@ -21,7 +21,7 @@ import { DisputesModule } from './disputes/disputes.module'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

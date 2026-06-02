@@ -27,6 +27,36 @@ export class WalletsService {
     return wallet.save()
   }
 
+  async getWalletByUserId(userId: string) {
+    const userObjectId = new Types.ObjectId(userId)
+    let wallet = await this.findByUserId(userObjectId)
+    if (!wallet) {
+      wallet = await this.createWallet(userObjectId)
+    }
+
+    const [topupResult, withdrawalResult] = await Promise.all([
+      this.topupModel
+        .aggregate<{
+          total: number
+        }>([{ $match: { userId: userObjectId, status: 'completed' } }, { $group: { _id: null, total: { $sum: '$amount' } } }])
+        .exec(),
+      this.withdrawalModel
+        .aggregate<{
+          total: number
+        }>([{ $match: { userId: userObjectId, status: 'approved' } }, { $group: { _id: null, total: { $sum: '$amount' } } }])
+        .exec(),
+    ])
+
+    const totalTopup = topupResult[0]?.total || 0
+    const totalWithdrawal = withdrawalResult[0]?.total || 0
+
+    return {
+      ...wallet.toObject({ virtuals: true }),
+      totalTopup,
+      totalWithdrawal,
+    }
+  }
+
   // Hàm khởi tạo lệnh nạp tiền (Giao cho PayOS Module gọi)
   async createTopupOrder(userId: string, orderCode: number, amount: number) {
     return await this.topupModel.create({

@@ -1,5 +1,5 @@
-import { createZodDto } from 'nestjs-zod';
-import z from 'zod';
+import { createZodDto } from 'nestjs-zod'
+import z from 'zod'
 
 export enum PagingDefault {
   ITEM_PER_PAGE = 10,
