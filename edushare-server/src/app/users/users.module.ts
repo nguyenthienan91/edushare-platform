@@ -7,6 +7,7 @@ import { User, UserSchema } from './entities/user.entity'
 import { NotificationsModule } from '../notifications/notification.module'
 import { WalletsModule } from '../wallets/wallets.module'
 import { AuthModule } from '../auth/auth.module'
+import { GroupsModule } from '../groups/groups.module'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from '../auth/auth.module'
     forwardRef(() => NotificationsModule),
     forwardRef(() => AuthModule),
     forwardRef(() => WalletsModule),
+    forwardRef(() => GroupsModule),
   ],
   controllers: [UsersController, AdminUsersController],
   providers: [UsersService],

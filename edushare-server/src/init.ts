@@ -61,7 +61,9 @@ const initApp = (app: INestApplication) => {
   const { APP_PREFIX = '/api', FE_URL } = process.env
   app.setGlobalPrefix(APP_PREFIX)
   app.enableCors({
-    origin: FE_URL ? FE_URL : ['*'],
+    origin: FE_URL
+      ? FE_URL.split(',').map((url) => url.trim().replace(/\/$/, ''))
+      : '*',
   })
   // app.enableVersioning({
   //   type: VersioningType.HEADER,

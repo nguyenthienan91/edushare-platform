@@ -510,4 +510,10 @@ export class GroupsService {
       data: updatedGroup,
     }
   }
+
+  async getDashboardStats(ownerId: string): Promise<{ totalMembers: number }> {
+    const groups = await this.groupModel.find({ ownerId } as any).select('members').exec()
+    const totalMembers = groups.reduce((sum, group) => sum + (group.members?.length || 0), 0)
+    return { totalMembers }
+  }
 }

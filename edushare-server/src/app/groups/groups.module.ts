@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { GroupsService } from './groups.service'
 import { GroupsController } from './groups.controller'
 import { AdminGroupsController } from './admin-groups.controller'
@@ -8,7 +8,11 @@ import { UsersModule } from '../users/users.module'
 import { PaginationUtilModule } from '../../common/utils/pagination-util/pagination-util.module'
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]), UsersModule, PaginationUtilModule],
+  imports: [
+    MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
+    forwardRef(() => UsersModule),
+    PaginationUtilModule,
+  ],
   controllers: [GroupsController, AdminGroupsController],
   providers: [GroupsService],
   exports: [GroupsService, MongooseModule],

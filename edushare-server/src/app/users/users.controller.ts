@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Inject, forwardRef } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -8,11 +8,16 @@ import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
 import { AuthGuard } from '../auth/auth.guard'
 import { ApiOperation } from '@nestjs/swagger'
+import { GroupsService } from '../groups/groups.service'
 
 @Controller('users')
 @Roles(UserRole.ADMIN)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(forwardRef(() => GroupsService))
+    private readonly groupsService: GroupsService,
+  ) {}
 
   @Patch('me')
   @Roles()
@@ -23,7 +28,13 @@ export class UsersController {
   @Get('me')
   @Roles()
   getMe(@User() user: UserInfo) {
-    return this.usersService.findById(user.userID)
+    return this.usersService.findByIdWithBalance(user.userID)
+  }
+
+  @Get('me/dashboard-stats')
+  @Roles()
+  getMeDashboardStats(@User() user: UserInfo) {
+    return this.groupsService.getDashboardStats(user.userID)
   }
 
   @Post('upgrade-vip')
