@@ -135,45 +135,45 @@ export default function MemberCreateGroup() {
     )
   }
 
-  if (!isVip) {
-    return (
-      <div className='flex items-center justify-center py-10 px-4'>
-        <Card className='max-w-md w-full rounded-3xl border-slate-200/80 shadow-lg text-center p-8 bg-white relative overflow-hidden'>
-          <div className='absolute -right-16 -top-16 size-36 rounded-full bg-indigo-50/50' />
-          <div className='absolute -left-16 -bottom-16 size-36 rounded-full bg-indigo-50/30' />
+  // if (!isVip) {
+  //   return (
+  //     <div className='flex items-center justify-center py-10 px-4'>
+  //       <Card className='max-w-md w-full rounded-3xl border-slate-200/80 shadow-lg text-center p-8  relative overflow-hidden'>
+  //         <div className='absolute -right-16 -top-16 size-36 rounded-full bg-indigo-50/50' />
+  //         <div className='absolute -left-16 -bottom-16 size-36 rounded-full bg-indigo-50/30' />
           
-          <div className='relative flex flex-col items-center gap-6'>
-            <div className='flex size-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm'>
-              <Lock className='size-8' />
-            </div>
+  //         <div className='relative flex flex-col items-center gap-6'>
+  //           <div className='flex size-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm'>
+  //             <Lock className='size-8' />
+  //           </div>
             
-            <div className='space-y-2'>
-              <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
-              <p className='text-sm text-slate-500 leading-relaxed'>
-                Tính năng tạo nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
-              </p>
-            </div>
+  //           <div className='space-y-2'>
+  //             <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
+  //             <p className='text-sm text-slate-500 leading-relaxed'>
+  //               Tính năng tạo nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
+  //             </p>
+  //           </div>
 
-            <div className='w-full pt-4 space-y-3 relative z-10'>
-              <Button 
-                onClick={() => navigate('/dashboard/wallet')}
-                className='w-full rounded-full bg-indigo-600 h-12 text-white hover:bg-indigo-700 font-medium'
-              >
-                Nâng cấp VIP (29,000đ/tháng)
-              </Button>
-              <Button 
-                onClick={() => navigate('/dashboard/overview')}
-                variant='outline'
-                className='w-full rounded-full h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
-              >
-                Quay lại
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    )
-  }
+  //           <div className='w-full pt-4 space-y-3 relative z-10'>
+  //             <Button 
+  //               onClick={() => navigate('/dashboard/wallet')}
+  //               className='w-full rounded-full bg-indigo-600 h-12 text-white hover:bg-indigo-700 font-medium'
+  //             >
+  //               Nâng cấp VIP (29,000đ/tháng)
+  //             </Button>
+  //             <Button 
+  //               onClick={() => navigate('/dashboard/overview')}
+  //               variant='outline'
+  //               className='w-full rounded-full h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
+  //             >
+  //               Quay lại
+  //             </Button>
+  //           </div>
+  //         </div>
+  //       </Card>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className='space-y-6 '>
@@ -257,7 +257,7 @@ export default function MemberCreateGroup() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className='w-auto p-0 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-950 dark:text-slate-50 transition-none shadow-xl' 
+                  className='w-auto p-0 rounded-2xl  dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-950 dark:text-slate-50 transition-none shadow-xl' 
                   align='start'
                 >
                   <Calendar
