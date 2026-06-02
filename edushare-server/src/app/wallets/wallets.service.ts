@@ -38,12 +38,18 @@ export class WalletsService {
       this.topupModel
         .aggregate<{
           total: number
-        }>([{ $match: { userId: userObjectId, status: 'completed' } }, { $group: { _id: null, total: { $sum: '$amount' } } }])
+        }>([
+          { $match: { userId: userObjectId, status: 'completed' } },
+          { $group: { _id: null, total: { $sum: '$amount' } } },
+        ])
         .exec(),
       this.withdrawalModel
         .aggregate<{
           total: number
-        }>([{ $match: { userId: userObjectId, status: 'approved' } }, { $group: { _id: null, total: { $sum: '$amount' } } }])
+        }>([
+          { $match: { userId: userObjectId, status: 'approved' } },
+          { $group: { _id: null, total: { $sum: '$amount' } } },
+        ])
         .exec(),
     ])
 
