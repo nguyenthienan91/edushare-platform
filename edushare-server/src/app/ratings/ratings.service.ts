@@ -78,4 +78,27 @@ export class RatingsService {
       data: createdRating,
     }
   }
+
+  async findAll(query: { senderId?: string; receiverId?: string }) {
+    const filter: any = {}
+    if (query.senderId) {
+      filter.senderId = new Types.ObjectId(query.senderId)
+    }
+    if (query.receiverId) {
+      filter.receiverId = new Types.ObjectId(query.receiverId)
+    }
+    return await this.ratingModel
+      .find(filter)
+      .populate('senderId', 'username email avatar')
+      .populate('receiverId', 'username email avatar')
+      .populate({
+        path: 'transactionId',
+        populate: {
+          path: 'groupId',
+          select: 'name category status expiredAt',
+        },
+      })
+      .sort({ createdAt: -1 })
+      .exec()
+  }
 }

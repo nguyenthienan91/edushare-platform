@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query } from '@nestjs/common'
 import { RatingsService } from './ratings.service'
 import { CreateRatingDto } from './dto/create-rating.dto'
 import { User } from '../../common/decorators/user.decorator'
@@ -14,5 +14,11 @@ export class RatingsController {
   @Roles(UserRole.MEMBER, UserRole.ADMIN)
   create(@Body() createRatingDto: CreateRatingDto, @User() user: UserInfo) {
     return this.ratingsService.create(user.userID, createRatingDto)
+  }
+
+  @Get()
+  @Roles(UserRole.MEMBER, UserRole.ADMIN)
+  findAll(@Query() query: { senderId?: string; receiverId?: string }) {
+    return this.ratingsService.findAll(query)
   }
 }

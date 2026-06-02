@@ -476,7 +476,6 @@ export default function MemberWalletPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -516,7 +515,6 @@ export default function MemberWalletPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
         </CardContent>
       </Card>
     </div>
