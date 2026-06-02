@@ -17,6 +17,7 @@ import { RatingsModule } from './ratings/ratings.module'
 import { NotificationsModule } from './notifications/notification.module'
 import { DashboardModule } from './dashboard/dashboard.module'
 import { DisputesModule } from './disputes/disputes.module'
+import { BankAccountsModule } from './bank-accounts/bank-accounts.module'
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { DisputesModule } from './disputes/disputes.module'
     NotificationsModule,
     DashboardModule,
     DisputesModule,
+    BankAccountsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: RolesGuard }],
