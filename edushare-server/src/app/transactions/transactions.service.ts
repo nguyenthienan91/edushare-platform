@@ -30,6 +30,14 @@ export class TransactionsService {
     return this.transactionModel.find().exec()
   }
 
+  async findMyOrders(userId: string): Promise<TransactionDocument[]> {
+    return this.transactionModel
+      .find({ senderId: new Types.ObjectId(userId) })
+      .populate('groupId', 'name category ownerId')
+      .sort({ createdAt: -1 })
+      .exec()
+  }
+
   async requestJoinGroup(userId: string, groupId: string) {
     // Gate check: Kiểm tra trước khi mở session để tránh tạo transaction không cần thiết
     const user = await this.userModel.findById(userId).exec()

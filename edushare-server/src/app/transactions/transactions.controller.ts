@@ -98,6 +98,12 @@ export class TransactionsController {
     return await this.transactionsService.approveJoinRequest(transactionId, ownerId)
   }
 
+  @Get('my-orders')
+  async getMyOrders(@Req() req: any) {
+    const userId = req.user.userID
+    return await this.transactionsService.findMyOrders(userId)
+  }
+
   @Get()
   @ApiOperation({ summary: '[ADMIN] Xem danh sách toàn bộ giao dịch và minh chứng ảnh' })
   @ApiResponse({ status: 200, description: 'Lấy danh sách thành công.' })
