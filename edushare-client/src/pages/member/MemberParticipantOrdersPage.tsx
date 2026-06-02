@@ -1,5 +1,7 @@
 import { useEffect, useState, type ComponentType, useMemo } from 'react'
 import {
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   FileText,
   ImageIcon,
@@ -48,12 +50,19 @@ interface PopulatedGroup {
 interface Transaction {
   _id: string
   senderId: string
-  groupId: PopulatedGroup | null
+  groupId: PopulatedGroup | string | null
   amount: number
   status: EscrowStatus
   proofUrl: string | null
   expiresAt: string
   createdAt: string
+}
+
+interface TransactionsResponse {
+  status: string
+  list: Transaction[]
+  totalPages: number
+  totalItems: number
 }
 
 // ─── Status map using switch-case ─────────────────────────────────────────────
@@ -132,12 +141,19 @@ function shortId(id: string) {
   return `#${id.slice(-8).toUpperCase()}`
 }
 
-function getOwnerName(groupId: PopulatedGroup | null) {
-  if (!groupId) return 'N/A'
+function getOwnerName(groupId: PopulatedGroup | string | null) {
+  if (!groupId || typeof groupId === 'string') return 'N/A'
   if (typeof groupId.ownerId === 'object' && groupId.ownerId !== null) {
     return groupId.ownerId.displayName || groupId.ownerId.username || 'N/A'
   }
   return 'N/A'
+}
+
+function getGroupInfo(groupId: PopulatedGroup | string | null) {
+  if (!groupId || typeof groupId === 'string') {
+    return { name: 'N/A', category: '', ownerId: null }
+  }
+  return groupId
 }
 
 // ─── Step card ────────────────────────────────────────────────────────────────
@@ -242,15 +258,22 @@ export default function MemberParticipantOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Transaction | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [confirmSuccess, setConfirmSuccess] = useState(false)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+  const itemPerPage = 10
 
-  // Fetch orders
-  const fetchOrders = async () => {
+  // Fetch orders using /transactions/me
+  const fetchOrders = async (currentPage = page) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetchClient('/transactions/my-orders')
-      const list: Transaction[] = Array.isArray(res) ? res : (res?.data ?? [])
-      setOrders(list)
+      const res: TransactionsResponse = await fetchClient(
+        `/transactions/me?page=${currentPage}&itemPerPage=${itemPerPage}`
+      )
+      setOrders(res.list ?? [])
+      setTotalPages(res.totalPages ?? 1)
+      setTotalItems(res.totalItems ?? 0)
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách đơn hàng.')
     } finally {
@@ -262,7 +285,7 @@ export default function MemberParticipantOrdersPage() {
     if (user?.userID) {
       fetchOrders()
     }
-  }, [user?.userID])
+  }, [user?.userID, page])
 
   // Confirm transaction (member xác nhận đã nhận được quyền truy cập)
   const handleConfirm = async () => {
@@ -274,10 +297,13 @@ export default function MemberParticipantOrdersPage() {
       toast.success('Xác nhận đã nhận quyền truy cập thành công')
       
       // Refresh list
-      const res = await fetchClient('/transactions/my-orders')
-      const list: Transaction[] = Array.isArray(res) ? res : (res?.data ?? [])
-      setOrders(list)
-      const updated = list.find((t) => t._id === selectedOrder._id)
+      const res: TransactionsResponse = await fetchClient(
+        `/transactions/me?page=${page}&itemPerPage=${itemPerPage}`
+      )
+      setOrders(res.list ?? [])
+      setTotalPages(res.totalPages ?? 1)
+      setTotalItems(res.totalItems ?? 0)
+      const updated = (res.list ?? []).find((t) => t._id === selectedOrder._id)
       if (updated) setSelectedOrder(updated)
     } catch (err: any) {
       toast.error(err.message || 'Xác nhận thất bại.')
@@ -315,7 +341,7 @@ export default function MemberParticipantOrdersPage() {
           </Badge>
           <Badge variant='outline' className='rounded-full px-4 py-2 text-sm font-semibold'>
             <Clock3 className='h-4 w-4 mr-2 text-sky-600' />
-            Tổng: {orders.length} đơn hàng
+            Tổng: {totalItems} đơn hàng
           </Badge>
         </div>
       )}
@@ -363,8 +389,9 @@ export default function MemberParticipantOrdersPage() {
                   {orders.map((order) => {
                     const meta = getStatusMeta(order.status)
                     const ActionIcon = meta.actionIcon
-                    const groupName = order.groupId?.name ?? 'N/A'
-                    const category = order.groupId?.category ?? ''
+                    const groupInfo = getGroupInfo(order.groupId)
+                    const groupName = groupInfo.name
+                    const category = groupInfo.category
                     const ownerName = getOwnerName(order.groupId)
 
                     return (
@@ -418,6 +445,37 @@ export default function MemberParticipantOrdersPage() {
                 </TableBody>
               </Table>
           </CardContent>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className='flex items-center justify-between border-t px-6 py-3'>
+              <p className='text-sm text-muted-foreground'>
+                Trang {page} / {totalPages} · Tổng {totalItems} đơn hàng
+              </p>
+              <div className='flex items-center gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='rounded-full'
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className='size-4' />
+                  Trước
+                </Button>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='rounded-full'
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Sau
+                  <ChevronRight className='size-4' />
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 
@@ -426,8 +484,9 @@ export default function MemberParticipantOrdersPage() {
         <DialogContent className='sm:max-w-[720px]'>
           {selectedOrder && (() => {
             const meta = getStatusMeta(selectedOrder.status)
-            const groupName = selectedOrder.groupId?.name ?? 'N/A'
-            const category = selectedOrder.groupId?.category ?? ''
+            const selectedGroupInfo = getGroupInfo(selectedOrder.groupId)
+            const groupName = selectedGroupInfo.name
+            const category = selectedGroupInfo.category
 
             return (
               <>

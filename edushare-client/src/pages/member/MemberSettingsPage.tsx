@@ -4,15 +4,17 @@ import {
   Bell,
   Shield,
   CreditCard,
-  Globe,
   Camera,
   Eye,
   EyeOff,
+  Loader2,
+  Crown,
 } from 'lucide-react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
+import { fetchClient } from '@/utils/fetchClient';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import {
   Select,
@@ -38,7 +42,33 @@ import {
 
 import { Separator } from '@/components/ui/separator';
 
+// ─── Types ──────────────────────────────────────────────────────────────────────
+
+interface UserProfile {
+  _id: string
+  email: string
+  displayName: string
+  avatar: string | null
+  phoneNumber: string | null
+  identityNumber: string | null
+  gender: 'male' | 'female' | 'other' | null
+  dateOfBirth: string | null
+  address: string | null
+  role: string
+  isActive: boolean
+  isVerified: boolean
+  trustScore: number
+  membershipStartedAt: string | null
+  membershipExpiresAt: string | null
+  isSubscriptionActive: boolean
+  lastPaymentAt: string | null
+  balance: number
+  createdAt: string
+  updatedAt: string
+}
+
 export default function MemberSettingsPage() {
+  // ─── Password state ─────────────────────────────────────────────────
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -48,6 +78,94 @@ export default function MemberSettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // ─── Profile state ──────────────────────────────────────────────────
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [upgradingVip, setUpgradingVip] = useState(false);
+
+  // Editable form fields
+  const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [gender, setGender] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [address, setAddress] = useState('');
+
+  // ─── Notifications ──────────────────────────────────────────────────
+  const [notifications, setNotifications] = useState({
+    emailOrders: true,
+    emailDisputes: true,
+    emailReviews: false,
+    emailPromotions: true,
+    pushOrders: true,
+    pushMessages: true,
+    smsImportant: false,
+  });
+
+  // ─── Privacy ────────────────────────────────────────────────────────
+  const [privacy, setPrivacy] = useState({
+    showProfile: true,
+    showReviews: true,
+    showRating: true,
+    twoFactorAuth: false,
+  });
+
+  // ─── Fetch profile from API ─────────────────────────────────────────
+  const fetchProfile = async () => {
+    setLoadingProfile(true);
+    try {
+      const res = await fetchClient('/users/me');
+      setProfile(res);
+      // Populate form fields
+      setDisplayName(res.displayName || '');
+      setPhoneNumber(res.phoneNumber || '');
+      setGender(res.gender || '');
+      setDateOfBirth(res.dateOfBirth ? res.dateOfBirth.split('T')[0] : '');
+      setAddress(res.address || '');
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      toast.error('Không thể tải thông tin tài khoản.');
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // ─── Save profile ───────────────────────────────────────────────────
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const body: Record<string, any> = { displayName, phoneNumber, address };
+      if (gender) body.gender = gender;
+      if (dateOfBirth) body.dateOfBirth = new Date(dateOfBirth).toISOString();
+
+      const res = await fetchClient('/users/me', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+      setProfile((prev) => (prev ? { ...prev, ...res } : prev));
+      toast.success('Cập nhật hồ sơ thành công!');
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi khi cập nhật hồ sơ.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  // ─── Reset form to original values ──────────────────────────────────
+  const handleCancelProfile = () => {
+    if (!profile) return;
+    setDisplayName(profile.displayName || '');
+    setPhoneNumber(profile.phoneNumber || '');
+    setGender(profile.gender || '');
+    setDateOfBirth(profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : '');
+    setAddress(profile.address || '');
+  };
+
+  // ─── Change password ────────────────────────────────────────────────
   const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       return toast.error('Vui lòng điền đầy đủ thông tin mật khẩu.');
@@ -73,31 +191,51 @@ export default function MemberSettingsPage() {
     }
   };
 
-  // Fake user data
-  const user = {
-    name: 'Nguyễn Văn A',
-    email: 'vana@gmail.com',
-    walletBalance: 250000,
+  // ─── Upgrade VIP ────────────────────────────────────────────────────
+  const handleUpgradeVip = async () => {
+    setUpgradingVip(true);
+    try {
+      const res = await fetchClient('/users/upgrade-vip', { method: 'POST' });
+      toast.success(res.message || 'Nâng cấp VIP thành công!');
+      // Refresh profile to get updated role + balance
+      await fetchProfile();
+    } catch (error: any) {
+      toast.error(error.message || 'Không thể nâng cấp VIP. Kiểm tra số dư ví.');
+    } finally {
+      setUpgradingVip(false);
+    }
   };
 
-  // Notifications
-  const [notifications, setNotifications] = useState({
-    emailOrders: true,
-    emailDisputes: true,
-    emailReviews: false,
-    emailPromotions: true,
-    pushOrders: true,
-    pushMessages: true,
-    smsImportant: false,
-  });
+  // ─── Helpers ────────────────────────────────────────────────────────
+  const initials = (displayName || 'U')
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
-  // Privacy
-  const [privacy, setPrivacy] = useState({
-    showProfile: true,
-    showReviews: true,
-    showRating: true,
-    twoFactorAuth: false,
-  });
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+
+  const formatDate = (iso: string | null) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const isVip = profile?.isSubscriptionActive && profile?.role !== 'guest';
+
+  // ─── Loading skeleton ──────────────────────────────────────────────
+  if (loadingProfile) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -151,23 +289,43 @@ export default function MemberSettingsPage() {
             {/* Avatar */}
             <div className="flex items-center gap-5 border-b pb-6 mb-6">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-700">
-                  {user.name.charAt(0)}
-                </div>
+                <Avatar className="size-20 border text-2xl">
+                  {profile?.avatar && <AvatarImage src={profile.avatar} alt={displayName} />}
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
 
-                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full  border flex items-center justify-center">
+                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full  border flex items-center justify-center bg-background">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
 
               <div>
-                <h3 className="font-semibold text-lg">
-                  {user.name}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-lg">
+                    {profile?.displayName || 'Chưa đặt tên'}
+                  </h3>
+                  {isVip && (
+                    <Badge className="rounded-full bg-amber-500/10 text-amber-600 border-amber-500/20">
+                      <Crown className="size-3 mr-1" />
+                      VIP
+                    </Badge>
+                  )}
+                </div>
 
-                <p className="">
-                  {user.email}
+                <p className="text-muted-foreground">
+                  {profile?.email}
                 </p>
+
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="outline" className="rounded-full text-xs">
+                    {profile?.role === 'admin' ? 'Admin' : profile?.role === 'member' ? 'Member' : profile?.role === 'owner' ? 'Owner' : 'Guest'}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    Trust Score: {profile?.trustScore?.toFixed(1) ?? '5.0'}
+                  </span>
+                </div>
 
                 <Button
                   variant="outline"
@@ -181,72 +339,73 @@ export default function MemberSettingsPage() {
 
             {/* Form */}
             <div className="space-y-4">
+              <div>
+                <Label>Tên hiển thị</Label>
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Nhập tên hiển thị"
+                />
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Họ</Label>
-                  <Input defaultValue="Nguyễn" />
+                  <Label>Email</Label>
+                  <Input value={profile?.email || ''} disabled className="bg-muted" />
                 </div>
 
                 <div>
-                  <Label>Tên</Label>
-                  <Input defaultValue="Văn A" />
+                  <Label>Số điện thoại</Label>
+                  <Input
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+84 xxx xxx xxx"
+                  />
                 </div>
               </div>
 
-              <div>
-                <Label>Email</Label>
-                <Input defaultValue={user.email} />
-              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Giới tính</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn giới tính" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Nam</SelectItem>
+                      <SelectItem value="female">Nữ</SelectItem>
+                      <SelectItem value="other">Khác</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div>
-                <Label>Số điện thoại</Label>
-                <Input placeholder="+84 xxx xxx xxx" />
+                <div>
+                  <Label>Ngày sinh</Label>
+                  <Input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div>
                 <Label>Địa chỉ</Label>
                 <Textarea
                   rows={3}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
                   placeholder="Nhập địa chỉ"
                 />
               </div>
 
-              <div>
-                <Label>Ngôn ngữ</Label>
-
-                <Select defaultValue="vi">
-                  <SelectTrigger>
-                    <Globe className="w-4 h-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="vi">
-                      Tiếng Việt
-                    </SelectItem>
-
-                    <SelectItem value="en">
-                      English
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Giới thiệu</Label>
-
-                <Textarea
-                  rows={4}
-                  defaultValue="Tôi là người dùng đáng tin cậy."
-                />
-              </div>
-
               <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleCancelProfile}>
                   Hủy
                 </Button>
 
-                <Button>
+                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                  {savingProfile && <Loader2 className="size-4 mr-2 animate-spin" />}
                   Lưu thay đổi
                 </Button>
               </div>
@@ -574,6 +733,7 @@ export default function MemberSettingsPage() {
         {/* PAYMENT */}
         <TabsContent value="payment">
           <div className="space-y-6">
+            {/* Wallet & Balance */}
             <Card className="p-6">
               <h2 className="font-semibold text-xl mb-6">
                 Thanh toán
@@ -587,15 +747,11 @@ export default function MemberSettingsPage() {
 
                   <div>
                     <p className="font-medium">
-                      Ví ShareHub
+                      Ví EduShare
                     </p>
 
-                    <p className="text-sm ">
-                      Số dư:{' '}
-                      {user.walletBalance.toLocaleString(
-                        'vi-VN'
-                      )}{' '}
-                      ₫
+                    <p className="text-sm font-semibold text-emerald-700">
+                      Số dư: {formatCurrency(profile?.balance ?? 0)}
                     </p>
                   </div>
                 </div>
@@ -612,6 +768,75 @@ export default function MemberSettingsPage() {
                 <CreditCard className="w-4 h-4 mr-2" />
                 Thêm phương thức thanh toán
               </Button>
+            </Card>
+
+            {/* VIP Subscription */}
+            <Card className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="font-semibold text-xl flex items-center gap-2">
+                    <Crown className="size-5 text-amber-500" />
+                    Gói VIP Member
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Nâng cấp tài khoản để tham gia các nhóm dùng chung
+                  </p>
+                </div>
+                {isVip && (
+                  <Badge className="rounded-full bg-amber-500/10 text-amber-600 border-amber-500/20">
+                    Đang hoạt động
+                  </Badge>
+                )}
+              </div>
+
+              {isVip ? (
+                <div className="space-y-3 rounded-lg border p-4 bg-secondary/20">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Trạng thái</span>
+                    <span className="font-semibold text-emerald-600">Đang kích hoạt</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Ngày bắt đầu</span>
+                    <span className="font-semibold">{formatDate(profile?.membershipStartedAt ?? null)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Ngày hết hạn</span>
+                    <span className="font-semibold">{formatDate(profile?.membershipExpiresAt ?? null)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Thanh toán gần nhất</span>
+                    <span className="font-semibold">{formatDate(profile?.lastPaymentAt ?? null)}</span>
+                  </div>
+                  <Separator />
+                  <Button
+                    className="w-full"
+                    onClick={handleUpgradeVip}
+                    disabled={upgradingVip}
+                  >
+                    {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
+                    <Crown className="size-4 mr-2" />
+                    Gia hạn thêm 30 ngày — 29.000đ
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-lg border p-4 bg-amber-50/50 border-amber-200">
+                    <p className="text-sm text-amber-800">
+                      Nâng cấp gói VIP Member với giá <strong>29.000đ / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
+                    </p>
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    onClick={handleUpgradeVip}
+                    disabled={upgradingVip}
+                  >
+                    {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
+                    <Crown className="size-4 mr-2" />
+                    Nâng cấp VIP — 29.000đ
+                  </Button>
+                </div>
+              )}
             </Card>
 
             {/* Bank Info */}
@@ -670,4 +895,3 @@ export default function MemberSettingsPage() {
     </div>
   );
 }
-
