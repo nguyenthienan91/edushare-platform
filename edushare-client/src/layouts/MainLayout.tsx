@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Moon, Sun } from 'lucide-react';
+import { ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 
 export default function MainLayout() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -77,9 +77,19 @@ export default function MainLayout() {
             </ThemeToggler>
 
             {isAuthenticated ? (
-              <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
-                Đăng xuất
-              </Button>
+              <>
+                <Button asChild variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                  <Link 
+                    to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
+                    title="Về Dashboard"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
+                  Đăng xuất
+                </Button>
+              </>
             ) : (
               <>
                 <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
