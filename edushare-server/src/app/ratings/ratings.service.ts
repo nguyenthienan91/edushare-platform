@@ -7,6 +7,8 @@ import { Group, GroupDocument } from '../groups/entities/group.entity'
 import { EscrowStatus } from '../transactions/enums/escrow-status.enum'
 import { CreateRatingDto } from './dto/create-rating.dto'
 import { User, UserDocument } from '../users/entities/user.entity'
+import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Injectable()
 export class RatingsService {
@@ -15,6 +17,7 @@ export class RatingsService {
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private paginationUtilService: PaginationUtilService,
   ) {}
 
   async create(userId: string, payload: CreateRatingDto) {
@@ -79,26 +82,32 @@ export class RatingsService {
     }
   }
 
-  async findAll(query: { senderId?: string; receiverId?: string }) {
+  async getRatingsMe(userId: string, type: 'received' | 'sent', pagination: Pagination) {
+    const userObjectId = new Types.ObjectId(userId)
     const filter: any = {}
-    if (query.senderId) {
-      filter.senderId = new Types.ObjectId(query.senderId)
+
+    if (type === 'sent') {
+      filter.senderId = userObjectId
+    } else {
+      filter.receiverId = userObjectId
     }
-    if (query.receiverId) {
-      filter.receiverId = new Types.ObjectId(query.receiverId)
-    }
-    return await this.ratingModel
+
+    const totalItems = await this.ratingModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const ratings = await this.ratingModel
       .find(filter)
-      .populate('senderId', 'username email avatar')
-      .populate('receiverId', 'username email avatar')
-      .populate({
-        path: 'transactionId',
-        populate: {
-          path: 'groupId',
-          select: 'name category status expiredAt',
-        },
-      })
+      .populate('senderId', 'displayName avatar email')
+      .populate('receiverId', 'displayName avatar email')
       .sort({ createdAt: -1 })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
       .exec()
+
+    return this.paginationUtilService.format(ratings)
   }
 }

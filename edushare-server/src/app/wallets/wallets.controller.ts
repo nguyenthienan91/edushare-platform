@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Post, Query, UseGuards, UsePipes } from '@nestjs/common'
 import { ApiBody } from '@nestjs/swagger'
 import { ZodValidationPipe } from 'nestjs-zod'
-import { Types } from 'mongoose'
 import { AuthGuard } from '../auth/auth.guard'
 import { User, type UserInfo } from '../../common/decorators/user.decorator'
 import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
@@ -15,13 +14,9 @@ export class WalletsController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  async getWalletMe(@User() user: UserInfo) {
+  async getMyWallet(@User() user: UserInfo) {
     const userId = user.userID
-    let wallet = await this.walletsService.findByUserId(new Types.ObjectId(userId))
-    if (!wallet) {
-      wallet = await this.walletsService.createWallet(new Types.ObjectId(userId))
-    }
-    return wallet
+    return await this.walletsService.getWalletByUserId(userId)
   }
 
   @Post('withdraw')

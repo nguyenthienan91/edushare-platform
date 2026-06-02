@@ -18,7 +18,6 @@ export class AdminGroupsController {
 
   @Patch(':id/status/restore')
   restoreStatus(@Param('id') id: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     return this.groupsService.restoreStatusAdmin(id)
   }
 }
