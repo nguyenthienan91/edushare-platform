@@ -12,6 +12,13 @@ import { WithdrawRequestDto, WithdrawRequestSwaggerDto } from './dto/withdraw-re
 export class WalletsController {
   constructor(private readonly walletsService: WalletsService) {}
 
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async getMyWallet(@User() user: UserInfo) {
+    const userId = user.userID
+    return await this.walletsService.getWalletByUserId(userId)
+  }
+
   @Post('withdraw')
   @UseGuards(AuthGuard)
   @UsePipes(new ZodValidationPipe())

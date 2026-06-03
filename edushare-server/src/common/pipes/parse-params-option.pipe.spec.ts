@@ -1,7 +1,7 @@
-import { ParseParamsOptionPipe } from './parse-params-option.pipe';
+import { ParseParamsOptionPipe } from './parse-params-option.pipe'
 
 describe('ParseParamsOptionPipe', () => {
   it('should be defined', () => {
-    expect(new ParseParamsOptionPipe()).toBeDefined();
-  });
-});
+    expect(new ParseParamsOptionPipe()).toBeDefined()
+  })
+})

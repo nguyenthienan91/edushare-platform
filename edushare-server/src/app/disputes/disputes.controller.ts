@@ -1,6 +1,7 @@
 // src/app/disputes/disputes.controller.ts
 import {
   Controller,
+  Get,
   Post,
   Patch,
   Param,
@@ -10,15 +11,18 @@ import {
   BadRequestException,
   UploadedFiles,
   UseInterceptors,
+  Query,
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import 'multer'
 import { DisputesService } from './disputes.service'
-import { ApiTags, ApiOperation, ApiBody, ApiConsumes } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger'
 import { AuthGuard } from '../auth/auth.guard'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
 import { CreateDisputeDto, CreateDisputeSwaggerDto } from './dto/create-dispute.dto'
 import { SubmitCounterProofSwaggerDto } from './dto/submit-counter-proof.dto'
+import { DisputeQueryDto } from './dto/dispute-query.dto'
+import { DisputeStatus } from './schemas/dispute.schema'
 
 @ApiTags('Disputes (Tranh chấp & Khiếu nại)')
 @UseGuards(AuthGuard)
@@ -28,6 +32,18 @@ export class DisputesController {
     private readonly disputesService: DisputesService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
+
+  @Get('me')
+  @ApiOperation({
+    summary: '[MEMBER/OWNER] Lấy danh sách khiếu nại của bản thân (do mình gửi hoặc liên quan đến nhóm của mình)',
+  })
+  @ApiQuery({ name: 'status', required: false, enum: DisputeStatus })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
+  async getMyDisputes(@Req() req: any, @Query() query: DisputeQueryDto) {
+    const userId = req.user.userID as string
+    return await this.disputesService.getMyDisputes(userId, query)
+  }
 
   @Post()
   @ApiOperation({ summary: '[MEMBER] Khởi tạo đơn khiếu nại đóng băng giao dịch mua slot' })

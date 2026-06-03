@@ -50,6 +50,65 @@ export class DisputesService {
     }
   }
 
+  async getMyDisputes(userId: string, query: DisputeQueryDto) {
+    const userObjectId = new Types.ObjectId(userId)
+
+    // 1. Tìm các group ID mà người dùng làm chủ nhóm (owner)
+    const ownedGroups = await this.groupModel
+      .find({ ownerId: userId } as any)
+      .select('_id')
+      .exec()
+    const ownedGroupIds = ownedGroups.map((g) => g._id)
+
+    // 2. Tìm các transaction ID thuộc các nhóm đó
+    const groupTransactions = await this.transactionModel
+      .find({ groupId: { $in: ownedGroupIds } })
+      .select('_id')
+      .exec()
+    const groupTransactionIds = groupTransactions.map((t) => t._id)
+
+    // 3. Xây dựng bộ lọc Disputes:
+    // - Hoặc do chính user này gửi đơn khiếu nại (raisedById = userObjectId)
+    // - Hoặc liên quan tới giao dịch của nhóm do user này làm chủ (transactionId in groupTransactionIds)
+    const filter: Record<string, any> = {
+      $or: [{ raisedById: userObjectId }, { transactionId: { $in: groupTransactionIds } }],
+    }
+
+    if (query.status) {
+      filter.status = query.status
+    }
+
+    const totalItems = await this.disputeModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: query.page,
+      itemPerPage: query.itemPerPage,
+      totalItems,
+    })
+
+    const list = await this.disputeModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .populate({
+        path: 'transactionId',
+        select: 'amount status groupId senderId',
+        populate: {
+          path: 'groupId',
+          select: 'name ownerId',
+        },
+      })
+      .populate('raisedById', 'displayName email avatar')
+      .lean()
+      .exec()
+
+    return {
+      status: 'success',
+      message: 'Lấy danh sách khiếu nại của bản thân thành công.',
+      ...this.paginationUtilService.format(list),
+    }
+  }
+
   async getDisputeById(disputeId: string) {
     const dispute = await this.disputeModel
       .findById(disputeId)

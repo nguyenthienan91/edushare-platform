@@ -6,6 +6,7 @@ import { Rating, RatingSchema } from './schemas/rating.schema'
 import { Transaction, TransactionSchema } from '../transactions/schemas/transaction.schema'
 import { Group, GroupSchema } from '../groups/entities/group.entity'
 import { User, UserSchema } from '../users/entities/user.entity'
+import { PaginationUtilModule } from '../../common/utils/pagination-util/pagination-util.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { User, UserSchema } from '../users/entities/user.entity'
       { name: Group.name, schema: GroupSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    PaginationUtilModule,
   ],
   controllers: [RatingsController],
   providers: [RatingsService],
