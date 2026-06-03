@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, Outlet } from 'react-router-dom'
 
 import MainLayout from '@/layouts/MainLayout'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
@@ -68,6 +68,13 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function MemberRoute() {
+  const { user, isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.role?.toLowerCase() === 'guest') return <ForbiddenPage />
+  return <Outlet />
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -78,7 +85,8 @@ export default function AppRoutes() {
       <Route path='/login' element={<LoginPage />} />
       <Route path='/forgot-password' element={<ForgotPasswordPage />} />
       <Route path='/reset-password' element={<ResetPasswordPage />} />
-      <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
+      <Route element={<MemberRoute />}>
+        <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/overview' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/wallet' element={<Navigate to='/dashboard/wallet' replace />} />
       <Route path='/member/groups' element={<Navigate to='/dashboard/groups' replace />} />
@@ -173,6 +181,7 @@ export default function AppRoutes() {
           </DashboardRoute>
         }
       />
+      </Route>
 
       <Route path='/admin' element={<AdminRoute><Navigate to='/admin/overview' replace /></AdminRoute>} />
       <Route
