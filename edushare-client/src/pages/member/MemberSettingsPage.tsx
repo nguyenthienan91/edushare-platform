@@ -170,8 +170,8 @@ export default function MemberSettingsPage() {
     if (!oldPassword || !newPassword || !confirmPassword) {
       return toast.error('Vui lòng điền đầy đủ thông tin mật khẩu.');
     }
-    if (newPassword.length < 8) {
-      return toast.error('Mật khẩu mới phải từ 8 ký tự trở lên.');
+    if (newPassword.length < 6) {
+      return toast.error('Mật khẩu mới phải từ 6 ký tự trở lên.');
     }
     if (newPassword !== confirmPassword) {
       return toast.error('Mật khẩu xác nhận không khớp.');
@@ -504,7 +504,7 @@ export default function MemberSettingsPage() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-700">
-                    Mật khẩu cần ít nhất 8 ký tự.
+                    Mật khẩu cần ít nhất 6 ký tự.
                   </p>
                 </div>
 
