@@ -1,9 +1,20 @@
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
 import { useAuth } from '@/contexts/AuthContext';
+import { WalletService } from '@/services/wallet.service';
 
 const NAV_ITEMS = [
   { label: 'Trang chủ', href: '#' },
@@ -16,6 +27,20 @@ export default function MainLayout() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      WalletService.getWalletInfo()
+        .then((data: any) => {
+          const balance = data?.data?.balance ?? data?.balance;
+          if (balance !== undefined && balance !== null) {
+            setWalletBalance(parseFloat(balance));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -78,6 +103,42 @@ export default function MainLayout() {
 
             {isAuthenticated ? (
               <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:ring-0">
+                      <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-lg">
+                    <DropdownMenuLabel className="text-base font-semibold">Ví EduShare</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/dashboard/wallet">
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          <span>Nạp tiền</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/dashboard/participant/orders">
+                          <Receipt className="mr-2 h-4 w-4" />
+                          <span>Giao Dịch</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/dashboard/participant/orders">
+                          <Eye className="mr-2 h-4 w-4" />
+                          <span>Nội dung đã mở khóa</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem disabled className="opacity-100 font-medium text-slate-500 py-2">
+                      Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} đ
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Button asChild variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800">
                   <Link 
                     to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
