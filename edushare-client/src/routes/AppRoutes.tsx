@@ -11,6 +11,7 @@ import LandingPage from '@/pages/Landingpage'
 import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
+import TopupPage from '@/pages/wallet/TopupPage'
 import MemberParticipantPage from '@/pages/member/MemberParticipantPageNew'
 import MemberParticipantOrdersPage from '@/pages/member/MemberParticipantOrdersPage'
 import MemberWalletPage from '@/pages/member/MemberWalletPage'
@@ -75,6 +76,12 @@ function MemberRoute() {
   return <Outlet />
 }
 
+function AuthRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -85,6 +92,7 @@ export default function AppRoutes() {
       <Route path='/login' element={<LoginPage />} />
       <Route path='/forgot-password' element={<ForgotPasswordPage />} />
       <Route path='/reset-password' element={<ResetPasswordPage />} />
+      <Route path='/topup' element={<AuthRoute><TopupPage /></AuthRoute>} />
       <Route element={<MemberRoute />}>
         <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/overview' element={<Navigate to='/dashboard/overview' replace />} />

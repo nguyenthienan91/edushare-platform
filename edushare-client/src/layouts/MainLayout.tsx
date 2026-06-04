@@ -114,7 +114,7 @@ export default function MainLayout() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
-                        <Link to="/dashboard/wallet">
+                        <Link to="/topup">
                           <CreditCard className="mr-2 h-4 w-4" />
                           <span>Nạp tiền</span>
                         </Link>
