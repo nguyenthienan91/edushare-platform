@@ -11,7 +11,7 @@ export default function App() {
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
-        <Toaster />
+        <Toaster richColors />
       </AuthProvider>
     </ThemeProvider>
   )

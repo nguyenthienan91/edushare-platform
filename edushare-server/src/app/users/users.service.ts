@@ -32,6 +32,16 @@ export class UsersService {
     return this.userModel.findById(id).select('-password').exec()
   }
 
+  async findByIdWithBalance(id: string): Promise<any> {
+    const user = await this.userModel.findById(id).select('-password').exec()
+    if (!user) return null
+    const wallet = await this.walletModel.findOne({ userId: new Types.ObjectId(id) }).exec()
+    return {
+      ...user.toObject(),
+      balance: wallet ? wallet.balance : 0,
+    }
+  }
+
   async updateById(id: string, data: UpdateQuery<UserDocument>): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }).select('-password').exec()
   }

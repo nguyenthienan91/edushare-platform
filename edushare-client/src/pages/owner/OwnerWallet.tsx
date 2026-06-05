@@ -104,7 +104,7 @@ export default function OwnerWallet() {
                 </DialogHeader>
 
                 <Tabs value={depositMethod} onValueChange={setDepositMethod} className="space-y-5">
-                  <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                  <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl  p-1">
                     <TabsTrigger value="bank" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
                       Ngân hàng
                     </TabsTrigger>
@@ -134,7 +134,7 @@ export default function OwnerWallet() {
                               key={label}
                               type="button"
                               variant="secondary"
-                              className="rounded-full bg-slate-100  hover:bg-slate-200"
+                              className="rounded-full   hover:bg-slate-200"
                               onClick={() => setDepositAmount(String(value))}
                             >
                               {label}
@@ -264,7 +264,7 @@ export default function OwnerWallet() {
                           key={value}
                           type="button"
                           variant="secondary"
-                          className="rounded-full bg-slate-100  hover:bg-slate-200"
+                          className="rounded-full   hover:bg-slate-200"
                           onClick={() => setAmount(String(value))}
                         >
                           {value.toLocaleString('vi-VN')} đ

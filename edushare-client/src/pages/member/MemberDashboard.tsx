@@ -1,31 +1,9 @@
+import { useState, useEffect } from 'react'
 import { ArrowUpRight, CirclePlus, Landmark, Users, Wallet } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
-const stats = [
-  {
-    label: 'Số dư',
-    value: '$120.50',
-    note: '+12% so với tuần trước',
-    icon: Wallet,
-    tone: 'bg-sky-100 text-sky-600',
-  },
-  {
-    label: 'Nhóm đang chạy',
-    value: '08',
-    note: '3 nhóm vừa có giao dịch mới',
-    icon: Landmark,
-    tone: 'bg-emerald-100 text-emerald-600',
-  },
-  {
-    label: 'Thành viên',
-    value: '248',
-    note: 'Tăng trưởng ổn định trong tuần',
-    icon: Users,
-    tone: 'bg-violet-100 text-violet-600',
-  },
-]
+import { fetchClient } from '@/utils/fetchClient'
 
 const featuredGroups = [
   { name: 'Netflix Premium', members: '4/5 thành viên', interactions: '128 tương tác', trend: '+18%' },
@@ -52,7 +30,77 @@ const points = weeklyMembers
 const areaPath = `M ${padding},${chartHeight - padding} L ${points} L ${chartWidth - padding},${chartHeight - padding} Z`
 const linePath = `M ${points.replaceAll(' ', ' L ')}`
 
+const formatCurrency = (val: number) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+}
+
 export default function MemberDashboard() {
+  const [balance, setBalance] = useState<number | null>(null)
+  const [groupCount, setGroupCount] = useState<number | null>(null)
+  const [memberCount, setMemberCount] = useState<number | null>(null)
+  const [userName, setUserName] = useState<string>('')
+
+  useEffect(() => {
+    let active = true
+
+    const loadData = async () => {
+      try {
+        const userRes = await fetchClient('/users/me')
+        if (!active) return
+        if (userRes) {
+          setBalance(userRes.balance ?? 0)
+          setUserName(userRes.displayName || userRes.username || 'f')
+          
+          // Fetch groups and count them
+          const groupsRes = await fetchClient(`/groups/search?ownerId=${userRes._id || userRes.id}`)
+          if (!active) return
+          if (groupsRes && Array.isArray(groupsRes.data)) {
+            setGroupCount(groupsRes.data.length)
+          }
+
+          // Fetch dashboard stats (total members)
+          const statsRes = await fetchClient('/users/me/dashboard-stats')
+          if (!active) return
+          if (statsRes && typeof statsRes.totalMembers === 'number') {
+            setMemberCount(statsRes.totalMembers)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err)
+      }
+    }
+
+    loadData()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const stats = [
+    {
+      label: 'Số dư',
+      value: balance !== null ? formatCurrency(balance) : '...',
+      note: '+12% so với tuần trước',
+      icon: Wallet,
+      tone: 'bg-sky-100 text-sky-600',
+    },
+    {
+      label: 'Nhóm đang chạy',
+      value: groupCount !== null ? String(groupCount).padStart(2, '0') : '...',
+      note: 'Các nhóm do bạn làm chủ',
+      icon: Landmark,
+      tone: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      label: 'Thành viên',
+      value: memberCount !== null ? String(memberCount).padStart(2, '0') : '...',
+      note: 'Tổng số thành viên trong nhóm',
+      icon: Users,
+      tone: 'bg-violet-100 text-violet-600',
+    },
+  ]
+
   return (
     <div className='space-y-6 '>
       <Card >
@@ -60,7 +108,7 @@ export default function MemberDashboard() {
           <div className='space-y-2'>
             <Badge className='rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100'>Owner Dashboard</Badge>
             <h2 className='text-2xl font-semibold tracking-tight  md:text-3xl'>
-              Chào buổi sáng, f! Cộng đồng của bạn đang hoạt động rất tốt
+              Chào buổi sáng, {userName || 'f'}! Cộng đồng của bạn đang hoạt động rất tốt
             </h2>
             <p className='max-w-2xl text-sm leading-6 '>
               Giao diện tối giản, nhẹ nhàng và đủ thông tin để bạn theo dõi hoạt động hằng ngày mà không bị rối.
