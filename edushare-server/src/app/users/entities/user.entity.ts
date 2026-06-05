@@ -4,7 +4,6 @@ import { HydratedDocument } from 'mongoose'
 export enum UserRole {
   GUEST = 'guest', // Người dùng đã đăng ký nhưng chưa nâng cấp gói
   MEMBER = 'member', // Sinh viên đã đóng phí (bao gồm cả người tham gia)
-  GROUP_OWNER = 'owner', // Sinh viên đóng phí và có quyền tạo/quản lý nhóm
   ADMIN = 'admin', // Quản trị viên hệ thống
 }
 
