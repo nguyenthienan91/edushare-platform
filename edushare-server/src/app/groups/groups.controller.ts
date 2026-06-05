@@ -12,7 +12,7 @@ import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagin
 import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('groups')
-@Roles(UserRole.ADMIN, UserRole.GROUP_OWNER)
+@Roles(UserRole.ADMIN, UserRole.MEMBER)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
