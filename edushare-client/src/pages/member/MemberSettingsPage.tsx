@@ -238,7 +238,7 @@ export default function MemberSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold ">
@@ -252,7 +252,7 @@ export default function MemberSettingsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <TabsList className="flex w-full overflow-x-auto h-auto p-1 justify-start gap-1 lg:grid lg:grid-cols-5 scrollbar-thin">
           <TabsTrigger value="profile">
             <User className="w-4 h-4 mr-2" />
             Hồ sơ
@@ -739,7 +739,7 @@ export default function MemberSettingsPage() {
                 Thanh toán
               </h2>
 
-              <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex items-center justify-between">
+              <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12  rounded-lg flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-emerald-600" />

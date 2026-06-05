@@ -7,7 +7,6 @@ import {
   Search,
   Star,
   Clock3,
-  User as UserIcon,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -107,7 +105,7 @@ function ReviewCard({
         </Avatar>
 
         <div className='flex-1 min-w-0'>
-          <div className='flex items-center justify-between gap-3'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3'>
             <div className='flex items-center gap-2 min-w-0'>
               <span className='font-semibold text-sm truncate'>{memberName}</span>
               <Badge variant='secondary' className='rounded-full text-[10px] px-2 py-0 shrink-0'>
@@ -165,7 +163,6 @@ function getRelativeTime(iso: string) {
 // ─── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function MemberReviewsPage() {
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
   const [ratingFilter, setRatingFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')

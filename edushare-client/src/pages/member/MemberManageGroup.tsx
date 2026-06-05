@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -79,7 +80,7 @@ interface Transaction {
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tất cả trạng thái' },
-  { value: 'available', label: 'Đang chờ' },
+  { value: 'available', label: 'Có sẵn' },
   { value: 'full', label: 'Đã đủ' },
   { value: 'expired', label: 'Hết hạn' },
   { value: 'closed', label: 'Đã đóng' },
@@ -94,21 +95,14 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  available: 'Đang chờ',
+  available: 'Có sẵn',
   full: 'Đã đủ',
   expired: 'Hết hạn',
   closed: 'Đã đóng',
   hidden: 'Ẩn',
 }
 
-const TRANSACTION_STATUS_LABEL: Record<string, string> = {
-  held_in_escrow: 'Đang chờ duyệt',
-  approved_waiting_proof: 'Đã duyệt – Chờ minh chứng',
-  proof_submitted: 'Đã nộp minh chứng',
-  completed: 'Hoàn tất',
-  refunded: 'Đã hoàn tiền',
-  expired: 'Hết hạn',
-}
+// TRANSACTION_STATUS_LABEL removed because it is unused
 
 const ITEMS_PER_PAGE = 6
 
@@ -128,7 +122,7 @@ function ConfirmDialog({ open, title, description, loading, onConfirm, onCancel 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center'>
       <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={onCancel} />
-      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl'>
+      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl mx-4'>
         <div className='mb-4 flex items-center gap-3'>
           <div className='flex size-10 items-center justify-center rounded-full bg-amber-100'>
             <AlertTriangle className='size-5 text-amber-600' />
@@ -213,7 +207,7 @@ function SubmitProofDialog({ open, transactionId, onClose, onSuccess }: SubmitPr
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center'>
       <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={handleClose} />
-      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl'>
+      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl mx-4'>
         <div className='mb-1 flex items-center justify-between'>
           <h3 className='text-lg font-semibold text-slate-800'>Nộp minh chứng</h3>
           <button
@@ -325,8 +319,9 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
     try {
       await fetchClient(`/transactions/${approveConfirm}/approve`, { method: 'POST' })
       await fetchTransactions()
+      toast.success('Duyệt thành viên thành công!')
     } catch (err: any) {
-      alert(err.message || 'Duyệt thất bại.')
+      toast.error(err.message || 'Duyệt thất bại.')
     } finally {
       setApprovingId(null)
       setApproveConfirm(null)
@@ -359,7 +354,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className='min-w-[90vw] rounded-3xl'>
+        <DialogContent className='w-[calc(100%-2rem)] sm:w-[90vw] max-w-5xl max-h-[90vh] flex flex-col p-6 rounded-3xl'>
           <DialogHeader>
             <DialogTitle className='text-2xl'>Manage Members - {group.name}</DialogTitle>
             <DialogDescription>
@@ -367,113 +362,119 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
             </DialogDescription>
           </DialogHeader>
 
-          <div className='grid gap-6 lg:grid-cols-2'>
-            {/* Pending – Approve + Submit Proof */}
-            <Card className='rounded-2xl border-slate-200 shadow-sm'>
-              <CardHeader className='border-b border-slate-100 pb-3'>
-                <CardTitle className='text-base'>Pending</CardTitle>
-                <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
-              </CardHeader>
-              <CardContent className='p-0'>
-                {loadingTx ? (
-                  <div className='flex justify-center py-8'>
-                    <Loader2 className='size-6 animate-spin text-slate-400' />
-                  </div>
-                ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
-                  <p className='py-6 text-center text-sm text-slate-400'>Không có yêu cầu nào.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tên</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead className='text-right'>Hành động</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingTransactions.map((tx) => (
-                        <TableRow key={tx._id}>
-                          <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
-                          <TableCell>{getSenderEmail(tx)}</TableCell>
-                          <TableCell>
-                            <div className='flex justify-end gap-2'>
-                              <Button
-                                size='sm'
-                                className='rounded-full bg-emerald-500 text-white hover:bg-emerald-600'
-                                disabled={approvingId === tx._id}
-                                onClick={() => setApproveConfirm(tx._id)}
-                              >
-                                {approvingId === tx._id ? (
-                                  <Loader2 className='mr-2 size-4 animate-spin' />
-                                ) : (
-                                  <ShieldCheck className='mr-2 size-4' />
-                                )}
-                                Approve
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {approvedTransactions.map((tx) => (
-                        <TableRow key={tx._id}>
-                          <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
-                          <TableCell>{getSenderEmail(tx)}</TableCell>
-                          <TableCell>
-                            <div className='flex justify-end gap-2'>
-                              <Button
-                                size='sm'
-                                className='rounded-full bg-indigo-600 text-white hover:bg-indigo-700'
-                                onClick={() => setProofTxId(tx._id)}
-                              >
-                                <ImagePlus className='mr-2 size-4' />
-                                Submit Proof
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+          <div className='flex-1 overflow-y-auto pr-1 scrollbar-thin'>
+            <div className='grid gap-6 lg:grid-cols-2 py-1'>
+              {/* Pending – Approve + Submit Proof */}
+              <Card className='rounded-2xl border-slate-200 shadow-sm'>
+                <CardHeader className='border-b border-slate-100 pb-3'>
+                  <CardTitle className='text-base'>Pending</CardTitle>
+                  <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
+                </CardHeader>
+                <CardContent className='p-0'>
+                  {loadingTx ? (
+                    <div className='flex justify-center py-8'>
+                      <Loader2 className='size-6 animate-spin text-slate-400' />
+                    </div>
+                  ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
+                    <p className='py-6 text-center text-sm text-slate-400'>Không có yêu cầu nào.</p>
+                  ) : (
+                    <div className='overflow-x-auto scrollbar-thin'>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tên</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead className='text-right'>Hành động</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pendingTransactions.map((tx) => (
+                            <TableRow key={tx._id}>
+                              <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
+                              <TableCell>{getSenderEmail(tx)}</TableCell>
+                              <TableCell>
+                                <div className='flex justify-end gap-2'>
+                                  <Button
+                                    size='sm'
+                                    className='rounded-full bg-emerald-500 text-white hover:bg-emerald-600'
+                                    disabled={approvingId === tx._id}
+                                    onClick={() => setApproveConfirm(tx._id)}
+                                  >
+                                    {approvingId === tx._id ? (
+                                      <Loader2 className='mr-2 size-4 animate-spin' />
+                                    ) : (
+                                      <ShieldCheck className='mr-2 size-4' />
+                                    )}
+                                    Approve
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {approvedTransactions.map((tx) => (
+                            <TableRow key={tx._id}>
+                              <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
+                              <TableCell>{getSenderEmail(tx)}</TableCell>
+                              <TableCell>
+                                <div className='flex justify-end gap-2'>
+                                  <Button
+                                    size='sm'
+                                    className='rounded-full bg-indigo-600 text-white hover:bg-indigo-700'
+                                    onClick={() => setProofTxId(tx._id)}
+                                  >
+                                    <ImagePlus className='mr-2 size-4' />
+                                    Submit Proof
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Joined Members */}
-            <Card className='rounded-2xl border-slate-200 shadow-sm'>
-              <CardHeader className='border-b border-slate-100 pb-3'>
-                <CardTitle className='text-base'>Joined</CardTitle>
-                <CardDescription>Người dùng đã tham gia nhóm.</CardDescription>
-              </CardHeader>
-              <CardContent className='p-0'>
-                {joinedMembers.length === 0 ? (
-                  <p className='py-6 text-center text-sm text-slate-400'>Chưa có thành viên.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tên</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead className='text-right'>Trạng thái</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {joinedMembers.map((member) => (
-                        <TableRow key={member._id}>
-                          <TableCell className='font-medium'>{member.displayName}</TableCell>
-                          <TableCell>{member.email}</TableCell>
-                          <TableCell className='text-right'>
-                            <Badge className='rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100'>
-                              <BadgeCheck className='mr-1 size-3.5' />
-                              Joined
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+              {/* Joined Members */}
+              <Card className='rounded-2xl border-slate-200 shadow-sm'>
+                <CardHeader className='border-b border-slate-100 pb-3'>
+                  <CardTitle className='text-base'>Joined</CardTitle>
+                  <CardDescription>Người dùng đã tham gia nhóm.</CardDescription>
+                </CardHeader>
+                <CardContent className='p-0'>
+                  {joinedMembers.length === 0 ? (
+                    <p className='py-6 text-center text-sm text-slate-400'>Chưa có thành viên.</p>
+                  ) : (
+                    <div className='overflow-x-auto scrollbar-thin'>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tên</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead className='text-right'>Trạng thái</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {joinedMembers.map((member) => (
+                            <TableRow key={member._id}>
+                              <TableCell className='font-medium'>{member.displayName}</TableCell>
+                              <TableCell>{member.email}</TableCell>
+                              <TableCell className='text-right'>
+                                <Badge className='rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100'>
+                                  <BadgeCheck className='mr-1 size-3.5' />
+                                  Joined
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -601,9 +602,10 @@ export default function MemberManageGroup() {
     try {
       await fetchClient(`/groups/${removeConfirm}`, { method: 'DELETE' })
       setRemoveConfirm(null)
+      toast.success('Xóa nhóm thành công!')
       fetchGroups()
     } catch (err: any) {
-      alert(err.message || 'Xóa nhóm thất bại.')
+      toast.error(err.message || 'Xóa nhóm thất bại.')
     } finally {
       setRemoving(false)
     }

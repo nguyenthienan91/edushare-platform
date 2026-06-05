@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowRight, Sparkles, Users, Lock, Loader2, CalendarIcon } from 'lucide-react'
+import { ArrowRight, Sparkles, Users, Loader2, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ export type GroupCategoryType = typeof GroupCategory[keyof typeof GroupCategory]
 export default function MemberCreateGroup() {
   const navigate = useNavigate()
   const [loadingUser, setLoadingUser] = useState(true)
-  const [isVip, setIsVip] = useState(false)
+  // const [isVip, setIsVip] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   // Form states
@@ -48,16 +48,9 @@ export default function MemberCreateGroup() {
 
     const checkVipStatus = async () => {
       try {
-        const user = await fetchClient('/users/me')
-        if (!active) return
-        if (user && user.isSubscriptionActive === true) {
-          setIsVip(true)
-        } else {
-          setIsVip(false)
-        }
+        await fetchClient('/users/me')
       } catch (err) {
         console.error('Error fetching user info:', err)
-        setIsVip(false)
       } finally {
         if (active) {
           setLoadingUser(false)
@@ -257,7 +250,7 @@ export default function MemberCreateGroup() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className='w-auto p-0 rounded-2xl  dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-950 dark:text-slate-50 transition-none shadow-xl' 
+                  className='w-auto p-0 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-950 dark:text-slate-50 transition-none shadow-xl' 
                   align='start'
                 >
                   <Calendar

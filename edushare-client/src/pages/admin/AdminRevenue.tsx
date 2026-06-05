@@ -1,6 +1,6 @@
-import { Download, TrendingUp, HandCoins, CreditCard, Percent } from 'lucide-react'
+import { TrendingUp, HandCoins, CreditCard, Percent } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+// Button import removed as unused
 import {
   BarChart,
   Bar,
@@ -172,7 +172,7 @@ export default function AdminRevenue() {
                       boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                     }}
                     itemStyle={{ color: '#0f172a' }}
-                    formatter={(value: number) => [`${value}%`]}
+                    formatter={(value: any) => [`${value}%`]}
                   />
                 </PieChart>
               </ResponsiveContainer>

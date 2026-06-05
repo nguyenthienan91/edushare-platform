@@ -9,7 +9,6 @@ import {
   Upload,
   Wallet,
   Home,
-  LayoutDashboard,
   CreditCard,
   Star,
   ShieldAlert,

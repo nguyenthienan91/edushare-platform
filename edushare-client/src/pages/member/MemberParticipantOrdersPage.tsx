@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
@@ -374,7 +374,8 @@ export default function MemberParticipantOrdersPage() {
       {/* Orders Table */}
       {!loading && orders.length > 0 && (
         <Card>
-          <CardContent >
+          <CardContent>
+            <div className='overflow-x-auto scrollbar-thin'>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -390,7 +391,6 @@ export default function MemberParticipantOrdersPage() {
                     const meta = getStatusMeta(order.status)
                     const ActionIcon = meta.actionIcon
                     const groupInfo = getGroupInfo(order.groupId)
-                    const groupName = groupInfo.name
                     const category = groupInfo.category
                     const ownerName = getOwnerName(order.groupId)
 
@@ -444,6 +444,7 @@ export default function MemberParticipantOrdersPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
           </CardContent>
 
           {/* Pagination */}
@@ -481,7 +482,7 @@ export default function MemberParticipantOrdersPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className='sm:max-w-[720px]'>
+        <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[720px] rounded-3xl'>
           {selectedOrder && (() => {
             const meta = getStatusMeta(selectedOrder.status)
             const selectedGroupInfo = getGroupInfo(selectedOrder.groupId)
@@ -538,7 +539,7 @@ export default function MemberParticipantOrdersPage() {
                         {meta.label}
                       </Badge>
                     </div>
-                    <div className='grid gap-3 sm:grid-cols-4'>
+                    <div className='grid gap-3 grid-cols-2 sm:grid-cols-4'>
                       {renderSteps(selectedOrder.status)}
                     </div>
                   </div>

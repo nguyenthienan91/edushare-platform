@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BanknoteArrowUp, CalendarClock, CircleDollarSign, Landmark, ShieldCheck } from 'lucide-react'
+import { BanknoteArrowUp, CircleDollarSign, Landmark } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -159,7 +159,7 @@ export default function MemberWalletPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <p className="text-sm font-medium text-muted-foreground">Số dư khả dụng</p>
@@ -404,7 +404,7 @@ export default function MemberWalletPage() {
             <DialogTrigger asChild>
               <Button variant="outline" className="rounded-full">Xem lịch sử</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[720px]">
+            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[720px] rounded-3xl">
               <DialogHeader>
                 <DialogTitle>Lịch sử giao dịch</DialogTitle>
                 <DialogDescription>
@@ -412,7 +412,7 @@ export default function MemberWalletPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="max-h-[400px] overflow-y-auto rounded-lg border">
+              <div className="max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-thin rounded-lg border">
                 <Table>
                   <TableHeader className="sticky top-0 bg-background">
                     <TableRow>
@@ -466,7 +466,7 @@ export default function MemberWalletPage() {
 
       {/* Table Lịch sử giao dịch trực tiếp trên trang */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 space-y-0">
           <div>
             <CardTitle>Lịch sử giao dịch gần đây</CardTitle>
             <CardDescription>Danh sách các giao dịch nạp và rút tiền gần nhất.</CardDescription>
@@ -476,6 +476,7 @@ export default function MemberWalletPage() {
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto scrollbar-thin">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -515,6 +516,7 @@ export default function MemberWalletPage() {
                 )}
               </TableBody>
             </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
