@@ -141,11 +141,11 @@ export default function MemberWalletPage() {
     switch (status) {
       case 'completed':
       case 'approved':
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">Thành công</Badge>
+        return <Badge variant="default">Thành công</Badge>
       case 'pending':
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/10">Đang xử lý</Badge>
+        return <Badge variant="secondary">Đang xử lý</Badge>
       case 'rejected':
-        return <Badge variant="outline" className="bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/10">Bị từ chối</Badge>
+        return <Badge variant="destructive">Bị từ chối</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -197,7 +197,7 @@ export default function MemberWalletPage() {
         </Card>
       </div>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Trạng thái escrow</CardTitle>
           <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
@@ -214,7 +214,7 @@ export default function MemberWalletPage() {
             </div>
           ))}
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>
@@ -437,11 +437,11 @@ export default function MemberWalletPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                              <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
                               {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                             </div>
                           </TableCell>
-                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
                             {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
                           </TableCell>
                           <TableCell className="text-center">
@@ -501,11 +501,11 @@ export default function MemberWalletPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
                           {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                         </div>
                       </TableCell>
-                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
                         {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
                       </TableCell>
                       <TableCell className="text-center">
