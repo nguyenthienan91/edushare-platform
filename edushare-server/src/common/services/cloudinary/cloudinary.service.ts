@@ -18,11 +18,11 @@ export class CloudinaryService {
   /**
    * Hàm chuyển đổi Buffer của file sang Stream và upload lên Cloudinary
    */
-  async uploadImage(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
+  async uploadImage(file: Express.Multer.File, folder = 'edushare_proofs'): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'edushare_proofs', // Tạo thư mục riêng trên Cloudinary để quản lý ảnh minh chứng
+          folder, // Tạo thư mục riêng trên Cloudinary để quản lý ảnh
           allowed_formats: ['jpg', 'png', 'jpeg'], // Chỉ cho phép upload các định dạng ảnh này
         },
         (error, result) => {
