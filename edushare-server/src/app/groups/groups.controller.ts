@@ -88,4 +88,9 @@ export class GroupsController {
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {
     return this.groupsService.removeMember(id, userId)
   }
+
+  @Get(':id/members')
+  getMembers(@Param('id') id: string, @User() user: UserInfo) {
+    return this.groupsService.getGroupMembers(id, user.userID, user.role)
+  }
 }
