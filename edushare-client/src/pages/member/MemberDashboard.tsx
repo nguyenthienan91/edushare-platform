@@ -111,7 +111,7 @@ export default function MemberDashboard() {
               Chào buổi sáng, {userName || 'Bạn'}! Cộng đồng của bạn đang hoạt động rất tốt
             </h2>
             <p className='max-w-2xl text-sm leading-6 '>
-              Giao diện tối giản, nhẹ nhàng và đủ thông tin để bạn theo dõi hoạt động hằng ngày mà không bị rối.
+              quản lý tài khoản.
             </p>
           </div>
         </CardContent>
