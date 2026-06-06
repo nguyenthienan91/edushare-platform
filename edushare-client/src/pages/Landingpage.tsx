@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
+import { UserService } from '@/services/user.service'
 import {
   ArrowRight,
   BadgeCheck,
@@ -86,7 +89,39 @@ const FAQS = [
 
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
+  const [isUpgrading, setIsUpgrading] = useState(false)
   const categories = useMemo(() => CATEGORIES, [])
+  const { user, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
+  const handleUpgradeVip = async () => {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+
+    if (user?.role?.toLowerCase() !== 'guest') {
+      toast.info("Tài khoản của bạn", { description: "Bạn đã là thành viên (Member) hoặc ở cấp độ cao hơn." })
+      return
+    }
+
+    setIsUpgrading(true)
+    try {
+      const res: any = await UserService.upgradeVip()
+      if (res?.status === 'success' || res?.message) {
+        toast.success("Nâng cấp VIP thành công!", { description: "Bây giờ bạn có thể tham gia các nhóm chia sẻ." })
+        setTimeout(() => window.location.reload(), 1500)
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "Có lỗi xảy ra, vui lòng thử lại sau."
+      toast.error("Giao dịch thất bại", { description: errorMessage })
+      if (errorMessage.toLowerCase().includes("balance")) {
+        navigate('/topup')
+      }
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -218,8 +253,12 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <Button asChild className="rounded-full">
-                      <Link to="/login">Đăng ký membership</Link>
+                    <Button 
+                      className="rounded-full" 
+                      onClick={handleUpgradeVip} 
+                      disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
+                    >
+                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29k)"))}
                     </Button>
                     <Button asChild variant="outline" className="rounded-full">
                       <a href="#groups">Xem nhóm đang chờ ghép</a>
