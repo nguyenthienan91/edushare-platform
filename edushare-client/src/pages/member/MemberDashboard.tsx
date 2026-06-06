@@ -106,7 +106,7 @@ export default function MemberDashboard() {
       <Card>
         <CardContent className='flex flex-col gap-4 md:flex-row md:items-end md:justify-between'>
           <div className='space-y-2'>
-            <Badge className='rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100'>Owner Dashboard</Badge>
+            <Badge variant='secondary' className='rounded-full'>Owner Dashboard</Badge>
             <h2 className='text-2xl font-semibold tracking-tight  md:text-3xl'>
               Chào buổi sáng, {userName || 'Bạn'}! Cộng đồng của bạn đang hoạt động rất tốt
             </h2>
@@ -125,7 +125,7 @@ export default function MemberDashboard() {
               <CardContent className='p-5'>
                 <div className='flex items-start justify-between gap-4'>
                   <div className='space-y-3'>
-                    <div className={`flex size-11 items-center justify-center rounded-2xl ${item.tone}`}>
+                    <div className={`flex size-11 items-center justify-center rounded-lg ${item.tone}`}>
                       <Icon className='size-5' />
                     </div>
                     <div>
@@ -134,7 +134,7 @@ export default function MemberDashboard() {
                       <p className='mt-1 text-xs '>{item.note}</p>
                     </div>
                   </div>
-                  <ArrowUpRight className='size-4 text-slate-300' />
+                  <ArrowUpRight className='size-4 text-muted-foreground' />
                 </div>
               </CardContent>
             </Card>
@@ -149,7 +149,7 @@ export default function MemberDashboard() {
             <CardDescription>Biểu đồ</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='rounded-3xl /70 p-4 overflow-x-auto scrollbar-thin'>
+            <div className='rounded-lg border p-4 overflow-x-auto scrollbar-thin'>
               <div className='min-w-[520px]'>
                 <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className='h-[220px] w-full overflow-visible'>
                   <defs>
@@ -179,7 +179,7 @@ export default function MemberDashboard() {
                           x={x}
                           y={chartHeight - 4}
                           textAnchor='middle'
-                          className='fill-slate-400 text-[12px] font-medium'
+                          className='fill-muted-foreground text-[12px] font-medium'
                         >
                           {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][index]}
                         </text>
@@ -201,14 +201,14 @@ export default function MemberDashboard() {
             {featuredGroups.map((group) => (
               <div
                 key={group.name}
-                className='rounded-3xl border border-slate-200/70  p-4 transition-colors hover:/60'
+                className='rounded-lg border p-4 transition-colors hover:bg-muted/50'
               >
                 <div className='flex items-start justify-between gap-3'>
                   <div>
                     <p className='font-medium '>{group.name}</p>
                     <p className='mt-1 text-sm '>{group.members}</p>
                   </div>
-                  <Badge className='rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-100'>
+                  <Badge className='rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'>
                     {group.trend}
                   </Badge>
                 </div>
@@ -217,7 +217,7 @@ export default function MemberDashboard() {
                   <Button
                     variant='ghost'
                     size='sm'
-                    className='rounded-full px-3 text-sky-700 hover:bg-sky-100 hover:text-sky-800'
+                    className='rounded-md px-3 text-sky-600 hover:bg-sky-500/10'
                   >
                     Xem chi tiết
                   </Button>

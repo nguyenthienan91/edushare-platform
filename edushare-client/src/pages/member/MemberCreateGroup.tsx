@@ -148,9 +148,9 @@ export default function MemberCreateGroup() {
   if (!isVip) {
     return (
       <div className='flex items-center justify-center py-10 px-4'>
-        <Card className='max-w-md w-full rounded-3xl shadow-lg text-center p-8 relative overflow-hidden'>
+        <Card className='max-w-md w-full rounded-lg shadow text-center p-8 relative overflow-hidden'>
           <div className='relative flex flex-col items-center gap-6'>
-            <div className='flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground shadow-sm'>
+            <div className='flex size-16 items-center justify-center rounded-lg bg-muted text-muted-foreground'>
               <Lock className='size-8' />
             </div>
             
@@ -165,14 +165,14 @@ export default function MemberCreateGroup() {
               <Button 
                 onClick={() => navigate('/dashboard/wallet')}
                 variant='default'
-                className='w-full rounded-full h-12 font-medium'
+                className='w-full rounded-md h-12 font-medium'
               >
                 Nâng cấp VIP (29,000đ/tháng)
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard/overview')}
                 variant='outline'
-                className='w-full rounded-full h-12 font-medium'
+                className='w-full rounded-md h-12 font-medium'
               >
                 Quay lại
               </Button>
@@ -207,7 +207,7 @@ export default function MemberCreateGroup() {
               <Input
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
-                className='h-12 rounded-2xl border-slate-200  px-4'
+                className='h-12 rounded-lg px-4'
                 placeholder='VD: Netflix Premium'
                 disabled={submitting}
               />
@@ -216,7 +216,7 @@ export default function MemberCreateGroup() {
             <div className='grid gap-2'>
               <Label className=''>Danh mục phần mềm</Label>
               <Select value={category} onValueChange={(val) => setCategory(val as GroupCategoryType)} disabled={submitting}>
-                <SelectTrigger className='h-12 rounded-2xl border-slate-200  px-4'>
+                <SelectTrigger className='h-12 rounded-lg px-4'>
                   <SelectValue placeholder='Chọn danh mục phần mềm' />
                 </SelectTrigger>
                 <SelectContent>
@@ -231,7 +231,7 @@ export default function MemberCreateGroup() {
 
             <div className='grid gap-2'>
               <Label className=''>Số lượng thành viên (Slot)</Label>
-              <div className='rounded-2xl border border-slate-200  p-4'>
+              <div className='rounded-lg border p-4'>
                 <div className='mb-3 flex items-center justify-between text-sm '>
                   <span>Slot hiện tại</span>
                   <span className='font-medium '>{maxMembers} người</span>
@@ -255,17 +255,17 @@ export default function MemberCreateGroup() {
                   <Button
                     variant='outline'
                     className={cn(
-                      'h-12 w-full justify-start rounded-2xl px-4 text-left font-normal outline-none',
+                      'h-12 w-full justify-start rounded-lg px-4 text-left font-normal outline-none',
                       !expiredAt && 'text-muted-foreground'
                     )}
                     disabled={submitting}
                   >
-                    <CalendarIcon className='mr-2 size-4 text-slate-400' />
+                    <CalendarIcon className='mr-2 size-4 text-muted-foreground' />
                     {expiredAt ? format(expiredAt, 'dd/MM/yyyy') : 'Chọn ngày hết hạn nhóm'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className='w-auto p-0 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-950 dark:text-slate-50 transition-none shadow-xl' 
+                  className='w-auto p-0 rounded-lg bg-popover text-popover-foreground border shadow-md transition-none' 
                   align='start'
                 >
                   <Calendar
@@ -285,7 +285,7 @@ export default function MemberCreateGroup() {
                   type='number'
                   value={pricePerSlot || ''}
                   onChange={(e) => setPricePerSlot(Number(e.target.value || 0))}
-                  className='h-12 rounded-2xl border-slate-200  px-4'
+                  className='h-12 rounded-lg px-4'
                   placeholder='35000'
                   disabled={submitting}
                 />
@@ -295,7 +295,7 @@ export default function MemberCreateGroup() {
                 <Input
                   value={`${totalPrice.toLocaleString('vi-VN')} VND`}
                   readOnly
-                  className='h-12 rounded-2xl border-slate-200  px-4 bg-slate-50'
+                  className='h-12 rounded-lg px-4 bg-muted'
                 />
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function MemberCreateGroup() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className='min-h-[120px] rounded-2xl border px-4 py-3 text-sm outline-none transition-colors'
+                className='min-h-[120px] rounded-lg border px-4 py-3 text-sm outline-none transition-colors'
                 placeholder='Viết lời chào mừng cho các thành viên mới...'
                 disabled={submitting}
               />
@@ -320,7 +320,7 @@ export default function MemberCreateGroup() {
             <div className='flex flex-wrap gap-3 pt-2'>
               <Button
                 variant='outline'
-                className='rounded-full'
+                className='rounded-md'
                 onClick={() => navigate('/dashboard/groups')}
                 disabled={submitting}
               >
@@ -328,7 +328,7 @@ export default function MemberCreateGroup() {
               </Button>
               <Button 
                 variant='default'
-                className='rounded-full'
+                className='rounded-md'
                 onClick={handleSubmit}
                 disabled={submitting}
               >
@@ -353,10 +353,10 @@ export default function MemberCreateGroup() {
             <CardDescription>Xem trước giao diện nhóm của bạn ngay khi chỉnh form.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='rounded-3xl border p-5 bg-card shadow-sm'>
+            <div className='rounded-lg border p-5 bg-card'>
               <div className='flex items-start justify-between gap-4'>
                 <div>
-                  <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium shadow-sm'>
+                  <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-medium'>
                     <Sparkles className='size-3.5' />
                     Live Preview
                   </Badge>
@@ -365,13 +365,13 @@ export default function MemberCreateGroup() {
                     {category} community
                   </p>
                 </div>
-                <div className='flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground'>
+                <div className='flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground'>
                   <Users className='size-5' />
                 </div>
               </div>
 
               <div className='mt-5 grid gap-3'>
-                <div className='rounded-2xl  p-4 shadow-sm'>
+                <div className='rounded-lg border p-4'>
                   <div className='flex items-center justify-between text-sm '>
                     <span>Slot</span>
                     <span>{maxMembers} người</span>
@@ -381,18 +381,18 @@ export default function MemberCreateGroup() {
                   </p>
                 </div>
 
-                <div className='rounded-2xl  p-4 shadow-sm'>
+                <div className='rounded-lg border p-4'>
                   <p className='text-sm font-medium '>Lời chào</p>
                   <p className='mt-2 text-sm leading-6 '>{description || 'Chưa có lời chào mừng.'}</p>
                 </div>
 
-                <div className='rounded-2xl  p-4 shadow-sm'>
+                <div className='rounded-lg border p-4'>
                   <p className='text-sm font-medium '>Tổng giá</p>
                   <p className='mt-2 text-2xl font-semibold '>{totalPrice.toLocaleString('vi-VN')} VND</p>
                 </div>
 
                 {expiredAt && (
-                  <div className='rounded-2xl  p-4 shadow-sm'>
+                  <div className='rounded-lg border p-4'>
                     <p className='text-sm font-medium '>Ngày hết hạn</p>
                     <p className='mt-2 text-2xl font-semibold '>{format(expiredAt, 'dd/MM/yyyy')}</p>
                   </div>

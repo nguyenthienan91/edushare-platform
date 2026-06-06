@@ -40,7 +40,6 @@ import {
   ShieldCheck,
   Trash2,
   Users,
-  X,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -212,7 +211,7 @@ function SubmitProofDialog({ open, transactionId, onClose, onSuccess }: SubmitPr
 
         <div
           onClick={() => inputRef.current?.click()}
-          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition hover:bg-muted"
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 transition hover:bg-muted"
         >
           {preview ? (
             <img src={preview} alt="preview" className="max-h-48 rounded-lg object-contain" />
@@ -353,8 +352,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className='w-[calc(100%-2rem)] sm:w-[95vw] max-w-6xl max-h-[90vh] flex flex-col p-6 rounded-3xl'>
-          <DialogHeader>
+<DialogContent className='w-[calc(100%-2rem)] sm:w-[95vw] !max-w-6xl max-h-[90vh] flex flex-col p-6 rounded-lg'>          <DialogHeader>
             <DialogTitle className='text-2xl'>Quản lý thành viên - {group.name}</DialogTitle>
             <DialogDescription>
               Danh sách người dùng đang chờ duyệt và người dùng đã tham gia.
@@ -364,18 +362,18 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
           <div className='flex-1 overflow-y-auto pr-1 scrollbar-thin'>
             <div className='grid gap-6 lg:grid-cols-2 py-1'>
               {/* Pending – Approve + Submit Proof */}
-              <Card className='rounded-2xl border-slate-200 shadow-sm'>
-                <CardHeader className='border-b border-slate-100 pb-3'>
+              <Card className='shadow-sm'>
+                <CardHeader className=' pb-3'>
                   <CardTitle className='text-base'>Đang chờ duyệt</CardTitle>
                   <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
                 </CardHeader>
                 <CardContent className='p-0'>
                   {loadingTx ? (
                     <div className='flex justify-center py-8'>
-                      <Loader2 className='size-6 animate-spin text-slate-400' />
+                      <Loader2 className='size-6 animate-spin ' />
                     </div>
                   ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
-                    <p className='py-6 text-center text-sm text-slate-400'>Không có yêu cầu nào.</p>
+                    <p className='py-6 text-center text-sm '>Không có yêu cầu nào.</p>
                   ) : (
                     <div className='overflow-x-auto scrollbar-thin'>
                       <Table>
@@ -396,7 +394,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
                                   <Button
                                     size='sm'
                                     variant='default'
-                                    className='rounded-full'
+                                    className='rounded-md'
                                     disabled={approvingId === tx._id}
                                     onClick={() => setApproveConfirm(tx._id)}
                                   >
@@ -420,7 +418,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
                                   <Button
                                     size='sm'
                                     variant='secondary'
-                                    className='rounded-full'
+                                    className='rounded-md'
                                     onClick={() => setProofTxId(tx._id)}
                                   >
                                     <ImagePlus className='mr-2 size-4' />
@@ -438,14 +436,14 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
               </Card>
 
               {/* Joined Members */}
-              <Card className='rounded-2xl border-slate-200 shadow-sm'>
-                <CardHeader className='border-b border-slate-100 pb-3'>
+              <Card className='shadow-sm'>
+                <CardHeader className='border-b pb-3'>
                   <CardTitle className='text-base'>Đã tham gia</CardTitle>
                   <CardDescription>Người dùng đã tham gia nhóm.</CardDescription>
                 </CardHeader>
                 <CardContent className='p-0'>
                   {joinedMembers.length === 0 ? (
-                    <p className='py-6 text-center text-sm text-slate-400'>Chưa có thành viên.</p>
+                    <p className='py-6 text-center text-sm '>Chưa có thành viên.</p>
                   ) : (
                     <div className='overflow-x-auto scrollbar-thin'>
                       <Table>
@@ -674,9 +672,9 @@ export default function MemberManageGroup() {
   if (!isVip) {
     return (
       <div className='flex items-center justify-center py-10 px-4'>
-        <Card className='max-w-md w-full rounded-3xl shadow-lg text-center p-8 relative overflow-hidden'>
+        <Card className='max-w-md w-full rounded-lg shadow-md text-center p-8 relative overflow-hidden'>
           <div className='relative flex flex-col items-center gap-6'>
-            <div className='flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground shadow-sm'>
+            <div className='flex size-16 items-center justify-center bg-muted text-muted-foreground shadow-sm'>
               <Lock className='size-8' />
             </div>
             
@@ -718,7 +716,7 @@ export default function MemberManageGroup() {
             Manage Group
           </Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Quản lý nhóm của tôi</h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
+          <p className='mt-2 max-w-2xl text-sm leading-6 text-muted-foreground'>
             Xem nhanh trạng thái từng nhóm, tiến độ lấp đầy slot và các thao tác quan trọng ngay
             dưới card.
           </p>
@@ -731,13 +729,13 @@ export default function MemberManageGroup() {
           <div className='flex flex-col gap-3 md:flex-row md:items-center'>
             {/* Search */}
             <div className='relative w-full md:max-w-sm'>
-              <Search className='pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400' />
+              <Search className='pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 ' />
               <Input
                 id='search-group-input'
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder='Tìm nhóm...'
-                className='h-11 rounded-2xl border-slate-200 pl-11'
+                className='h-11 pl-11'
               />
             </div>
 
@@ -749,7 +747,7 @@ export default function MemberManageGroup() {
               >
                 <SelectTrigger
                   id='status-filter-select'
-                  className='!h-11 w-full rounded-2xl border-slate-200 px-4'
+                  className='!h-11 w-full px-4'
                 >
                   <SelectValue placeholder='Lọc trạng thái' />
                 </SelectTrigger>
@@ -767,7 +765,7 @@ export default function MemberManageGroup() {
             <Button
               id='sort-price-btn'
               variant={priceOrder ? 'secondary' : 'outline'}
-              className='h-11 rounded-2xl px-4'
+              className='h-11 px-4'
               onClick={() =>
                 setPriceOrder((prev) =>
                   prev === null ? 'asc' : prev === 'asc' ? 'desc' : null,
@@ -786,7 +784,7 @@ export default function MemberManageGroup() {
             </Button>
 
             {loading && (
-              <div className='flex items-center gap-2 text-sm text-slate-400'>
+              <div className='flex items-center gap-2 text-sm '>
                 <Loader2 className='size-4 animate-spin' />
                 Đang tải...
               </div>
@@ -797,34 +795,34 @@ export default function MemberManageGroup() {
 
       {/* Error */}
       {error && (
-        <div className='rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600'>
+        <div className='rounded-lg border border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive'>
           {error}
         </div>
       )}
 
       {/* Groups Grid */}
       {!loading && groups.length === 0 && !error ? (
-        <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-16'>
-          <Users className='size-12 text-slate-300' />
-          <p className='mt-3 text-sm font-medium text-slate-500'>Bạn chưa có nhóm nào.</p>
-          <p className='mt-1 text-xs text-slate-400'>Hãy tạo nhóm đầu tiên của bạn!</p>
+        <div className='flex flex-col items-center justify-center border border-dashed py-16'>
+          <Users className='size-12 text-muted-foreground/40' />
+          <p className='mt-3 text-sm font-medium text-muted-foreground'>Bạn chưa có nhóm nào.</p>
+          <p className='mt-1 text-xs '>Hãy tạo nhóm đầu tiên của bạn!</p>
         </div>
       ) : (
         <div className='grid gap-6 md:grid-cols-2 xl:grid-cols-3'>
           {loading
             ? Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <Card key={i} className='animate-pulse rounded-2xl'>
+                <Card key={i} className='animate-pulse rounded-lg'>
                   <CardHeader className='space-y-4'>
-                    <div className='h-5 w-2/3 rounded-lg bg-slate-200' />
-                    <div className='h-3 w-1/2 rounded-lg bg-slate-100' />
-                    <div className='h-2.5 rounded-full bg-slate-100' />
+                    <div className='h-5 w-2/3 rounded-md bg-muted' />
+                    <div className='h-3 w-1/2 rounded-md bg-muted/70' />
+                    <div className='h-2.5 rounded-full bg-muted/70' />
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     <div className='grid grid-cols-2 gap-3'>
-                      <div className='h-14 rounded-2xl bg-slate-100' />
-                      <div className='h-14 rounded-2xl bg-slate-100' />
+                      <div className='h-14 bg-muted/70' />
+                      <div className='h-14 bg-muted/70' />
                     </div>
-                    <div className='h-10 rounded-2xl bg-slate-200' />
+                    <div className='h-10 bg-muted' />
                   </CardContent>
                 </Card>
               ))
@@ -835,7 +833,7 @@ export default function MemberManageGroup() {
                 return (
                   <Card
                     key={group._id}
-                    className='rounded-2xl border-slate-200/70 shadow-sm shadow-sky-100/30 transition hover:shadow-md'
+                    className='border transition hover:shadow-md'
                   >
                     <CardHeader className='space-y-4'>
                       <div className='flex items-start justify-between gap-4'>
@@ -851,7 +849,7 @@ export default function MemberManageGroup() {
                       </div>
 
                       <div className='space-y-2'>
-                        <div className='flex items-center justify-between text-sm text-slate-600'>
+                        <div className='flex items-center justify-between text-sm text-muted-foreground'>
                           <span>Độ lấp đầy</span>
                           <span className='font-medium'>{progress}%</span>
                         </div>
@@ -861,12 +859,12 @@ export default function MemberManageGroup() {
 
                     <CardContent className='space-y-4'>
                       <div className='grid grid-cols-2 gap-3 text-sm'>
-                        <div className='rounded-2xl border p-3'>
-                          <p className='text-xs text-slate-400'>Slot còn lại</p>
+                        <div className='border p-3'>
+                          <p className='text-xs '>Slot còn lại</p>
                           <p className='mt-1 font-semibold'>{group.totalSlots - group.occupiedSlots} slot</p>
                         </div>
-                        <div className='rounded-2xl border p-3'>
-                          <p className='text-xs text-slate-400'>Giá / slot</p>
+                        <div className='border p-3'>
+                          <p className='text-xs '>Giá / slot</p>
                           <p className='mt-1 font-semibold'>
                             {group.price?.toLocaleString('vi-VN')}đ
                           </p>
@@ -877,7 +875,7 @@ export default function MemberManageGroup() {
                       <Button
                         id={`manage-members-btn-${group._id}`}
                         variant='default'
-                        className='w-full rounded-2xl'
+                        className='w-full rounded-md'
                         onClick={() => setManagingGroup(group)}
                       >
                         <Users className='mr-2 size-4' />
@@ -890,11 +888,11 @@ export default function MemberManageGroup() {
                           id={`remove-group-btn-${group._id}`}
                           size='sm'
                           variant='destructive'
-                          className='rounded-full'
+                          className='rounded-md'
                           onClick={() => setRemoveConfirm(group._id)}
                         >
                           <Trash2 className='mr-2 size-4' />
-                          Remove Group
+                          xoá nhóm
                         </Button>
                       </div>
                     </CardContent>
@@ -948,7 +946,7 @@ export default function MemberManageGroup() {
                       e.preventDefault()
                       if (!loading) setCurrentPage(page)
                     }}
-                    className={currentPage === page ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white' : ''}
+                    className={currentPage === page ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : ''}
                   >
                     {page}
                   </PaginationLink>

@@ -14,16 +14,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { fetchClient } from '@/utils/fetchClient'
 
-// ─── Types ──────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────----------------──────
 
 interface RatingSender {
   _id: string
   email: string
   displayName: string
   avatar: string | null
+  username?: string
 }
 
 interface RatingItem {
@@ -98,7 +98,7 @@ function ReviewCard({
   const memberName = member?.username || member?.displayName || 'Thành viên'
   const initials = memberName
     .split(' ')
-    .map((w) => w[0])
+    .map((w: string) => w[0])
     .join('')
     .slice(0, 2)
     .toUpperCase()
@@ -106,7 +106,7 @@ function ReviewCard({
   const timeAgo = getRelativeTime(item.createdAt)
 
   return (
-    <div className='group relative rounded-xl border bg-card p-5 transition-colors hover:bg-accent/30'>
+    <div className='group relative rounded-lg border bg-card p-5 transition-colors hover:bg-accent/30'>
       {/* Header: Avatar + Name + Stars + Time */}
       <div className='flex items-start gap-4'>
         <Avatar className='size-10 border'>
@@ -205,7 +205,7 @@ export default function MemberReviewsPage() {
       // 1. Fetch transactions where I am the buyer
       const buyerTxs = await fetchClient('/transactions/me?page=1&itemPerPage=100')
       if (buyerTxs && buyerTxs.list) {
-        const groupIdsToFetch = Array.from(
+        const groupIdsToFetch: string[] = Array.from(
           new Set(
             buyerTxs.list
               .map((tx: any) => tx.groupId)
@@ -275,8 +275,9 @@ export default function MemberReviewsPage() {
       if (res && res.trustScore !== undefined) {
         setTrustScore(res.trustScore)
       }
-      if (res && res.userID) {
-        fetchTxLookup(res.userID)
+      const uId = res?._id || res?.id || res?.userID
+      if (uId) {
+        fetchTxLookup(uId)
       }
     } catch (error) {
       console.error('Failed to load trust score:', error)
@@ -412,14 +413,14 @@ export default function MemberReviewsPage() {
             <div className='flex flex-wrap gap-2'>
               <Button
                 variant={activeTab === 'received' ? 'default' : 'outline'}
-                className='rounded-full'
+                className='rounded-md'
                 onClick={() => setActiveTab('received')}
               >
                 Đánh giá nhận được
               </Button>
               <Button
                 variant={activeTab === 'sent' ? 'default' : 'outline'}
-                className='rounded-full'
+                className='rounded-md'
                 onClick={() => setActiveTab('sent')}
               >
                 Đánh giá đã gửi
@@ -473,7 +474,7 @@ export default function MemberReviewsPage() {
           {loading && (
             <div className='space-y-4'>
               {[1, 2, 3].map((i) => (
-                <div key={i} className='animate-pulse rounded-xl border p-5'>
+                <div key={i} className='animate-pulse rounded-lg border p-5'>
                   <div className='flex items-start gap-4'>
                     <div className='size-10 rounded-full bg-muted' />
                     <div className='flex-1 space-y-3'>
@@ -530,7 +531,7 @@ export default function MemberReviewsPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
@@ -540,7 +541,7 @@ export default function MemberReviewsPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 >

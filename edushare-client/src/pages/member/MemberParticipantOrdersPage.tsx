@@ -364,7 +364,7 @@ export default function MemberParticipantOrdersPage() {
       {/* Header */}
       <Card>
         <CardContent className='p-6'>
-          <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm'>
+          <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold'>
             <Sparkles className='h-3.5 w-3.5' />
             Đơn hàng thuê bao an toàn
           </Badge>
@@ -378,11 +378,11 @@ export default function MemberParticipantOrdersPage() {
       {/* Stats bar */}
       {!loading && (
         <div className='flex flex-wrap items-center gap-3'>
-          <Badge variant='outline' className='rounded-full px-4 py-2 text-sm font-semibold'>
+          <Badge variant='outline' className='rounded-md px-4 py-2 text-sm font-semibold'>
             <ShieldCheck className='h-4 w-4 mr-2 text-muted-foreground' />
             Đang hoạt động: {activeOrdersCount} gói
           </Badge>
-          <Badge variant='outline' className='rounded-full px-4 py-2 text-sm font-semibold'>
+          <Badge variant='outline' className='rounded-md px-4 py-2 text-sm font-semibold'>
             <Clock3 className='h-4 w-4 mr-2 text-muted-foreground' />
             Tổng: {totalItems} đơn hàng
           </Badge>
@@ -432,7 +432,6 @@ export default function MemberParticipantOrdersPage() {
                 <TableBody>
                   {orders.map((order) => {
                     const meta = getStatusMeta(order.status)
-                    const ActionIcon = meta.actionIcon
                     const resolvedGroup = getResolvedGroup(order.groupId)
                     const groupInfo = getGroupInfo(resolvedGroup)
                     const category = groupInfo.category
@@ -464,7 +463,7 @@ export default function MemberParticipantOrdersPage() {
                           {formatVnd(order.amount)}
                         </TableCell>
                         <TableCell className='text-center'>
-                          <Badge variant={meta.badgeVariant} className='rounded-full'>
+                          <Badge variant={meta.badgeVariant} className='rounded-md'>
                             {meta.label}
                           </Badge>
                         </TableCell>
@@ -499,7 +498,7 @@ export default function MemberParticipantOrdersPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
@@ -509,7 +508,7 @@ export default function MemberParticipantOrdersPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 >
@@ -524,7 +523,7 @@ export default function MemberParticipantOrdersPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[720px] rounded-3xl'>
+        <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[720px]'>
           {selectedOrder && (() => {
             const meta = getStatusMeta(selectedOrder.status)
             const resolvedGroup = getResolvedGroup(selectedOrder.groupId)
@@ -578,7 +577,7 @@ export default function MemberParticipantOrdersPage() {
                       <h4 className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
                         Tiến trình đơn hàng
                       </h4>
-                      <Badge variant={meta.badgeVariant} className='rounded-full'>
+                      <Badge variant={meta.badgeVariant} className='rounded-md'>
                         {meta.label}
                       </Badge>
                     </div>
@@ -603,7 +602,7 @@ export default function MemberParticipantOrdersPage() {
                         <ShieldCheck className='h-4 w-4 text-muted-foreground' />
                         Thông tin tài khoản & Mật khẩu
                       </div>
-                      <div className='rounded border p-3 font-mono text-sm bg-background break-all select-all'>
+                      <div className='rounded-md border p-3 font-mono text-sm bg-background break-all select-all'>
                         {selectedOrder.proofUrl}
                       </div>
                       <p className='mt-2 text-xs text-muted-foreground'>
@@ -636,7 +635,7 @@ export default function MemberParticipantOrdersPage() {
                     {selectedOrder.status === 'proof' && !confirmSuccess && (
                       <Button
                         variant='destructive'
-                        className='rounded-full'
+                        className='rounded-md'
                         onClick={() => {
                           setDisputeTxId(selectedOrder._id)
                           setSelectedOrder(null)
@@ -649,7 +648,7 @@ export default function MemberParticipantOrdersPage() {
                     {selectedOrder.status === 'proof' && !confirmSuccess && (
                       <Button
                         variant='default'
-                        className='rounded-full'
+                        className='rounded-md'
                         onClick={handleConfirm}
                         disabled={confirming}
                       >
@@ -663,13 +662,13 @@ export default function MemberParticipantOrdersPage() {
                     )}
 
                     {confirmSuccess && (
-                      <Badge variant='secondary' className='rounded-full px-4 py-2'>
+                      <Badge variant='secondary' className='rounded-md px-4 py-2'>
                         ✓ Đã xác nhận! Tiền đang được giải ngân.
                       </Badge>
                     )}
 
                     <DialogClose asChild>
-                      <Button variant='outline' className='rounded-full'>
+                      <Button variant='outline' className='rounded-md'>
                         Đóng
                       </Button>
                     </DialogClose>
@@ -785,7 +784,7 @@ function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: Create
               Lý do khiếu nại (tối thiểu 10 ký tự)
             </Label>
             <textarea
-              className='mt-1.5 w-full rounded-xl border p-3 text-sm focus:outline-none dark:bg-slate-950 dark:text-slate-100'
+              className='mt-1.5 w-full rounded-lg border p-3 text-sm focus:outline-none'
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -802,7 +801,7 @@ function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: Create
             </Label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className='mt-1.5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 transition hover:bg-muted bg-muted/20'
+              className='mt-1.5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 transition hover:bg-muted bg-muted/20'
             >
               {previews.length > 0 ? (
                 <div className='grid grid-cols-3 gap-2 w-full'>
@@ -831,7 +830,7 @@ function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: Create
           </div>
 
           {files && files.length > 0 && (
-            <div className='text-xs text-destructive font-semibold bg-destructive/10 p-2.5 rounded-xl border border-destructive/20 flex items-center gap-2'>
+            <div className='text-xs text-destructive font-semibold bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 flex items-center gap-2'>
               <CheckCircle2 className='size-4 text-emerald-500' />
               Đã chọn {files.length} ảnh minh chứng
             </div>

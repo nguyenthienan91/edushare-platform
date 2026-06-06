@@ -49,11 +49,11 @@ export default function MemberDisputesPage() {
   const getStatus = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: 'Đang chờ', color: 'bg-amber-100 text-amber-700', icon: Clock }
+        return { label: 'Đang chờ', color: 'bg-amber-500/10 text-amber-600', icon: Clock }
       case 'resolved_refund':
-        return { label: 'Đã hoàn tiền (Member thắng)', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle }
+        return { label: 'Đã hoàn tiền (Member thắng)', color: 'bg-emerald-500/10 text-emerald-500', icon: CheckCircle }
       case 'resolved_payout':
-        return { label: 'Đã giải ngân (Owner thắng)', color: 'bg-indigo-100 text-indigo-700', icon: CheckCircle }
+        return { label: 'Đã giải ngân (Owner thắng)', color: 'bg-primary/10 text-primary', icon: CheckCircle }
       default:
         return { label: status, color: 'bg-muted text-muted-foreground', icon: Clock }
     }
@@ -90,7 +90,7 @@ export default function MemberDisputesPage() {
         ].map((item) => {
           const Icon = item.icon
           return (
-            <div key={item.label} className='border rounded-2xl p-5 shadow-sm bg-card'>
+            <div key={item.label} className='border rounded-lg p-5 bg-card'>
               <div className='flex items-center justify-between mb-3'>
                 <span className='text-sm text-muted-foreground'>{item.label}</span>
                 <Icon className='w-5 h-5 text-muted-foreground' />
@@ -110,7 +110,7 @@ export default function MemberDisputesPage() {
           <button
             key={value}
             onClick={() => setFilter(value)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
               filter === value 
                 ? 'bg-primary text-primary-foreground' 
                 : 'border bg-card hover:bg-muted text-foreground'
@@ -127,7 +127,7 @@ export default function MemberDisputesPage() {
             <Loader2 className='w-8 h-8 animate-spin text-muted-foreground' />
           </div>
         ) : filteredDisputes.length === 0 ? (
-          <div className='border rounded-2xl p-12 text-center bg-card shadow-sm'>
+          <div className='border rounded-lg p-12 text-center bg-card shadow-sm'>
             <FileText className='w-12 h-12 mx-auto mb-3 text-muted-foreground/40' />
             <h3 className='text-lg font-semibold'>Không có tranh chấp</h3>
             <p className='text-sm text-muted-foreground mt-1'>Bạn chưa có hoặc không có khiếu nại nào phù hợp bộ lọc.</p>
@@ -138,7 +138,7 @@ export default function MemberDisputesPage() {
             const Icon = status.icon
             const isOwner = user?.userID === dispute.transactionId?.groupId?.ownerId
             return (
-              <div key={dispute._id} className='border rounded-2xl p-6 shadow-sm bg-card hover:shadow-md transition duration-200'>
+              <div key={dispute._id} className='border rounded-lg p-6 shadow-sm bg-card hover:shadow-md transition duration-200'>
                 <div className='flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5'>
                   <div>
                     <div className='flex flex-wrap items-center gap-3 mb-2'>
@@ -148,7 +148,7 @@ export default function MemberDisputesPage() {
                         {status.label}
                       </div>
                       {isOwner && (
-                        <Badge className='bg-indigo-50 text-indigo-700 border-none rounded-full px-2.5 py-0.5 text-xs font-medium'>Chủ nhóm</Badge>
+                        <Badge className='bg-secondary text-secondary-foreground border-none rounded-full px-2.5 py-0.5 text-xs font-medium'>Chủ nhóm</Badge>
                       )}
                     </div>
                     <div className='text-xs text-muted-foreground flex flex-wrap gap-3 font-medium'>
@@ -178,7 +178,7 @@ export default function MemberDisputesPage() {
                   <div className='text-xs text-muted-foreground font-medium break-words'>
                     Người gửi: {dispute.raisedById?.displayName || dispute.raisedById?.email || 'Thành viên'} ({dispute.raisedById?.email})
                   </div>
-                  <Button onClick={() => setSelectedDispute(dispute)} variant='outline' className='rounded-xl text-xs font-semibold'>
+                  <Button onClick={() => setSelectedDispute(dispute)} variant='outline' className='rounded-md text-xs font-semibold'>
                     Xem chi tiết đối chất
                   </Button>
                 </div>

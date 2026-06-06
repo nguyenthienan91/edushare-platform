@@ -225,7 +225,7 @@ export default function MemberWalletPage() {
           {/* Dialog Nạp tiền */}
           <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full">Nạp thêm</Button>
+              <Button className="rounded-md">Nạp thêm</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px]">
               <DialogHeader>
@@ -265,7 +265,7 @@ export default function MemberWalletPage() {
                             key={label}
                             type="button"
                             variant="secondary"
-                            className="rounded-full"
+                            className="rounded-md"
                             onClick={() => setDepositAmount(String(value))}
                           >
                             {label}
@@ -292,9 +292,9 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" className="rounded-full" onClick={() => setIsDepositOpen(false)}>Hủy</Button>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsDepositOpen(false)}>Hủy</Button>
                 <Button 
-                  className="rounded-full"
+                  className="rounded-md"
                   onClick={handleDeposit}
                   disabled={loading}
                 >
@@ -308,7 +308,7 @@ export default function MemberWalletPage() {
           {/* Dialog Rút tiền */}
           <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full">Yêu cầu rút</Button>
+              <Button className="rounded-md">Yêu cầu rút</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px]">
               <DialogHeader>
@@ -336,7 +336,7 @@ export default function MemberWalletPage() {
                         key={value}
                         type="button"
                         variant="secondary"
-                        className="rounded-full"
+                        className="rounded-md"
                         onClick={() => setAmount(String(value))}
                       >
                         {value.toLocaleString('vi-VN')} đ
@@ -386,9 +386,9 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" className="rounded-full" onClick={() => setIsWithdrawOpen(false)}>Hủy</Button>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsWithdrawOpen(false)}>Hủy</Button>
                 <Button 
-                  className="rounded-full"
+                  className="rounded-md"
                   onClick={handleWithdraw}
                   disabled={loading}
                 >
@@ -402,9 +402,9 @@ export default function MemberWalletPage() {
           {/* Dialog Xem Lịch Sử */}
           <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="rounded-full">Xem lịch sử</Button>
+              <Button variant="outline" className="rounded-md">Xem lịch sử</Button>
             </DialogTrigger>
-            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[720px] rounded-3xl">
+            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[720px]">
               <DialogHeader>
                 <DialogTitle>Lịch sử giao dịch</DialogTitle>
                 <DialogDescription>
@@ -425,7 +425,7 @@ export default function MemberWalletPage() {
                   <TableBody>
                     {historyData.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                           Không có giao dịch nào
                         </TableCell>
                       </TableRow>
@@ -455,7 +455,7 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button className="rounded-full" onClick={() => setIsHistoryOpen(false)}>
+                <Button className="rounded-md" onClick={() => setIsHistoryOpen(false)}>
                   Đóng
                 </Button>
               </DialogFooter>
@@ -471,7 +471,7 @@ export default function MemberWalletPage() {
             <CardTitle>Lịch sử giao dịch gần đây</CardTitle>
             <CardDescription>Danh sách các giao dịch nạp và rút tiền gần nhất.</CardDescription>
           </div>
-          <Button variant="ghost" className="rounded-full" onClick={() => setIsHistoryOpen(true)}>
+          <Button variant="ghost" className="rounded-md" onClick={() => setIsHistoryOpen(true)}>
             Xem chi tiết
           </Button>
         </CardHeader>
@@ -489,7 +489,7 @@ export default function MemberWalletPage() {
               <TableBody>
                 {historyData.slice(0, 5).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                       Không có giao dịch nào
                     </TableCell>
                   </TableRow>

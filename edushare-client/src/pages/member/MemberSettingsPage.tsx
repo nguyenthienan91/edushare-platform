@@ -261,7 +261,7 @@ export default function MemberSettingsPage() {
               <div className="relative">
                 <Avatar className="size-20 border text-2xl">
                   {profile?.avatar && <AvatarImage src={profile.avatar} alt={displayName} />}
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold">
+                  <AvatarFallback className="bg-emerald-500/10 text-emerald-500 font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -472,8 +472,8 @@ export default function MemberSettingsPage() {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-4">
+                  <p className="text-sm text-blue-600">
                     Mật khẩu cần ít nhất 6 ký tự.
                   </p>
                 </div>
@@ -501,10 +501,10 @@ export default function MemberSettingsPage() {
                 Thanh toán
               </h2>
 
-              <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 border rounded-lg bg-emerald-500/10 border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12  rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-emerald-600" />
+                    <CreditCard className="w-6 h-6 text-emerald-500" />
                   </div>
 
                   <div>
@@ -512,13 +512,13 @@ export default function MemberSettingsPage() {
                       Ví EduShare
                     </p>
 
-                    <p className="text-sm font-semibold text-emerald-700">
+                    <p className="text-sm font-semibold text-emerald-600">
                       Số dư: {formatCurrency(profile?.balance ?? 0)}
                     </p>
                   </div>
                 </div>
 
-                <span className="text-xs  px-3 py-1 rounded-full text-emerald-600 font-medium">
+                <span className="text-xs  px-3 py-1 rounded-full text-emerald-500 font-medium">
                   Mặc định
                 </span>
               </div>
@@ -574,8 +574,8 @@ export default function MemberSettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-lg border p-4 bg-amber-50/50 border-amber-200">
-                    <p className="text-sm text-amber-800">
+                  <div className="rounded-lg border p-4 bg-amber-500/10 border-amber-500/20">
+                    <p className="text-sm text-amber-600">
                       Nâng cấp gói VIP Member với giá <strong>29.000đ / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
                     </p>
                   </div>
