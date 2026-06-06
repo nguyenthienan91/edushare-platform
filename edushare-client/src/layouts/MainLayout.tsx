@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { WalletService } from '@/services/wallet.service';
 
 const NAV_ITEMS = [
-  { label: 'Trang chủ', href: '#' },
+  { label: 'Trang chủ', href: '/' },
+  { label: 'Nhóm', href: '/groups' },
   { label: 'Tính năng', href: '#' },
   { label: 'FAQ', href: '#' },
   { label: 'Liên hệ', href: '#' },
@@ -67,15 +69,29 @@ export default function MainLayout() {
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="transition-colors hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isAdminOrOwner = isAuthenticated && user && ['admin', 'owner'].includes(user?.role?.toLowerCase() || '');
+
+              const handleClick = (e: React.MouseEvent) => {
+                if (item.href === '/groups' && !isAdminOrOwner) {
+                  e.preventDefault();
+                  toast.error('Truy cập bị từ chối', {
+                    description: 'Tính năng Nhóm hiện chỉ dành cho Quản trị viên và Chủ nhóm.',
+                  });
+                }
+              };
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={item.href === '/groups' ? handleClick : undefined}
+                  className={`transition-colors hover:text-primary ${item.href === '/groups' ? 'font-bold text-indigo-600' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-3">

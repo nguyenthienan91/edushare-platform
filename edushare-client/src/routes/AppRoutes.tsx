@@ -12,6 +12,7 @@ import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import TopupPage from '@/pages/wallet/TopupPage'
+import GroupsPage from '@/pages/GroupsPage'
 import MemberParticipantPage from '@/pages/member/MemberParticipantPageNew'
 import MemberParticipantOrdersPage from '@/pages/member/MemberParticipantOrdersPage'
 import MemberWalletPage from '@/pages/member/MemberWalletPage'
@@ -87,6 +88,7 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path='/' element={<LandingPage />} />
+        <Route path='/groups' element={<GroupsPage />} />
       </Route>
 
       <Route path='/login' element={<LoginPage />} />
