@@ -14,7 +14,7 @@ export class BankAccountsService {
 
   async create(userId: string, createBankAccountDto: CreateBankAccountDto): Promise<BankAccountDocument> {
     const userObjectId = new Types.ObjectId(userId)
-    
+
     // Check current bank account limit
     const count = await this.bankAccountModel.countDocuments({ userId: userObjectId }).exec()
     if (count >= 3) {
@@ -62,10 +62,14 @@ export class BankAccountsService {
 
     if (isDefaultUpdating === true) {
       // Set all other accounts to not default
-      await this.bankAccountModel.updateMany({ userId: userObjectId, _id: { $ne: bankAccount._id } }, { isDefault: false }).exec()
+      await this.bankAccountModel
+        .updateMany({ userId: userObjectId, _id: { $ne: bankAccount._id } }, { isDefault: false })
+        .exec()
     } else if (isDefaultUpdating === false && bankAccount.isDefault) {
       // User is setting default to false on the current default account, set another account to default
-      const anotherAccount = await this.bankAccountModel.findOne({ userId: userObjectId, _id: { $ne: bankAccount._id } }).exec()
+      const anotherAccount = await this.bankAccountModel
+        .findOne({ userId: userObjectId, _id: { $ne: bankAccount._id } })
+        .exec()
       if (anotherAccount) {
         anotherAccount.isDefault = true
         await anotherAccount.save()
@@ -75,11 +79,9 @@ export class BankAccountsService {
       }
     }
 
-    const updatedAccount = await this.bankAccountModel.findByIdAndUpdate(
-      id,
-      { $set: updateBankAccountDto },
-      { new: true },
-    ).exec()
+    const updatedAccount = await this.bankAccountModel
+      .findByIdAndUpdate(id, { $set: updateBankAccountDto }, { new: true })
+      .exec()
 
     if (!updatedAccount) {
       throw new NotFoundException('Bank account not found.')

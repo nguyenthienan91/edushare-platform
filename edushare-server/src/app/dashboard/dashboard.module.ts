@@ -8,6 +8,7 @@ import { Withdrawal, WithdrawalSchema } from '../wallets/schemas/withdrawal.sche
 import { AuthModule } from '../auth/auth.module'
 import { UsersModule } from '../users/users.module'
 import { AdminDashboardController } from './admin-dashboard.controller'
+import { DashboardController } from './dashboard.controller'
 import { DashboardService } from './dashboard.service'
 
 @Module({
@@ -22,7 +23,7 @@ import { DashboardService } from './dashboard.service'
     AuthModule,
     UsersModule,
   ],
-  controllers: [AdminDashboardController],
+  controllers: [AdminDashboardController, DashboardController],
   providers: [DashboardService],
 })
 export class DashboardModule {}

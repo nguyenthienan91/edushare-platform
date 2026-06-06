@@ -8,6 +8,7 @@ import { NotificationsModule } from '../notifications/notification.module'
 import { WalletsModule } from '../wallets/wallets.module'
 import { AuthModule } from '../auth/auth.module'
 import { GroupsModule } from '../groups/groups.module'
+import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { GroupsModule } from '../groups/groups.module'
     forwardRef(() => GroupsModule),
   ],
   controllers: [UsersController, AdminUsersController],
-  providers: [UsersService],
+  providers: [UsersService, CloudinaryService],
   exports: [UsersService, MongooseModule],
 })
 export class UsersModule {}
