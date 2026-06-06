@@ -40,11 +40,7 @@ export class BankAccountsController {
   @ApiOperation({ summary: 'Cập nhật tài khoản ngân hàng' })
   @UsePipes(new ZodValidationPipe())
   @ApiBody({ type: UpdateBankAccountSwaggerDto })
-  async update(
-    @User() user: UserInfo,
-    @Param('id') id: string,
-    @Body() updateBankAccountDto: UpdateBankAccountDto,
-  ) {
+  async update(@User() user: UserInfo, @Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto) {
     const userId = user.userID
     return await this.bankAccountsService.update(userId, id, updateBankAccountDto)
   }

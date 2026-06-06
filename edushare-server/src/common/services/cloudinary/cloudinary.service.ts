@@ -18,7 +18,10 @@ export class CloudinaryService {
   /**
    * Hàm chuyển đổi Buffer của file sang Stream và upload lên Cloudinary
    */
-  async uploadImage(file: Express.Multer.File, folder = 'edushare_proofs'): Promise<UploadApiResponse | UploadApiErrorResponse> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder = 'edushare_proofs',
+  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {

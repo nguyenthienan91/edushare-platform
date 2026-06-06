@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { User, UserDocument } from '../users/entities/user.entity'
+import { Model, Types } from 'mongoose'
+import { EscrowStatus } from '../transactions/enums/escrow-status.enum'
+import { User, UserDocument, UserRole } from '../users/entities/user.entity'
 import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
 import { Transaction, TransactionDocument } from '../transactions/schemas/transaction.schema'
 import { Topup, TopupDocument } from '../wallets/schemas/topup.schema'
@@ -71,6 +72,71 @@ export class DashboardService {
         totalTopupAmount,
         totalApprovedWithdrawalAmount,
       },
+    }
+  }
+
+  async getMemberGrowthChart(userId: string) {
+    const ownerId = new Types.ObjectId(userId)
+
+    // Find all groups owned by this user
+    const groups = await this.groupModel
+      .find({ ownerId } as any)
+      .select('_id members')
+      .exec()
+    const groupIds = groups.map((g) => g._id)
+    const currentActualMembersCount = groups.reduce((sum, group) => sum + (group.members?.length || 0), 0)
+
+    const now = new Date()
+    const currentDay = now.getDay() // 0 is Sunday, 1 is Monday, etc.
+    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay
+
+    const monday = new Date(now)
+    monday.setDate(now.getDate() + distanceToMonday)
+    monday.setHours(0, 0, 0, 0)
+
+    // Calculate completed transactions count up to now (to calculate offset)
+    const totalTxCountNow = await this.transactionModel.countDocuments({
+      groupId: { $in: groupIds },
+      status: EscrowStatus.COMPLETED,
+    })
+
+    const offset = Math.max(0, currentActualMembersCount - totalTxCountNow)
+
+    const data: number[] = []
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday)
+      day.setDate(monday.getDate() + i)
+      day.setHours(23, 59, 59, 999)
+
+      // Only query if the day is not in the future, otherwise use the same count as now
+      if (day > now) {
+        data.push(currentActualMembersCount)
+      } else {
+        const txCount = await this.transactionModel.countDocuments({
+          groupId: { $in: groupIds },
+          status: EscrowStatus.COMPLETED,
+          updatedAt: { $lte: day },
+        })
+        data.push(txCount + offset)
+      }
+    }
+
+    return {
+      status: 'success',
+      data,
+    }
+  }
+
+  async getFeaturedGroups(limit = 3) {
+    const groups = await this.groupModel
+      .find({ status: { $in: [GroupStatus.AVAILABLE, GroupStatus.FULL] } })
+      .sort({ occupiedSlots: -1, createdAt: -1 })
+      .limit(limit)
+      .exec()
+
+    return {
+      status: 'success',
+      data: groups,
     }
   }
 }
