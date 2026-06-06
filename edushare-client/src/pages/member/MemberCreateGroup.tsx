@@ -22,6 +22,7 @@ export default function MemberCreateGroup() {
   const [loadingUser, setLoadingUser] = useState(true)
   const [isVip, setIsVip] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Form states
   const [groupName, setGroupName] = useState('')
@@ -68,21 +69,32 @@ export default function MemberCreateGroup() {
   const totalPrice = useMemo(() => maxMembers * pricePerSlot, [maxMembers, pricePerSlot])
 
   const handleSubmit = async () => {
+    setError(null)
     // Client-side validations
     if (!groupName.trim()) {
-      return toast.error('Vui lòng nhập tên nhóm')
+      const msg = 'Vui lòng nhập tên nhóm'
+      setError(msg)
+      return toast.error(msg)
     }
     if (!category) {
-      return toast.error('Vui lòng chọn danh mục phần mềm')
+      const msg = 'Vui lòng chọn danh mục phần mềm'
+      setError(msg)
+      return toast.error(msg)
     }
-    if (!maxMembers || maxMembers < 2) {
-      return toast.error('Số lượng thành viên tối thiểu là 2')
+    if (!maxMembers || Number(maxMembers) < 2) {
+      const msg = 'Số lượng thành viên tối thiểu là 2'
+      setError(msg)
+      return toast.error(msg)
     }
-    if (!pricePerSlot || pricePerSlot <= 0) {
-      return toast.error('Vui lòng nhập giá tiền mỗi slot')
+    if (!pricePerSlot || Number(pricePerSlot) <= 0) {
+      const msg = 'Vui lòng nhập giá tiền mỗi slot'
+      setError(msg)
+      return toast.error(msg)
     }
     if (!description.trim()) {
-      return toast.error('Vui lòng nhập mô tả chi tiết nhóm')
+      const msg = 'Vui lòng nhập mô tả chi tiết nhóm'
+      setError(msg)
+      return toast.error(msg)
     }
 
     setSubmitting(true)
@@ -91,6 +103,8 @@ export default function MemberCreateGroup() {
       const body = {
         name: groupName.trim(),
         category: category,
+        maxMembers: Number(maxMembers),
+        pricePerSlot: Number(pricePerSlot),
         totalSlots: Number(maxMembers),
         totalPrice: Number(totalPrice),
         description: description.trim(),
@@ -109,12 +123,15 @@ export default function MemberCreateGroup() {
       setDescription('')
       setPricePerSlot(0)
       setExpiredAt(undefined)
+      setError(null)
       
       // Redirect to Quản lý nhóm (Của tôi)
       navigate('/dashboard/groups')
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || 'Lỗi khi tạo nhóm mới. Vui lòng kiểm tra lại.')
+      const msg = err.message || 'Lỗi khi tạo nhóm mới. Vui lòng kiểm tra lại.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setSubmitting(false)
     }
@@ -123,7 +140,7 @@ export default function MemberCreateGroup() {
   if (loadingUser) {
     return (
       <div className='flex h-[400px] items-center justify-center'>
-        <Loader2 className='size-8 animate-spin text-indigo-600' />
+        <Loader2 className='size-8 animate-spin text-muted-foreground' />
       </div>
     )
   }
@@ -131,18 +148,15 @@ export default function MemberCreateGroup() {
   if (!isVip) {
     return (
       <div className='flex items-center justify-center py-10 px-4'>
-        <Card className='max-w-md w-full rounded-3xl border-slate-200/80 shadow-lg text-center p-8  relative overflow-hidden'>
-          <div className='absolute -right-16 -top-16 size-36 rounded-full bg-indigo-50/50' />
-          <div className='absolute -left-16 -bottom-16 size-36 rounded-full bg-indigo-50/30' />
-          
+        <Card className='max-w-md w-full rounded-3xl shadow-lg text-center p-8 relative overflow-hidden'>
           <div className='relative flex flex-col items-center gap-6'>
-            <div className='flex size-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm'>
+            <div className='flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground shadow-sm'>
               <Lock className='size-8' />
             </div>
             
             <div className='space-y-2'>
               <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
-              <p className='text-sm text-slate-500 leading-relaxed'>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
                 Tính năng tạo nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
               </p>
             </div>
@@ -150,14 +164,15 @@ export default function MemberCreateGroup() {
             <div className='w-full pt-4 space-y-3 relative z-10'>
               <Button 
                 onClick={() => navigate('/dashboard/wallet')}
-                className='w-full rounded-full bg-indigo-600 h-12 text-white hover:bg-indigo-700 font-medium'
+                variant='default'
+                className='w-full rounded-full h-12 font-medium'
               >
                 Nâng cấp VIP (29,000đ/tháng)
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard/overview')}
                 variant='outline'
-                className='w-full rounded-full h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
+                className='w-full rounded-full h-12 font-medium'
               >
                 Quay lại
               </Button>
@@ -172,7 +187,7 @@ export default function MemberCreateGroup() {
     <div className='space-y-6 '>
       <Card>
         <CardContent>
-          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Create Group</Badge>
+          <Badge variant='secondary' className='rounded-full'>Create Group</Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight '>Tạo nhóm mới</h2>
           <p className='mt-2 max-w-2xl text-sm leading-6 '>
             Xây dựng một cộng đồng nhỏ với cảm giác thân thiện, tin tưởng và rõ ràng ngay từ đầu.
@@ -240,8 +255,8 @@ export default function MemberCreateGroup() {
                   <Button
                     variant='outline'
                     className={cn(
-                      'h-12 w-full justify-start rounded-2xl border-slate-200 px-4 text-left font-normal hover:bg-slate-50 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none',
-                      !expiredAt && 'text-slate-400'
+                      'h-12 w-full justify-start rounded-2xl px-4 text-left font-normal outline-none',
+                      !expiredAt && 'text-muted-foreground'
                     )}
                     disabled={submitting}
                   >
@@ -290,23 +305,30 @@ export default function MemberCreateGroup() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className='min-h-[120px] rounded-2xl border border-slate-200  px-4 py-3 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-400'
+                className='min-h-[120px] rounded-2xl border px-4 py-3 text-sm outline-none transition-colors'
                 placeholder='Viết lời chào mừng cho các thành viên mới...'
                 disabled={submitting}
               />
             </div>
 
+            {error && (
+              <div className='rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive'>
+                {error}
+              </div>
+            )}
+
             <div className='flex flex-wrap gap-3 pt-2'>
               <Button
                 variant='outline'
-                className='rounded-full border-indigo-200  text-indigo-700 hover:bg-indigo-50'
+                className='rounded-full'
                 onClick={() => navigate('/dashboard/groups')}
                 disabled={submitting}
               >
                 Hủy
               </Button>
               <Button 
-                className='rounded-full bg-indigo-600 text-white hover:bg-indigo-700'
+                variant='default'
+                className='rounded-full'
                 onClick={handleSubmit}
                 disabled={submitting}
               >
@@ -331,19 +353,19 @@ export default function MemberCreateGroup() {
             <CardDescription>Xem trước giao diện nhóm của bạn ngay khi chỉnh form.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='rounded-3xl  from-sky-50 to-white p-5 ring-1 ring-sky-100'>
+            <div className='rounded-3xl border p-5 bg-card shadow-sm'>
               <div className='flex items-start justify-between gap-4'>
                 <div>
-                  <div className='inline-flex items-center gap-2 rounded-full  px-3 py-1 text-xs font-medium text-sky-700 shadow-sm'>
+                  <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium shadow-sm'>
                     <Sparkles className='size-3.5' />
                     Live Preview
-                  </div>
+                  </Badge>
                   <h3 className='mt-4 text-2xl font-semibold '>{groupName || 'Tên nhóm của bạn'}</h3>
-                  <p className='mt-1 text-sm '>
+                  <p className='mt-1 text-sm text-muted-foreground'>
                     {category} community
                   </p>
                 </div>
-                <div className='flex size-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600'>
+                <div className='flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground'>
                   <Users className='size-5' />
                 </div>
               </div>
