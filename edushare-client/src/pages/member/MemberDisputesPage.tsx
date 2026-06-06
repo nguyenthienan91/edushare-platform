@@ -1,19 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { AlertCircle, CheckCircle, Clock, FileText, Loader2, UploadCloud, CheckCircle2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { CheckCircle, Clock, FileText, Loader2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { fetchClient } from '@/utils/fetchClient'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { DisputeDetailDialog } from '@/components/escrow/DisputeDetailDialog'
 
 export default function MemberDisputesPage() {
   const { user } = useAuth()
@@ -21,11 +14,6 @@ export default function MemberDisputesPage() {
   const [disputes, setDisputes] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedDispute, setSelectedDispute] = useState<any | null>(null)
-  
-  // Counter proof upload states
-  const [uploading, setUploading] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
-
   const fetchMyDisputes = useCallback(async () => {
     setLoading(true)
     try {
@@ -44,35 +32,6 @@ export default function MemberDisputesPage() {
   useEffect(() => {
     fetchMyDisputes()
   }, [fetchMyDisputes])
-
-  const handleCounterProofSubmit = async (disputeId: string) => {
-    if (!selectedFiles || selectedFiles.length === 0) {
-      toast.error('Vui lòng chọn ít nhất một ảnh bằng chứng đối chất.')
-      return
-    }
-
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      Array.from(selectedFiles).forEach((file) => {
-        formData.append('files', file)
-      })
-
-      await fetchClient(`/disputes/${disputeId}/counter-proof`, {
-        method: 'PATCH',
-        body: formData,
-      })
-
-      toast.success('Nộp bằng chứng phản biện thành công!')
-      setSelectedFiles(null)
-      await fetchMyDisputes()
-      setSelectedDispute(null)
-    } catch (err: any) {
-      toast.error(err.message || 'Nộp bằng chứng phản biện thất bại.')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const filteredDisputes = disputes.filter((dispute) => {
     if (filter === 'all') return true
@@ -229,170 +188,12 @@ export default function MemberDisputesPage() {
         )}
       </div>
 
-      {/* Symmetrical Dialog details */}
-      <Dialog open={!!selectedDispute} onOpenChange={(open) => !open && setSelectedDispute(null)}>
-        <DialogContent className='w-[calc(100%-2rem)] sm:max-w-3xl md:max-w-4xl rounded-3xl overflow-hidden p-6 gap-0 max-h-[90vh] flex flex-col'>
-          <DialogHeader className='pb-4 border-b shrink-0'>
-            <div className='flex items-center gap-2 mb-1.5'>
-              {selectedDispute && (
-                <>
-                  <Badge className={`rounded-full border-none font-semibold ${getStatus(selectedDispute.status).color}`}>
-                    {getStatus(selectedDispute.status).label}
-                  </Badge>
-                  <span className='text-xs text-muted-foreground font-medium'>
-                    Mã đơn khiếu nại: #{selectedDispute._id.toUpperCase()}
-                  </span>
-                </>
-              )}
-            </div>
-            <DialogTitle className='text-2xl font-bold tracking-tight'>
-              {selectedDispute?.transactionId?.groupId?.name || 'Chi tiết tranh chấp'}
-            </DialogTitle>
-            <DialogDescription className='text-xs font-medium'>
-              Khởi tạo ngày: {selectedDispute && new Date(selectedDispute.createdAt).toLocaleString('vi-VN')}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedDispute && (
-            <div className='flex-1 overflow-y-auto pr-2 mt-4 space-y-6 max-h-[calc(90vh-140px)]'>
-              {/* Symmetrical split view grid */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                {/* Left Side: Member argument & evidence */}
-                <Card className='rounded-2xl shadow-sm'>
-                  <CardHeader className='pb-3 border-b bg-muted/50 p-4'>
-                    <CardTitle className='text-sm font-semibold text-rose-700 flex items-center gap-2'>
-                      <span className='flex size-6 items-center justify-center rounded-full bg-rose-100 text-rose-700 text-xs font-bold'>1</span>
-                      Phía Thành viên (Khiếu nại)
-                    </CardTitle>
-                    <CardDescription className='text-xs font-medium'>
-                      Người nộp: {selectedDispute.raisedById?.displayName || 'Thành viên'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className='p-4 space-y-4'>
-                    <div>
-                      <h4 className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1'>Lý do ghi nhận</h4>
-                      <p className='text-sm font-semibold'>{getReason(selectedDispute.reason)}</p>
-                    </div>
-                    <div>
-                      <h4 className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2'>Tệp ảnh minh chứng</h4>
-                      {selectedDispute.memberEvidence && selectedDispute.memberEvidence.length > 0 ? (
-                        <div className='grid grid-cols-2 gap-2'>
-                          {selectedDispute.memberEvidence.map((url: string, index: number) => (
-                            <a href={url} target='_blank' rel='noreferrer' key={index} className='relative rounded-xl overflow-hidden border block bg-muted'>
-                              <img src={url} alt='Member evidence large' className='h-24 w-full object-cover hover:scale-105 transition-transform duration-250' />
-                            </a>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className='text-xs text-muted-foreground italic'>Thành viên không đính kèm hình ảnh.</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Right Side: Owner argument & counter-evidence */}
-                <Card className='rounded-2xl shadow-sm'>
-                  <CardHeader className='pb-3 border-b bg-muted/50 p-4'>
-                    <CardTitle className='text-sm font-semibold text-indigo-700 flex items-center gap-2'>
-                      <span className='flex size-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold'>2</span>
-                      Phía Chủ nhóm (Đối chất)
-                    </CardTitle>
-                    <CardDescription className='text-xs font-medium'>
-                      Yêu cầu phản biện bằng hình ảnh cấp quyền
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className='p-4 space-y-4'>
-                    {user?.userID === selectedDispute.transactionId?.groupId?.ownerId && selectedDispute.status === 'pending' ? (
-                      <div className='space-y-3'>
-                        <p className='text-xs text-muted-foreground leading-normal font-medium'>
-                          Hãy tải lên ảnh chụp màn hình chứng minh bạn đã cấp quyền sử dụng cho member này để giữ an toàn cho số tiền cọc.
-                        </p>
-                        <div className='flex flex-col gap-2'>
-                          <input
-                            type='file'
-                            multiple
-                            accept='image/*'
-                            id={`file-upload-dialog-${selectedDispute._id}`}
-                            className='hidden'
-                            onChange={(e) => setSelectedFiles(e.target.files)}
-                          />
-                          <Button 
-                            variant='outline' 
-                            size='sm'
-                            onClick={() => document.getElementById(`file-upload-dialog-${selectedDispute._id}`)?.click()}
-                            className='rounded-xl w-full text-xs font-semibold'
-                            disabled={uploading}
-                          >
-                            <UploadCloud className='w-4 h-4 mr-2' />
-                            Chọn hình ảnh tệp tin
-                          </Button>
-                          <Button 
-                            size='sm'
-                            onClick={() => handleCounterProofSubmit(selectedDispute._id)}
-                            className='bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl w-full text-xs font-semibold'
-                            disabled={uploading || !selectedFiles}
-                          >
-                            {uploading ? <Loader2 className='w-4 h-4 mr-2 animate-spin' /> : <CheckCircle2 className='w-4 h-4 mr-2' />}
-                            Gửi ảnh đối chất phản biện
-                          </Button>
-                        </div>
-                        {selectedFiles && selectedFiles.length > 0 && (
-                          <p className='text-xs text-indigo-600 font-semibold'>Đã chọn {selectedFiles.length} ảnh</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div>
-                        <h4 className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2'>Ảnh phản biện từ chủ nhóm</h4>
-                        {selectedDispute.ownerEvidence && selectedDispute.ownerEvidence.length > 0 ? (
-                          <div className='grid grid-cols-2 gap-2'>
-                            {selectedDispute.ownerEvidence.map((url: string, index: number) => (
-                              <a href={url} target='_blank' rel='noreferrer' key={index} className='relative rounded-xl overflow-hidden border block bg-muted'>
-                                <img src={url} alt='Owner evidence large' className='h-24 w-full object-cover hover:scale-105 transition-transform duration-250' />
-                              </a>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className='text-xs text-muted-foreground italic font-medium'>Chủ nhóm chưa gửi bất kỳ ảnh đối chất nào.</p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Separator />
-
-              {/* Bottom Resolution summary */}
-              <div className='rounded-2xl border p-4 bg-muted/50 flex flex-col md:flex-row md:items-center justify-between gap-4'>
-                <div className='space-y-0.5 shrink-0'>
-                  <p className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>Tổng giá trị cọc đóng băng</p>
-                  <p className='text-2xl font-black text-rose-600'>{(selectedDispute.transactionId?.amount || 0).toLocaleString('vi-VN')} ₫</p>
-                </div>
-                <div className='text-xs font-semibold leading-relaxed text-muted-foreground max-w-lg'>
-                  {selectedDispute.status === 'pending' ? (
-                    <span className='text-amber-600 flex items-center gap-1.5'>
-                      <AlertCircle className='w-4 h-4 shrink-0' />
-                      Hồ sơ tranh chấp đang được đóng băng an toàn và đợi Admin đưa ra phán quyết hoàn trả hoặc giải ngân.
-                    </span>
-                  ) : (
-                    <div className='flex gap-2 items-start'>
-                      <CheckCircle className='w-4 h-4 text-emerald-600 shrink-0 mt-0.5' />
-                      <div>
-                        <span className='font-bold'>Phán quyết từ Admin: </span>
-                        <span>
-                          {selectedDispute.status === 'resolved_refund'
-                            ? 'Admin phán quyết Member thắng kiện: Số tiền giao dịch đã được hoàn trả về ví của Member.'
-                            : 'Admin phán quyết Chủ nhóm thắng kiện: Số tiền giao dịch đã được giải ngân cho Chủ nhóm.'}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Detail Dialog */}
+      <DisputeDetailDialog
+        dispute={selectedDispute}
+        onClose={() => setSelectedDispute(null)}
+        onRefresh={fetchMyDisputes}
+      />
     </div>
   )
 }

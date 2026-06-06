@@ -163,7 +163,9 @@ export default function AdminDisputes() {
                     </p>
                     <div className='flex items-center gap-2 text-xs text-slate-500'>
                       <User className='w-3 h-3' />
-                      <span className='truncate'>{dispute.raisedById?.name || dispute.raisedById?.email || 'N/A'}</span>
+                      <span className='truncate'>
+                        {dispute.raisedById?.displayName || dispute.raisedById?.name || dispute.raisedById?.email || 'N/A'}
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -215,7 +217,7 @@ export default function AdminDisputes() {
                           Khiếu nại từ Member
                         </CardTitle>
                         <CardDescription className='text-xs font-medium text-slate-500'>
-                          Tên: {currentDispute.raisedById?.name || 'N/A'} ({currentDispute.raisedById?.email || 'N/A'})
+                          Tên: {currentDispute.raisedById?.displayName || currentDispute.raisedById?.name || 'N/A'} ({currentDispute.raisedById?.email || 'N/A'})
                         </CardDescription>
                       </CardHeader>
                       <CardContent className='p-4 space-y-4'>
@@ -226,19 +228,19 @@ export default function AdminDisputes() {
                         <div>
                           <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2'>Ảnh bằng chứng thành viên gửi</h4>
                           {currentDispute.memberEvidence && currentDispute.memberEvidence.length > 0 ? (
-                            <div className='grid grid-cols-2 gap-2'>
+                            <div className='flex flex-col items-center gap-3 w-full'>
                               {currentDispute.memberEvidence.map((src: string, i: number) => (
                                 <a
                                   href={src}
                                   target='_blank'
                                   rel='noreferrer'
                                   key={i}
-                                  className='relative rounded-xl overflow-hidden border border-slate-200 block bg-slate-50'
+                                  className='relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 block bg-slate-50 group hover:shadow-md transition-all'
                                 >
                                   <img
                                     src={src}
                                     alt='Member Evidence'
-                                    className='h-28 w-full object-cover hover:scale-105 transition-transform'
+                                    className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-300'
                                   />
                                 </a>
                               ))}
@@ -269,19 +271,19 @@ export default function AdminDisputes() {
                         <div>
                           <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2'>Ảnh đối chất chủ nhóm gửi</h4>
                           {currentDispute.ownerEvidence && currentDispute.ownerEvidence.length > 0 ? (
-                            <div className='grid grid-cols-2 gap-2'>
+                            <div className='flex flex-col items-center gap-3 w-full'>
                               {currentDispute.ownerEvidence.map((src: string, i: number) => (
                                 <a
                                   href={src}
                                   target='_blank'
                                   rel='noreferrer'
                                   key={i}
-                                  className='relative rounded-xl overflow-hidden border border-slate-200 block bg-slate-50'
+                                  className='relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 block bg-slate-50 group hover:shadow-md transition-all'
                                 >
                                   <img
                                     src={src}
                                     alt='Owner Evidence'
-                                    className='h-28 w-full object-cover hover:scale-105 transition-transform'
+                                    className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-300'
                                   />
                                 </a>
                               ))}

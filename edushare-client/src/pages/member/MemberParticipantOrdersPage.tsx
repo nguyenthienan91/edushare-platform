@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
   X,
+  CheckCircle2,
 } from 'lucide-react'
 import {
   Dialog,
@@ -27,6 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
 import { toast } from 'sonner'
+import { Label } from '@/components/ui/label'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -261,6 +263,7 @@ export default function MemberParticipantOrdersPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const [disputeTxId, setDisputeTxId] = useState<string | null>(null)
   const itemPerPage = 10
 
   // Fetch orders using /transactions/me
@@ -588,10 +591,22 @@ export default function MemberParticipantOrdersPage() {
 
                 <DialogFooter className='border-t pt-4'>
                   <div className='flex flex-wrap items-center justify-end gap-2 w-full'>
-                    {/* Confirm Button – only shown when status = 'proof' */}
                     {selectedOrder.status === 'proof' && !confirmSuccess && (
                       <Button
+                        variant='destructive'
                         className='rounded-full'
+                        onClick={() => {
+                          setDisputeTxId(selectedOrder._id)
+                          setSelectedOrder(null)
+                        }}
+                      >
+                        Khiếu nại giao dịch
+                      </Button>
+                    )}
+
+                    {selectedOrder.status === 'proof' && !confirmSuccess && (
+                      <Button
+                        className='rounded-full bg-indigo-600 hover:bg-indigo-700 text-white'
                         onClick={handleConfirm}
                         disabled={confirming}
                       >
@@ -622,6 +637,191 @@ export default function MemberParticipantOrdersPage() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Create Dispute Dialog */}
+      <CreateDisputeDialog
+        open={!!disputeTxId}
+        transactionId={disputeTxId}
+        onClose={() => setDisputeTxId(null)}
+        onSuccess={() => {
+          if (user?.userID) fetchOrders()
+        }}
+      />
+    </div>
+  )
+}
+
+interface CreateDisputeDialogProps {
+  open: boolean
+  transactionId: string | null
+  onClose: () => void
+  onSuccess: () => void
+}
+
+function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: CreateDisputeDialogProps) {
+  const [reason, setReason] = useState('')
+  const [files, setFiles] = useState<FileList | null>(null)
+  const [previews, setPreviews] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files
+    if (!selected || selected.length === 0) return
+    
+    if (selected.length > 5) {
+      setError('Tối đa chỉ được chọn 5 ảnh bằng chứng.')
+      return
+    }
+
+    setFiles(selected)
+    const previewUrls = Array.from(selected).map((f) => URL.createObjectURL(f))
+    setPreviews(previewUrls)
+    setError(null)
+  }
+
+  const handleSubmit = async () => {
+    if (!reason || reason.trim().length < 10) {
+      setError('Lý do khiếu nại phải tối thiểu 10 ký tự.')
+      return
+    }
+    if (!files || files.length === 0) {
+      setError('Vui lòng chọn ít nhất một hình ảnh minh chứng.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append('transactionId', transactionId || '')
+      formData.append('reason', reason.trim())
+      Array.from(files).forEach((file) => {
+        formData.append('files', file)
+      })
+
+      await fetchClient('/disputes', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      toast.success('Gửi đơn khiếu nại thành công! Giao dịch đã được đóng băng để Admin xử lý.')
+      onSuccess()
+      handleClose()
+    } catch (err: any) {
+      setError(err.message || 'Gửi khiếu nại thất bại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setReason('')
+    setFiles(null)
+    setPreviews([])
+    setError(null)
+    onClose()
+  }
+
+  if (!open || !transactionId) return null
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={handleClose} />
+      <div className='relative w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl mx-4 max-h-[90vh] flex flex-col'>
+        <div className='mb-1 flex items-center justify-between shrink-0'>
+          <h3 className='text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2'>
+            <span className='size-2 rounded-full bg-rose-600 animate-pulse' />
+            Khởi tạo khiếu nại giao dịch
+          </h3>
+          <button
+            onClick={handleClose}
+            className='flex size-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          >
+            <X className='size-4' />
+          </button>
+        </div>
+        <p className='mb-4 text-xs text-muted-foreground shrink-0'>
+          Giao dịch sẽ được đóng băng tạm thời. Vui lòng cung cấp lý do chi tiết và hình ảnh bằng chứng để Admin phân xử.
+        </p>
+
+        <div className='flex-1 overflow-y-auto pr-1 space-y-4 my-2 scrollbar-thin'>
+          <div>
+            <Label className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+              Lý do khiếu nại (tối thiểu 10 ký tự)
+            </Label>
+            <textarea
+              className='mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-950 p-3 text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 dark:text-slate-100'
+              rows={3}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder='Mô tả chi tiết vấn đề bạn gặp phải (ví dụ: Chủ nhóm gửi thông tin tài khoản sai, không đăng nhập được...)'
+            />
+            <div className='text-[10px] text-right text-muted-foreground mt-1'>
+              Đo độ dài: {reason.length} ký tự
+            </div>
+          </div>
+
+          <div>
+            <Label className='text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+              Tệp ảnh minh chứng (tối đa 5 ảnh, bắt buộc có ít nhất 1 ảnh)
+            </Label>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className='mt-1.5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 px-4 py-6 transition hover:border-rose-400 dark:hover:border-rose-500 bg-slate-50/50 dark:bg-slate-950/20'
+            >
+              {previews.length > 0 ? (
+                <div className='grid grid-cols-3 gap-2 w-full'>
+                  {previews.map((src, i) => (
+                    <div key={i} className='relative aspect-square rounded-lg overflow-hidden border border-slate-100'>
+                      <img src={src} alt='preview' className='h-full w-full object-cover' />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <ImageIcon className='size-8 text-slate-300' />
+                  <p className='text-xs font-semibold text-slate-500'>Nhấn để chọn ảnh bằng chứng</p>
+                  <p className='text-[10px] text-slate-400'>PNG, JPG, JPEG – tối đa 5MB mỗi ảnh</p>
+                </>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept='image/*'
+              multiple
+              className='hidden'
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {files && files.length > 0 && (
+            <div className='text-xs text-rose-600 font-semibold bg-rose-50/50 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100/30 flex items-center gap-2'>
+              <CheckCircle2 className='size-4 text-rose-600' />
+              Đã chọn {files.length} ảnh minh chứng
+            </div>
+          )}
+
+          {error && (
+            <p className='rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100/30 px-3 py-2 text-xs font-medium text-rose-600'>{error}</p>
+          )}
+        </div>
+
+        <div className='flex justify-end gap-3 pt-3 border-t shrink-0'>
+          <Button variant='outline' className='rounded-xl text-xs font-semibold' onClick={handleClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button
+            className='rounded-xl bg-rose-600 text-white hover:bg-rose-700 text-xs font-semibold'
+            onClick={handleSubmit}
+            disabled={loading || !files || files.length === 0 || reason.trim().length < 10}
+          >
+            {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
+            Gửi yêu cầu khiếu nại
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

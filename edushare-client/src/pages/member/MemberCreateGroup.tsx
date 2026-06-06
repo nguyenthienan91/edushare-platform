@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowRight, Sparkles, Users, Loader2, CalendarIcon } from 'lucide-react'
+import { ArrowRight, Sparkles, Users, Loader2, CalendarIcon, Lock } from 'lucide-react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,27 +14,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { fetchClient } from '@/utils/fetchClient'
-
-export const GroupCategory = {
-  PRODUCTIVITY: 'Productivity',
-  DESIGN: 'Design',
-  AI_TOOLS: 'AI Tools',
-} as const
-
-export type GroupCategoryType = typeof GroupCategory[keyof typeof GroupCategory]
+import { GroupCategory } from '@/types/group-category'
+import type { GroupCategoryType } from '@/types/group-category'
 
 export default function MemberCreateGroup() {
   const navigate = useNavigate()
   const [loadingUser, setLoadingUser] = useState(true)
-  // const [isVip, setIsVip] = useState(false)
+  const [isVip, setIsVip] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   // Form states
   const [groupName, setGroupName] = useState('')
   const [category, setCategory] = useState<GroupCategoryType>(GroupCategory.PRODUCTIVITY)
-  const [slotCount, setSlotCount] = useState([5])
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [welcome, setWelcome] = useState('')
+  const [maxMembers, setMaxMembers] = useState<number>(5)
+  const [pricePerSlot, setPricePerSlot] = useState<number>(0)
+  const [description, setDescription] = useState('')
   const [expiredAt, setExpiredAt] = useState<Date | undefined>(undefined)
 
   const today = useMemo(() => {
@@ -48,9 +42,15 @@ export default function MemberCreateGroup() {
 
     const checkVipStatus = async () => {
       try {
-        await fetchClient('/users/me')
+        const res = await fetchClient('/users/me')
+        if (res && res.isSubscriptionActive === true) {
+          setIsVip(true)
+        } else {
+          setIsVip(false)
+        }
       } catch (err) {
         console.error('Error fetching user info:', err)
+        setIsVip(false)
       } finally {
         if (active) {
           setLoadingUser(false)
@@ -65,7 +65,7 @@ export default function MemberCreateGroup() {
     }
   }, [])
 
-  const pricePerPerson = useMemo(() => Math.round(totalPrice / slotCount[0]), [totalPrice, slotCount])
+  const totalPrice = useMemo(() => maxMembers * pricePerSlot, [maxMembers, pricePerSlot])
 
   const handleSubmit = async () => {
     // Client-side validations
@@ -75,14 +75,14 @@ export default function MemberCreateGroup() {
     if (!category) {
       return toast.error('Vui lòng chọn danh mục phần mềm')
     }
-    if (slotCount[0] < 2) {
+    if (!maxMembers || maxMembers < 2) {
       return toast.error('Số lượng thành viên tối thiểu là 2')
     }
-    if (totalPrice <= 0) {
-      return toast.error('Vui lòng nhập tổng giá tiền nhóm')
+    if (!pricePerSlot || pricePerSlot <= 0) {
+      return toast.error('Vui lòng nhập giá tiền mỗi slot')
     }
-    if (!welcome.trim()) {
-      return toast.error('Vui lòng nhập lời chào mừng thành viên (mô tả nhóm)')
+    if (!description.trim()) {
+      return toast.error('Vui lòng nhập mô tả chi tiết nhóm')
     }
 
     setSubmitting(true)
@@ -91,9 +91,9 @@ export default function MemberCreateGroup() {
       const body = {
         name: groupName.trim(),
         category: category,
-        totalSlots: slotCount[0],
-        totalPrice: totalPrice,
-        description: welcome.trim(),
+        totalSlots: Number(maxMembers),
+        totalPrice: Number(totalPrice),
+        description: description.trim(),
         expiredAt: expiredAt ? expiredAt.toISOString() : null,
       }
 
@@ -106,8 +106,8 @@ export default function MemberCreateGroup() {
       
       // Clear form
       setGroupName('')
-      setWelcome('')
-      setTotalPrice(0)
+      setDescription('')
+      setPricePerSlot(0)
       setExpiredAt(undefined)
       
       // Redirect to Quản lý nhóm (Của tôi)
@@ -128,45 +128,45 @@ export default function MemberCreateGroup() {
     )
   }
 
-  // if (!isVip) {
-  //   return (
-  //     <div className='flex items-center justify-center py-10 px-4'>
-  //       <Card className='max-w-md w-full rounded-3xl border-slate-200/80 shadow-lg text-center p-8  relative overflow-hidden'>
-  //         <div className='absolute -right-16 -top-16 size-36 rounded-full bg-indigo-50/50' />
-  //         <div className='absolute -left-16 -bottom-16 size-36 rounded-full bg-indigo-50/30' />
+  if (!isVip) {
+    return (
+      <div className='flex items-center justify-center py-10 px-4'>
+        <Card className='max-w-md w-full rounded-3xl border-slate-200/80 shadow-lg text-center p-8  relative overflow-hidden'>
+          <div className='absolute -right-16 -top-16 size-36 rounded-full bg-indigo-50/50' />
+          <div className='absolute -left-16 -bottom-16 size-36 rounded-full bg-indigo-50/30' />
           
-  //         <div className='relative flex flex-col items-center gap-6'>
-  //           <div className='flex size-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm'>
-  //             <Lock className='size-8' />
-  //           </div>
+          <div className='relative flex flex-col items-center gap-6'>
+            <div className='flex size-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm'>
+              <Lock className='size-8' />
+            </div>
             
-  //           <div className='space-y-2'>
-  //             <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
-  //             <p className='text-sm text-slate-500 leading-relaxed'>
-  //               Tính năng tạo nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
-  //             </p>
-  //           </div>
+            <div className='space-y-2'>
+              <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
+              <p className='text-sm text-slate-500 leading-relaxed'>
+                Tính năng tạo nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
+              </p>
+            </div>
 
-  //           <div className='w-full pt-4 space-y-3 relative z-10'>
-  //             <Button 
-  //               onClick={() => navigate('/dashboard/wallet')}
-  //               className='w-full rounded-full bg-indigo-600 h-12 text-white hover:bg-indigo-700 font-medium'
-  //             >
-  //               Nâng cấp VIP (29,000đ/tháng)
-  //             </Button>
-  //             <Button 
-  //               onClick={() => navigate('/dashboard/overview')}
-  //               variant='outline'
-  //               className='w-full rounded-full h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
-  //             >
-  //               Quay lại
-  //             </Button>
-  //           </div>
-  //         </div>
-  //       </Card>
-  //     </div>
-  //   )
-  // }
+            <div className='w-full pt-4 space-y-3 relative z-10'>
+              <Button 
+                onClick={() => navigate('/dashboard/wallet')}
+                className='w-full rounded-full bg-indigo-600 h-12 text-white hover:bg-indigo-700 font-medium'
+              >
+                Nâng cấp VIP (29,000đ/tháng)
+              </Button>
+              <Button 
+                onClick={() => navigate('/dashboard/overview')}
+                variant='outline'
+                className='w-full rounded-full h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
+              >
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className='space-y-6 '>
@@ -219,11 +219,11 @@ export default function MemberCreateGroup() {
               <div className='rounded-2xl border border-slate-200  p-4'>
                 <div className='mb-3 flex items-center justify-between text-sm '>
                   <span>Slot hiện tại</span>
-                  <span className='font-medium '>{slotCount[0]} người</span>
+                  <span className='font-medium '>{maxMembers} người</span>
                 </div>
                 <Slider 
-                  value={slotCount} 
-                  onValueChange={setSlotCount} 
+                  value={[maxMembers]} 
+                  onValueChange={(val) => setMaxMembers(val[0])} 
                   min={2} 
                   max={20} 
                   step={1} 
@@ -265,33 +265,31 @@ export default function MemberCreateGroup() {
 
             <div className='grid gap-2 sm:grid-cols-2'>
               <div className='grid gap-2'>
-                <Label className=''>Tổng giá nhóm</Label>
+                <Label className=''>Giá tiền mỗi slot (VND)</Label>
                 <Input
                   type='number'
-                  value={totalPrice || ''}
-                  onChange={(e) => setTotalPrice(Number(e.target.value || 0))}
+                  value={pricePerSlot || ''}
+                  onChange={(e) => setPricePerSlot(Number(e.target.value || 0))}
                   className='h-12 rounded-2xl border-slate-200  px-4'
-                  placeholder='150000'
+                  placeholder='35000'
                   disabled={submitting}
-                  step={10000}
-
                 />
               </div>
               <div className='grid gap-2'>
-                <Label className=''>Giá mỗi người</Label>
+                <Label className=''>Tổng giá nhóm</Label>
                 <Input
-                  value={`${pricePerPerson.toLocaleString('vi-VN')} VND`}
+                  value={`${totalPrice.toLocaleString('vi-VN')} VND`}
                   readOnly
-                  className='h-12 rounded-2xl border-slate-200  px-4 '
+                  className='h-12 rounded-2xl border-slate-200  px-4 bg-slate-50'
                 />
               </div>
             </div>
 
             <div className='grid gap-2'>
-              <Label className=''>Lời chào mừng thành viên</Label>
+              <Label className=''>Lời chào mừng thành viên (Mô tả nhóm)</Label>
               <textarea
-                value={welcome}
-                onChange={(e) => setWelcome(e.target.value)}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 className='min-h-[120px] rounded-2xl border border-slate-200  px-4 py-3 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-400'
                 placeholder='Viết lời chào mừng cho các thành viên mới...'
                 disabled={submitting}
@@ -354,16 +352,16 @@ export default function MemberCreateGroup() {
                 <div className='rounded-2xl  p-4 shadow-sm'>
                   <div className='flex items-center justify-between text-sm '>
                     <span>Slot</span>
-                    <span>{slotCount[0]} người</span>
+                    <span>{maxMembers} người</span>
                   </div>
                   <p className='mt-1 text-lg font-semibold '>
-                    {pricePerPerson.toLocaleString('vi-VN')} VND / người
+                    {pricePerSlot.toLocaleString('vi-VN')} VND / người
                   </p>
                 </div>
 
                 <div className='rounded-2xl  p-4 shadow-sm'>
                   <p className='text-sm font-medium '>Lời chào</p>
-                  <p className='mt-2 text-sm leading-6 '>{welcome || 'Chưa có lời chào mừng.'}</p>
+                  <p className='mt-2 text-sm leading-6 '>{description || 'Chưa có lời chào mừng.'}</p>
                 </div>
 
                 <div className='rounded-2xl  p-4 shadow-sm'>
