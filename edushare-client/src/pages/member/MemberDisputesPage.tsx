@@ -1,92 +1,61 @@
-import { useState } from 'react'
-import { AlertCircle, CheckCircle, Clock, FileText, MessageSquare, XCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { CheckCircle, Clock, FileText, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-
-type DisputeStatus = 'pending' | 'under_review' | 'resolved' | 'rejected'
-
-type Message = {
-  id: string
-  sender: 'user' | 'admin'
-  senderName: string
-  message: string
-  timestamp: string
-}
-
-type Dispute = {
-  id: string
-  orderId: string
-  groupName: string
-  software: string
-  reason: string
-  description: string
-  status: DisputeStatus
-  createdAt: string
-  updatedAt: string
-  amount: number
-  evidence?: string[]
-  messages: Message[]
-  resolution?: string
-}
-
-const disputesData: Dispute[] = [
-  {
-    id: 'DIS-001',
-    orderId: 'ORD-004',
-    groupName: 'Canva Pro Shared',
-    software: 'Canva',
-    reason: 'access_denied',
-    description: 'Đã thanh toán escrow nhưng chưa được owner thêm vào nhóm sau 24 giờ.',
-    status: 'under_review',
-    createdAt: '2025-03-03',
-    updatedAt: '2025-03-04',
-    amount: 45000,
-    evidence: ['payment-screenshot.png', 'owner-chat.pdf'],
-    messages: [
-      { id: '1', sender: 'user', senderName: 'Nguyễn Văn A', message: 'Mình chưa được thêm vào nhóm sau khi thanh toán escrow.', timestamp: '2025-03-03 14:30' },
-      { id: '2', sender: 'admin', senderName: 'Admin Support', message: 'Chúng tôi đã yêu cầu owner xác minh và phản hồi.', timestamp: '2025-03-04 09:15' },
-    ],
-  },
-  {
-    id: 'DIS-002',
-    orderId: 'ORD-007',
-    groupName: 'Microsoft 365 Study Pack',
-    software: 'Microsoft 365',
-    reason: 'service_disruption',
-    description: 'Owner đã add nhưng slot bị remove sau vài ngày sử dụng.',
-    status: 'resolved',
-    createdAt: '2025-02-28',
-    updatedAt: '2025-03-01',
-    amount: 30000,
-    messages: [],
-    resolution: 'Admin quyết định hoàn tiền cho member vì giao dịch không được duy trì đúng cam kết.',
-  },
-]
+import { Button } from '@/components/ui/button'
+import { fetchClient } from '@/utils/fetchClient'
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
+import { DisputeDetailDialog } from '@/components/escrow/DisputeDetailDialog'
 
 export default function MemberDisputesPage() {
+  const { user } = useAuth()
   const [filter, setFilter] = useState<string>('all')
-  const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null)
-  const [newMessage, setNewMessage] = useState('')
+  const [disputes, setDisputes] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [selectedDispute, setSelectedDispute] = useState<any | null>(null)
+  const fetchMyDisputes = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetchClient('/disputes/me?page=1&itemPerPage=50')
+      if (res && res.status === 'success') {
+        const list = res.list || res.data || []
+        setDisputes(list)
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Không thể tải danh sách khiếu nại.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const filteredDisputes = disputesData.filter((dispute) => (filter === 'all' ? true : dispute.status === filter))
+  useEffect(() => {
+    fetchMyDisputes()
+  }, [fetchMyDisputes])
+
+  const filteredDisputes = disputes.filter((dispute) => {
+    if (filter === 'all') return true
+    if (filter === 'pending') return dispute.status === 'pending'
+    if (filter === 'resolved') return dispute.status === 'resolved_refund' || dispute.status === 'resolved_payout'
+    return true
+  })
 
   const stats = {
-    total: disputesData.length,
-    pending: disputesData.filter((d) => d.status === 'pending').length,
-    under_review: disputesData.filter((d) => d.status === 'under_review').length,
-    resolved: disputesData.filter((d) => d.status === 'resolved').length,
+    total: disputes.length,
+    pending: disputes.filter((d) => d.status === 'pending').length,
+    resolved: disputes.filter((d) => d.status === 'resolved_refund' || d.status === 'resolved_payout').length,
   }
 
-  const getStatus = (status: DisputeStatus) => {
+  const getStatus = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: 'Đang chờ', color: 'bg-slate-100 ', icon: Clock }
-      case 'under_review':
-        return { label: 'Đang xem xét', color: 'bg-blue-100 text-blue-700', icon: AlertCircle }
-      case 'resolved':
-        return { label: 'Đã giải quyết', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle }
-      case 'rejected':
-        return { label: 'Đã từ chối', color: 'bg-red-100 text-red-700', icon: XCircle }
+        return { label: 'Đang chờ', color: 'bg-amber-500/10 text-amber-600', icon: Clock }
+      case 'resolved_refund':
+        return { label: 'Đã hoàn tiền (Member thắng)', color: 'bg-emerald-500/10 text-emerald-500', icon: CheckCircle }
+      case 'resolved_payout':
+        return { label: 'Đã giải ngân (Owner thắng)', color: 'bg-primary/10 text-primary', icon: CheckCircle }
+      default:
+        return { label: status, color: 'bg-muted text-muted-foreground', icon: Clock }
     }
   }
 
@@ -105,27 +74,28 @@ export default function MemberDisputesPage() {
     <div className='max-w-7xl mx-auto space-y-6'>
       <Card>
         <CardContent>
-          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Escrow Dispute Management</Badge>
-          <h2 className='mt-3 text-3xl font-semibold tracking-tight '>Tranh chấp & khiếu nại giao dịch</h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 '>Theo dõi các trường hợp member khiếu nại khi chưa được add nhóm hoặc bị gián đoạn dịch vụ.</p>
+          <Badge variant='secondary' className='rounded-full'>Escrow Dispute Management</Badge>
+          <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Tranh chấp & khiếu nại giao dịch</h2>
+          <p className='mt-2 max-w-2xl text-sm leading-6 text-muted-foreground'>
+            Theo dõi các trường hợp member khiếu nại khi chưa được add nhóm hoặc bị gián đoạn dịch vụ.
+          </p>
         </CardContent>
       </Card>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'>
         {[
-          { label: 'Tổng số', value: stats.total, icon: FileText },
-          { label: 'Đang chờ', value: stats.pending, icon: Clock },
-          { label: 'Đang xem xét', value: stats.under_review, icon: AlertCircle },
+          { label: 'Tổng số khiếu nại', value: stats.total, icon: FileText },
+          { label: 'Đang chờ xử lý', value: stats.pending, icon: Clock },
           { label: 'Đã giải quyết', value: stats.resolved, icon: CheckCircle },
         ].map((item) => {
           const Icon = item.icon
           return (
-            <div key={item.label} className=' border border-slate-200 rounded-2xl p-5 shadow-sm'>
+            <div key={item.label} className='border rounded-lg p-5 bg-card'>
               <div className='flex items-center justify-between mb-3'>
-                <span className='text-sm '>{item.label}</span>
-                <Icon className='w-5 h-5 text-slate-400' />
+                <span className='text-sm text-muted-foreground'>{item.label}</span>
+                <Icon className='w-5 h-5 text-muted-foreground' />
               </div>
-              <div className='text-3xl font-bold '>{item.value}</div>
+              <div className='text-3xl font-bold'>{item.value}</div>
             </div>
           )
         })}
@@ -135,13 +105,16 @@ export default function MemberDisputesPage() {
         {[
           ['all', 'Tất cả'],
           ['pending', 'Đang chờ'],
-          ['under_review', 'Đang xem xét'],
           ['resolved', 'Đã giải quyết'],
         ].map(([value, label]) => (
           <button
             key={value}
             onClick={() => setFilter(value)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${filter === value ? 'bg-slate-900 text-white' : ' border border-slate-200  hover:'}`}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+              filter === value 
+                ? 'bg-primary text-primary-foreground' 
+                : 'border bg-card hover:bg-muted text-foreground'
+            }`}
           >
             {label}
           </button>
@@ -149,86 +122,65 @@ export default function MemberDisputesPage() {
       </div>
 
       <div className='space-y-4'>
-        {filteredDisputes.length === 0 ? (
-          <div className=' border border-slate-200 rounded-2xl p-12 text-center'>
-            <FileText className='w-12 h-12 mx-auto mb-3 text-slate-300' />
-            <h3 className='text-lg font-semibold '>Không có tranh chấp</h3>
-            <p className='text-sm  mt-1'>Bạn chưa có tranh chấp nào.</p>
+        {loading ? (
+          <div className='flex justify-center items-center py-20'>
+            <Loader2 className='w-8 h-8 animate-spin text-muted-foreground' />
+          </div>
+        ) : filteredDisputes.length === 0 ? (
+          <div className='border rounded-lg p-12 text-center bg-card shadow-sm'>
+            <FileText className='w-12 h-12 mx-auto mb-3 text-muted-foreground/40' />
+            <h3 className='text-lg font-semibold'>Không có tranh chấp</h3>
+            <p className='text-sm text-muted-foreground mt-1'>Bạn chưa có hoặc không có khiếu nại nào phù hợp bộ lọc.</p>
           </div>
         ) : (
           filteredDisputes.map((dispute) => {
             const status = getStatus(dispute.status)
             const Icon = status.icon
+            const isOwner = user?.userID === dispute.transactionId?.groupId?.ownerId
             return (
-              <div key={dispute.id} className=' border border-slate-200 rounded-2xl p-6 shadow-sm'>
+              <div key={dispute._id} className='border rounded-lg p-6 shadow-sm bg-card hover:shadow-md transition duration-200'>
                 <div className='flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5'>
                   <div>
                     <div className='flex flex-wrap items-center gap-3 mb-2'>
-                      <h3 className='text-lg font-bold '>{dispute.groupName}</h3>
+                      <h3 className='text-lg font-bold truncate max-w-full'>{dispute.transactionId?.groupId?.name || 'Nhóm dùng chung'}</h3>
                       <div className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${status.color}`}>
                         <Icon className='w-3 h-3' />
                         {status.label}
                       </div>
+                      {isOwner && (
+                        <Badge className='bg-secondary text-secondary-foreground border-none rounded-full px-2.5 py-0.5 text-xs font-medium'>Chủ nhóm</Badge>
+                      )}
                     </div>
-                    <div className='text-sm  flex flex-wrap gap-3'>
-                      <span>Mã: {dispute.id}</span>
+                    <div className='text-xs text-muted-foreground flex flex-wrap gap-3 font-medium'>
+                      <span>Mã: {dispute._id.substring(dispute._id.length - 8).toUpperCase()}</span>
                       <span>•</span>
-                      <span>Đơn: {dispute.orderId}</span>
+                      <span>Đơn: {dispute.transactionId?._id?.substring(dispute.transactionId?._id?.length - 8).toUpperCase()}</span>
                       <span>•</span>
-                      <span>{dispute.createdAt}</span>
+                      <span>{new Date(dispute.createdAt).toLocaleString('vi-VN')}</span>
                     </div>
                   </div>
                   <div className='text-left lg:text-right'>
-                    <div className='text-2xl font-bold '>{dispute.amount.toLocaleString('vi-VN')} ₫</div>
-                    <div className='text-xs '>Giá trị tranh chấp</div>
+                    <div className='text-2xl font-bold'>
+                      {(dispute.transactionId?.amount || 0).toLocaleString('vi-VN')} ₫
+                    </div>
+                    <div className='text-xs text-muted-foreground font-medium'>Giá trị tranh chấp</div>
                   </div>
                 </div>
 
                 <div className='space-y-4'>
                   <div>
-                    <div className='text-sm font-semibold  mb-1'>Lý do</div>
-                    <div className='text-sm '>{getReason(dispute.reason)}</div>
+                    <div className='text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1'>Lý do khiếu nại</div>
+                    <div className='text-sm font-medium'>{getReason(dispute.reason)}</div>
                   </div>
-                  <div>
-                    <div className='text-sm font-semibold  mb-1'>Mô tả</div>
-                    <p className=' leading-relaxed'>{dispute.description}</p>
-                  </div>
-
-                  {dispute.evidence && dispute.evidence.length > 0 && (
-                    <div>
-                      <div className='text-sm font-semibold  mb-2'>Bằng chứng</div>
-                      <div className='flex flex-wrap gap-2'>
-                        {dispute.evidence.map((file) => (
-                          <div key={file} className='px-3 py-2  border border-slate-200 rounded-lg text-sm  flex items-center gap-2'>
-                            <FileText className='w-4 h-4' />
-                            {file}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {dispute.resolution && (
-                    <div className='bg-emerald-50 border border-emerald-200 rounded-xl p-4'>
-                      <div className='flex gap-3'>
-                        <CheckCircle className='w-5 h-5 text-emerald-600 mt-0.5' />
-                        <div>
-                          <div className='font-semibold text-emerald-800 mb-1'>Đã giải quyết</div>
-                          <p className='text-sm text-emerald-700'>{dispute.resolution}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-5 mt-5 border-t border-slate-100'>
-                  <div className='flex items-center gap-2 text-sm '>
-                    <MessageSquare className='w-4 h-4' />
-                    <span>{dispute.messages.length} tin nhắn</span>
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-5 mt-5 border-t'>
+                  <div className='text-xs text-muted-foreground font-medium break-words'>
+                    Người gửi: {dispute.raisedById?.displayName || dispute.raisedById?.email || 'Thành viên'} ({dispute.raisedById?.email})
                   </div>
-                  <button onClick={() => setSelectedDispute(dispute)} className='px-4 py-2  border border-slate-200 rounded-xl text-sm font-semibold hover: transition-colors'>
-                    Xem chi tiết
-                  </button>
+                  <Button onClick={() => setSelectedDispute(dispute)} variant='outline' className='rounded-md text-xs font-semibold'>
+                    Xem chi tiết đối chất
+                  </Button>
                 </div>
               </div>
             )
@@ -236,50 +188,12 @@ export default function MemberDisputesPage() {
         )}
       </div>
 
-      {selectedDispute && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm'>
-          <div className=' rounded-3xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col'>
-            <div className='p-6 border-b border-slate-100 flex items-center justify-between'>
-              <div>
-                <h2 className='text-xl font-bold '>Chi tiết tranh chấp</h2>
-                <p className='text-sm  mt-1'>#{selectedDispute.id}</p>
-              </div>
-              <button onClick={() => setSelectedDispute(null)} className='w-10 h-10 rounded-full hover:bg-slate-100 transition-colors flex items-center justify-center'>✕</button>
-            </div>
-
-            <div className='flex-1 overflow-y-auto p-6 space-y-4'>
-              {selectedDispute.messages.length === 0 ? (
-                <div className='text-center  py-10'>Chưa có tin nhắn nào</div>
-              ) : (
-                selectedDispute.messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md rounded-2xl px-4 py-3 ${msg.sender === 'user' ? 'bg-emerald-500 text-white' : 'bg-slate-100 '}`}>
-                      <div className='text-xs opacity-70 mb-1'>{msg.senderName}</div>
-                      <div className='text-sm'>{msg.message}</div>
-                      <div className='text-[11px] opacity-70 mt-2'>{msg.timestamp}</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {selectedDispute.status !== 'resolved' && (
-              <div className='p-6 border-t border-slate-100'>
-                <div className='flex gap-3'>
-                  <input
-                    type='text'
-                    placeholder='Nhập tin nhắn...'
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className='flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500'
-                  />
-                  <button className='px-5 py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-colors'>Gửi</button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Detail Dialog */}
+      <DisputeDetailDialog
+        dispute={selectedDispute}
+        onClose={() => setSelectedDispute(null)}
+        onRefresh={fetchMyDisputes}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   Sparkles,
   X,
+  CheckCircle2,
+  Eye,
 } from 'lucide-react'
 import {
   Dialog,
@@ -22,11 +24,12 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
 import { toast } from 'sonner'
+import { Label } from '@/components/ui/label'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,35 +77,35 @@ function getStatusMeta(status: string) {
       return {
         label: 'Chờ chủ nhóm cấp quyền',
         nextAction: 'Đang xử lý giao dịch thanh toán của bạn.',
-        tone: 'bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/10',
+        badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'held':
       return {
         label: 'Chờ chủ nhóm duyệt',
         nextAction: 'Tiền đã được giữ. Đang chờ chủ nhóm phê duyệt yêu cầu tham gia.',
-        tone: 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/10',
+        badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'proof':
       return {
         label: 'Chủ nhóm đang xác nhận',
         nextAction: 'Chủ nhóm đã nộp minh chứng. Hãy kiểm tra và xác nhận bạn đã vào nhóm thành công.',
-        tone: 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 hover:bg-indigo-500/10',
+        badgeVariant: 'secondary' as const,
         actionIcon: ShieldCheck,
       }
     case 'completed':
       return {
         label: 'Đã hoàn tất / Đã giải ngân',
         nextAction: 'Giao dịch hoàn tất. Tiền đã được giải ngân cho chủ nhóm.',
-        tone: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/10',
+        badgeVariant: 'default' as const,
         actionIcon: ShieldCheck,
       }
     case 'disputed':
       return {
         label: 'Đang tranh chấp / Đang chờ admin xử lý',
         nextAction: 'Giao dịch đang được tranh chấp. Đang chờ admin xem xét và xử lý.',
-        tone: 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/10',
+        badgeVariant: 'destructive' as const,
         actionIcon: Info,
       }
     case 'failed':
@@ -110,14 +113,14 @@ function getStatusMeta(status: string) {
       return {
         label: 'Đã hoàn tiền về ví',
         nextAction: 'Giao dịch thất bại. Tiền đã được hoàn về ví của bạn.',
-        tone: 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/10',
+        badgeVariant: 'destructive' as const,
         actionIcon: X,
       }
     default:
       return {
         label: 'Chờ chủ nhóm cấp quyền',
         nextAction: 'Đang xử lý giao dịch thanh toán của bạn.',
-        tone: 'bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/10',
+        badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
   }
@@ -141,34 +144,34 @@ function shortId(id: string) {
   return `#${id.slice(-8).toUpperCase()}`
 }
 
-function getOwnerName(groupId: PopulatedGroup | string | null) {
-  if (!groupId || typeof groupId === 'string') return 'N/A'
-  if (typeof groupId.ownerId === 'object' && groupId.ownerId !== null) {
-    return groupId.ownerId.displayName || groupId.ownerId.username || 'N/A'
+function getOwnerName(group: PopulatedGroup | null) {
+  if (!group) return 'N/A'
+  if (typeof group.ownerId === 'object' && group.ownerId !== null) {
+    return group.ownerId.displayName || group.ownerId.username || 'N/A'
   }
   return 'N/A'
 }
 
-function getGroupInfo(groupId: PopulatedGroup | string | null) {
-  if (!groupId || typeof groupId === 'string') {
+function getGroupInfo(group: PopulatedGroup | null) {
+  if (!group) {
     return { name: 'N/A', category: '', ownerId: null }
   }
-  return groupId
+  return group
 }
 
 // ─── Step card ────────────────────────────────────────────────────────────────
 
 function StepCard({ label, done = false, active = false }: { label: string; done?: boolean; active?: boolean }) {
   return (
-    <div className='rounded-lg border p-4'>
+    <div className='rounded-lg border p-4 bg-card'>
       <div
         className={
-          `mb-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold border ` +
+          `mb-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ` +
           (done
-            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            ? 'bg-primary text-primary-foreground'
             : active
-              ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20'
-              : 'bg-secondary text-muted-foreground border-transparent')
+              ? 'bg-secondary text-secondary-foreground border border-input'
+              : 'bg-muted text-muted-foreground')
         }
       >
         {done ? '✓' : '•'}
@@ -253,6 +256,7 @@ export default function MemberParticipantOrdersPage() {
   const { user } = useAuth()
 
   const [orders, setOrders] = useState<Transaction[]>([])
+  const [groupsCache, setGroupsCache] = useState<Record<string, PopulatedGroup>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Transaction | null>(null)
@@ -261,7 +265,16 @@ export default function MemberParticipantOrdersPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const [disputeTxId, setDisputeTxId] = useState<string | null>(null)
   const itemPerPage = 10
+
+  const getResolvedGroup = (groupId: PopulatedGroup | string | null): PopulatedGroup | null => {
+    if (!groupId) return null
+    if (typeof groupId === 'string') {
+      return groupsCache[groupId] || null
+    }
+    return groupId
+  }
 
   // Fetch orders using /transactions/me
   const fetchOrders = async (currentPage = page) => {
@@ -271,11 +284,46 @@ export default function MemberParticipantOrdersPage() {
       const res: TransactionsResponse = await fetchClient(
         `/transactions/me?page=${currentPage}&itemPerPage=${itemPerPage}`
       )
-      setOrders(res.list ?? [])
+      const list = res.list ?? []
+      setOrders(list)
       setTotalPages(res.totalPages ?? 1)
       setTotalItems(res.totalItems ?? 0)
+
+      // Fetch group details for string groupIds that are not in the cache yet
+      const missingGroupIds = Array.from(
+        new Set(
+          list
+            .map((t) => (typeof t.groupId === 'string' ? t.groupId : t.groupId?._id))
+            .filter((id): id is string => !!id && !groupsCache[id])
+        )
+      )
+
+      if (missingGroupIds.length > 0) {
+        const groupDetails = await Promise.all(
+          missingGroupIds.map(async (id) => {
+            try {
+              const groupRes = await fetchClient(`/groups/${id}`)
+              return { id, data: groupRes }
+            } catch {
+              return { id, data: null }
+            }
+          })
+        )
+
+        setGroupsCache((prev) => {
+          const updated = { ...prev }
+          groupDetails.forEach(({ id, data }) => {
+            if (data) {
+              updated[id] = data
+            }
+          })
+          return updated
+        })
+      }
+      return list
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách đơn hàng.')
+      return []
     } finally {
       setLoading(false)
     }
@@ -297,13 +345,8 @@ export default function MemberParticipantOrdersPage() {
       toast.success('Xác nhận đã nhận quyền truy cập thành công')
       
       // Refresh list
-      const res: TransactionsResponse = await fetchClient(
-        `/transactions/me?page=${page}&itemPerPage=${itemPerPage}`
-      )
-      setOrders(res.list ?? [])
-      setTotalPages(res.totalPages ?? 1)
-      setTotalItems(res.totalItems ?? 0)
-      const updated = (res.list ?? []).find((t) => t._id === selectedOrder._id)
+      const list = await fetchOrders(page)
+      const updated = list.find((t) => t._id === selectedOrder._id)
       if (updated) setSelectedOrder(updated)
     } catch (err: any) {
       toast.error(err.message || 'Xác nhận thất bại.')
@@ -321,10 +364,10 @@ export default function MemberParticipantOrdersPage() {
       {/* Header */}
       <Card>
         <CardContent className='p-6'>
-          <div className='inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100 bg-indigo-50/10'>
+          <Badge variant='secondary' className='inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-semibold'>
             <Sparkles className='h-3.5 w-3.5' />
             Đơn hàng thuê bao an toàn
-          </div>
+          </Badge>
           <h1 className='mt-4 text-3xl font-bold tracking-tight'>Đơn hàng của tôi</h1>
           <p className='mt-2 max-w-2xl text-sm text-muted-foreground'>
             Xem nhanh gói bạn vừa tham gia, trạng thái ký quỹ và bước tiếp theo cần làm.
@@ -335,12 +378,12 @@ export default function MemberParticipantOrdersPage() {
       {/* Stats bar */}
       {!loading && (
         <div className='flex flex-wrap items-center gap-3'>
-          <Badge variant='outline' className='rounded-full px-4 py-2 text-sm font-semibold'>
-            <ShieldCheck className='h-4 w-4 mr-2 text-emerald-600' />
+          <Badge variant='outline' className='rounded-md px-4 py-2 text-sm font-semibold'>
+            <ShieldCheck className='h-4 w-4 mr-2 text-muted-foreground' />
             Đang hoạt động: {activeOrdersCount} gói
           </Badge>
-          <Badge variant='outline' className='rounded-full px-4 py-2 text-sm font-semibold'>
-            <Clock3 className='h-4 w-4 mr-2 text-sky-600' />
+          <Badge variant='outline' className='rounded-md px-4 py-2 text-sm font-semibold'>
+            <Clock3 className='h-4 w-4 mr-2 text-muted-foreground' />
             Tổng: {totalItems} đơn hàng
           </Badge>
         </div>
@@ -374,7 +417,8 @@ export default function MemberParticipantOrdersPage() {
       {/* Orders Table */}
       {!loading && orders.length > 0 && (
         <Card>
-          <CardContent >
+          <CardContent>
+            <div className='overflow-x-auto scrollbar-thin'>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -382,17 +426,16 @@ export default function MemberParticipantOrdersPage() {
                     <TableHead>Loại</TableHead>
                     <TableHead className='text-right'>Giá</TableHead>
                     <TableHead className='text-center w-[180px]'>Trạng thái</TableHead>
-                    <TableHead className='text-right w-[150px]'></TableHead>
+                    <TableHead className='text-right w-[150px]'>hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {orders.map((order) => {
                     const meta = getStatusMeta(order.status)
-                    const ActionIcon = meta.actionIcon
-                    const groupInfo = getGroupInfo(order.groupId)
-                    const groupName = groupInfo.name
+                    const resolvedGroup = getResolvedGroup(order.groupId)
+                    const groupInfo = getGroupInfo(resolvedGroup)
                     const category = groupInfo.category
-                    const ownerName = getOwnerName(order.groupId)
+                    const ownerName = getOwnerName(resolvedGroup)
 
                     return (
                       <TableRow 
@@ -416,27 +459,25 @@ export default function MemberParticipantOrdersPage() {
                             Chủ nhóm: {ownerName}
                           </div>
                         </TableCell>
-                        <TableCell className='text-right font-semibold text-emerald-600'>
+                        <TableCell className='text-right font-semibold'>
                           {formatVnd(order.amount)}
                         </TableCell>
                         <TableCell className='text-center'>
-                          <Badge variant='outline' className={`rounded-full ${meta.tone}`}>
+                          <Badge variant={meta.badgeVariant} className='rounded-md'>
                             {meta.label}
                           </Badge>
                         </TableCell>
                         <TableCell className='text-right'>
                           <Button
                             size='sm'
-                            variant='secondary'
-                            className='rounded-full inline-flex items-center gap-2'
                             onClick={(e) => {
                               e.stopPropagation()
                               setSelectedOrder(order)
                               setConfirmSuccess(false)
                             }}
                           >
-                            <ActionIcon className='h-4 w-4' />
-                            Xem chi tiết
+                            <Eye/>
+                            xem chi tiết
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -444,6 +485,7 @@ export default function MemberParticipantOrdersPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
           </CardContent>
 
           {/* Pagination */}
@@ -456,7 +498,7 @@ export default function MemberParticipantOrdersPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
@@ -466,7 +508,7 @@ export default function MemberParticipantOrdersPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 >
@@ -481,10 +523,11 @@ export default function MemberParticipantOrdersPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <DialogContent className='sm:max-w-[720px]'>
+        <DialogContent className='w-[calc(100%-2rem)] sm:max-w-[720px]'>
           {selectedOrder && (() => {
             const meta = getStatusMeta(selectedOrder.status)
-            const selectedGroupInfo = getGroupInfo(selectedOrder.groupId)
+            const resolvedGroup = getResolvedGroup(selectedOrder.groupId)
+            const selectedGroupInfo = getGroupInfo(resolvedGroup)
             const groupName = selectedGroupInfo.name
             const category = selectedGroupInfo.category
 
@@ -512,7 +555,7 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Giá</span>
-                      <span className='font-semibold text-emerald-600'>{formatVnd(selectedOrder.amount)}</span>
+                      <span className='font-semibold'>{formatVnd(selectedOrder.amount)}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Nền tảng</span>
@@ -520,11 +563,11 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Loại</span>
-                      <span className='font-semibold text-indigo-600'>{category || 'N/A'}</span>
+                      <span className='font-semibold'>{category || 'N/A'}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Chủ nhóm</span>
-                      <span className='font-semibold'>{getOwnerName(selectedOrder.groupId)}</span>
+                      <span className='font-semibold'>{getOwnerName(resolvedGroup)}</span>
                     </div>
                   </div>
 
@@ -534,19 +577,19 @@ export default function MemberParticipantOrdersPage() {
                       <h4 className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
                         Tiến trình đơn hàng
                       </h4>
-                      <Badge variant='outline' className={`rounded-full ${meta.tone}`}>
+                      <Badge variant={meta.badgeVariant} className='rounded-md'>
                         {meta.label}
                       </Badge>
                     </div>
-                    <div className='grid gap-3 sm:grid-cols-4'>
+                    <div className='grid gap-3 grid-cols-2 sm:grid-cols-4'>
                       {renderSteps(selectedOrder.status)}
                     </div>
                   </div>
 
                   {/* Next Action Instruction */}
-                  <div className='rounded-lg border p-4 bg-secondary/50'>
+                  <div className='rounded-lg border p-4 bg-muted/20'>
                     <div className='mb-2 flex items-center gap-2 text-sm font-semibold'>
-                      <Info className='h-4 w-4 text-indigo-500' />
+                      <Info className='h-4 w-4 text-muted-foreground' />
                       Bạn cần làm gì tiếp theo?
                     </div>
                     <p className='text-sm leading-6 text-muted-foreground'>{meta.nextAction}</p>
@@ -554,15 +597,15 @@ export default function MemberParticipantOrdersPage() {
 
                   {/* Proof details / Credentials (Tài khoản mật khẩu hoặc link proof) */}
                   {selectedOrder.status === 'completed' && selectedOrder.proofUrl && (
-                    <div className='rounded-lg border p-4 bg-emerald-500/5 border-emerald-500/10'>
-                      <div className='mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-600'>
-                        <ShieldCheck className='h-4 w-4' />
+                    <div className='rounded-lg border p-4 bg-muted/20'>
+                      <div className='mb-2 flex items-center gap-2 text-sm font-semibold'>
+                        <ShieldCheck className='h-4 w-4 text-muted-foreground' />
                         Thông tin tài khoản & Mật khẩu
                       </div>
-                      <div className='rounded border p-3 font-mono text-sm bg-background break-all select-all'>
+                      <div className='rounded-md border p-3 font-mono text-sm bg-background break-all select-all'>
                         {selectedOrder.proofUrl}
                       </div>
-                      <p className='mt-2 text-xs text-emerald-600'>
+                      <p className='mt-2 text-xs text-muted-foreground'>
                         Vui lòng sử dụng thông tin đăng nhập trên để truy cập gói dịch vụ chia sẻ.
                       </p>
                     </div>
@@ -570,11 +613,12 @@ export default function MemberParticipantOrdersPage() {
 
                   {/* Standard Proof image (nếu có và trạng thái khác completed) */}
                   {selectedOrder.status !== 'completed' && selectedOrder.proofUrl && (
-                    <div className='rounded-lg border p-4'>
-                      <div className='mb-3 flex items-center gap-2 text-sm font-semibold'>
-                        <ImageIcon className='h-4 w-4 text-indigo-500' />
+                    <div>
+  <div className='mb-3 flex items-center gap-2 text-sm font-semibold'>
+                        <ImageIcon className='h-4 w-4 text-muted-foreground' />
                         Minh chứng từ chủ nhóm
                       </div>
+                    
                       <img
                         src={selectedOrder.proofUrl}
                         alt='Minh chứng cấp quyền'
@@ -582,15 +626,29 @@ export default function MemberParticipantOrdersPage() {
                         style={{ maxHeight: 280 }}
                       />
                     </div>
+                  
                   )}
                 </div>
 
                 <DialogFooter className='border-t pt-4'>
                   <div className='flex flex-wrap items-center justify-end gap-2 w-full'>
-                    {/* Confirm Button – only shown when status = 'proof' */}
                     {selectedOrder.status === 'proof' && !confirmSuccess && (
                       <Button
-                        className='rounded-full'
+                        variant='destructive'
+                        className='rounded-md'
+                        onClick={() => {
+                          setDisputeTxId(selectedOrder._id)
+                          setSelectedOrder(null)
+                        }}
+                      >
+                        Khiếu nại giao dịch
+                      </Button>
+                    )}
+
+                    {selectedOrder.status === 'proof' && !confirmSuccess && (
+                      <Button
+                        variant='default'
+                        className='rounded-md'
                         onClick={handleConfirm}
                         disabled={confirming}
                       >
@@ -604,13 +662,13 @@ export default function MemberParticipantOrdersPage() {
                     )}
 
                     {confirmSuccess && (
-                      <Badge variant='outline' className='rounded-full bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10 px-4 py-2'>
+                      <Badge variant='secondary' className='rounded-md px-4 py-2'>
                         ✓ Đã xác nhận! Tiền đang được giải ngân.
                       </Badge>
                     )}
 
                     <DialogClose asChild>
-                      <Button variant='outline' className='rounded-full'>
+                      <Button variant='outline' className='rounded-md'>
                         Đóng
                       </Button>
                     </DialogClose>
@@ -621,6 +679,182 @@ export default function MemberParticipantOrdersPage() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Create Dispute Dialog */}
+      <CreateDisputeDialog
+        open={!!disputeTxId}
+        transactionId={disputeTxId}
+        onClose={() => setDisputeTxId(null)}
+        onSuccess={() => {
+          if (user?.userID) fetchOrders()
+        }}
+      />
     </div>
+  )
+}
+
+interface CreateDisputeDialogProps {
+  open: boolean
+  transactionId: string | null
+  onClose: () => void
+  onSuccess: () => void
+}
+
+function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: CreateDisputeDialogProps) {
+  const [reason, setReason] = useState('')
+  const [files, setFiles] = useState<FileList | null>(null)
+  const [previews, setPreviews] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files
+    if (!selected || selected.length === 0) return
+    
+    if (selected.length > 5) {
+      setError('Tối đa chỉ được chọn 5 ảnh bằng chứng.')
+      return
+    }
+
+    setFiles(selected)
+    const previewUrls = Array.from(selected).map((f) => URL.createObjectURL(f))
+    setPreviews(previewUrls)
+    setError(null)
+  }
+
+  const handleSubmit = async () => {
+    if (!reason || reason.trim().length < 10) {
+      setError('Lý do khiếu nại phải tối thiểu 10 ký tự.')
+      return
+    }
+    if (!files || files.length === 0) {
+      setError('Vui lòng chọn ít nhất một hình ảnh minh chứng.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append('transactionId', transactionId || '')
+      formData.append('reason', reason.trim())
+      Array.from(files).forEach((file) => {
+        formData.append('files', file)
+      })
+
+      await fetchClient('/disputes', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      toast.success('Gửi đơn khiếu nại thành công! Giao dịch đã được đóng băng để Admin xử lý.')
+      onSuccess()
+      handleClose()
+    } catch (err: any) {
+      setError(err.message || 'Gửi khiếu nại thất bại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setReason('')
+    setFiles(null)
+    setPreviews([])
+    setError(null)
+    onClose()
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent className='sm:max-w-lg'>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className='size-2 rounded-full bg-destructive animate-pulse' />
+            Khởi tạo khiếu nại giao dịch
+          </DialogTitle>
+          <DialogDescription>
+            Giao dịch sẽ được đóng băng tạm thời. Vui lòng cung cấp lý do chi tiết và hình ảnh bằng chứng để Admin phân xử.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1'>
+          <div>
+            <Label className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
+              Lý do khiếu nại (tối thiểu 10 ký tự)
+            </Label>
+            <textarea
+              className='mt-1.5 w-full rounded-lg border p-3 text-sm focus:outline-none'
+              rows={3}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder='Mô tả chi tiết vấn đề bạn gặp phải (ví dụ: Chủ nhóm gửi thông tin tài khoản sai, không đăng nhập được...)'
+            />
+            <div className='text-[10px] text-right text-muted-foreground mt-1'>
+              Đo độ dài: {reason.length} ký tự
+            </div>
+          </div>
+
+          <div>
+            <Label className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
+              Tệp ảnh minh chứng (tối đa 5 ảnh, bắt buộc có ít nhất 1 ảnh)
+            </Label>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className='mt-1.5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 transition hover:bg-muted bg-muted/20'
+            >
+              {previews.length > 0 ? (
+                <div className='grid grid-cols-3 gap-2 w-full'>
+                  {previews.map((src, i) => (
+                    <div key={i} className='relative aspect-square rounded-lg overflow-hidden border'>
+                      <img src={src} alt='preview' className='h-full w-full object-cover' />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <ImageIcon className='size-8 text-muted-foreground/50' />
+                  <p className='text-xs font-semibold text-muted-foreground'>Nhấn để chọn ảnh bằng chứng</p>
+                  <p className='text-[10px] text-muted-foreground/75'>PNG, JPG, JPEG – tối đa 5MB mỗi ảnh</p>
+                </>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept='image/*'
+              multiple
+              className='hidden'
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {files && files.length > 0 && (
+            <div className='text-xs text-destructive font-semibold bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 flex items-center gap-2'>
+              <CheckCircle2 className='size-4 text-emerald-500' />
+              Đã chọn {files.length} ảnh minh chứng
+            </div>
+          )}
+
+          {error && (
+            <p className='rounded-lg bg-destructive/10 p-2 text-sm text-destructive'>{error}</p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant='outline' onClick={handleClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button
+            variant='destructive'
+            onClick={handleSubmit}
+            disabled={loading || !files || files.length === 0 || reason.trim().length < 10}
+          >
+            {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
+            Gửi yêu cầu khiếu nại
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

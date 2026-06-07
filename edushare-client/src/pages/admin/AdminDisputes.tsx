@@ -1,270 +1,341 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
-  AlertCircle,
-  CheckCircle2,
-  ChevronRight,
-  MessageSquare,
-  Image as ImageIcon,
   History,
-  Undo2,
   XCircle,
-  ShieldCheck
+  ShieldCheck,
+  Loader2,
+  Clock,
+  User
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+// Avatar import removed as unused
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-
-// Mock Data
-const disputes = [
-  {
-    id: 'DSP-092',
-    title: 'Không truy cập được Netflix',
-    groupName: 'Netflix Premium 4K - Family',
-    member: { name: 'Lê Văn C', avatar: 'https://i.pravatar.cc/150?u=3' },
-    owner: { name: 'Nguyễn Văn A', avatar: 'https://i.pravatar.cc/150?u=1' },
-    status: 'pending',
-    date: '2 giờ trước',
-    unread: true
-  },
-  {
-    id: 'DSP-091',
-    title: 'Tài khoản Spotify bị văng',
-    groupName: 'Spotify Family (1 year)',
-    member: { name: 'Hoàng Thị E', avatar: 'https://i.pravatar.cc/150?u=5' },
-    owner: { name: 'Phạm Thị D', avatar: 'https://i.pravatar.cc/150?u=4' },
-    status: 'investigating',
-    date: '5 giờ trước',
-    unread: false
-  },
-  {
-    id: 'DSP-090',
-    title: 'Chủ nhóm không phản hồi',
-    groupName: 'Youtube Premium - No Ads',
-    member: { name: 'Trịnh Văn F', avatar: 'https://i.pravatar.cc/150?u=6' },
-    owner: { name: 'Trần Văn C', avatar: 'https://i.pravatar.cc/150?u=12' },
-    status: 'pending',
-    date: '1 ngày trước',
-    unread: false
-  }
-]
-
-const messages = [
-  {
-    id: 1,
-    sender: 'Lê Văn C',
-    role: 'member',
-    content:
-      'Admin ơi, tài khoản Netflix nay tự nhiên báo sai mật khẩu. Mình nhắn cho chủ nhóm từ tối qua đến giờ chưa thấy rep.',
-    time: '09:00 AM',
-    avatar: 'https://i.pravatar.cc/150?u=3'
-  },
-  {
-    id: 2,
-    sender: 'Nguyễn Văn A',
-    role: 'owner',
-    content: 'Xin lỗi bạn nha, tối qua mình bận quá chưa check tin nhắn. Mật khẩu mới đây nhé bạn: NetFlix@2026',
-    time: '10:30 AM',
-    avatar: 'https://i.pravatar.cc/150?u=1'
-  },
-  {
-    id: 3,
-    sender: 'Lê Văn C',
-    role: 'member',
-    content: 'Vẫn không được bạn ơi, nó báo vượt quá số thiết bị truy cập rồi. Không vào xem được gì cả.',
-    time: '10:35 AM',
-    avatar: 'https://i.pravatar.cc/150?u=3'
-  }
-]
-
-const evidences = [
-  'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=400&auto=format&fit=crop'
-]
+import { fetchClient } from '@/utils/fetchClient'
+import { toast } from 'sonner'
 
 export default function AdminDisputes() {
-  const [selectedId, setSelectedId] = useState(disputes[0].id)
+  const [disputes, setDisputes] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [resolving, setResolving] = useState(false)
 
-  const currentDispute = disputes.find((d) => d.id === selectedId) || disputes[0]
+  const fetchDisputes = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetchClient('/admin/disputes?page=1&itemPerPage=50')
+      if (res && res.status === 'success') {
+        const list = res.list || res.data || []
+        setDisputes(list)
+        if (list.length > 0 && !selectedId) {
+          setSelectedId(list[0]._id)
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Không thể tải danh sách khiếu nại.')
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedId])
+
+  useEffect(() => {
+    fetchDisputes()
+  }, [fetchDisputes])
+
+  const handleResolve = async (id: string, resolution: 'refund' | 'payout') => {
+    setResolving(true)
+    try {
+      const res = await fetchClient(`/admin/disputes/${id}/resolve`, {
+        method: 'POST',
+        body: JSON.stringify({ resolution })
+      })
+      if (res && res.status === 'success') {
+        toast.success(res.message || 'Phân xử khiếu nại thành công!')
+        await fetchDisputes()
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi khi xử lý khiếu nại.')
+    } finally {
+      setResolving(false)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-orange-100 text-orange-700'
+      case 'resolved_refund':
+        return 'bg-emerald-100 text-emerald-700'
+      case 'resolved_payout':
+        return 'bg-indigo-100 text-indigo-700'
+      default:
+        return 'bg-slate-100 text-slate-700'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Chờ xử lý'
+      case 'resolved_refund':
+        return 'Đã hoàn tiền'
+      case 'resolved_payout':
+        return 'Đã giải ngân'
+      default:
+        return status
+    }
+  }
+
+  const getReason = (reason: string) => {
+    const map: Record<string, string> = {
+      access_denied: 'Chưa được thêm vào nhóm',
+      service_disruption: 'Dịch vụ bị gián đoạn / bị kick',
+      incorrect_plan: 'Gói không đúng mô tả',
+      payment_issue: 'Lỗi thanh toán / giải ngân',
+      account_removed: 'Tài khoản bị gỡ khỏi nhóm',
+    }
+    return map[reason] || reason
+  }
+
+  const currentDispute = disputes.find((d) => d._id === selectedId) || disputes[0] || null
 
   return (
-    <div className='space-y-6  min-h-[calc(100vh-(--spacing(20)))]'>
+    <div className='space-y-6 min-h-[calc(100vh-80px)]'>
       <Card>
         <CardContent>
           <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Trung tâm hòa giải</Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Quản lý Khiếu nại</h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6'>
-            Xử lý tranh chấp giữa các thành viên bằng góc nhìn khách quan. Ưu tiên sự đồng thuận và duy trì môi trường
-            chia sẻ tích cực.
+          <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
+            Xử lý tranh chấp giữa các thành viên bằng góc nhìn khách quan. Đảm bảo an toàn giao dịch qua hệ thống ký quỹ.
           </p>
         </CardContent>
       </Card>
 
-      <div className='grid gap-6 lg:grid-cols-[380px_1fr] items-start'>
-        {/* Left Column: List of Disputes */}
-        <Card >
-          <CardHeader className='py-5 px-6 border-b border-slate-50 bg-amber-50/30'>
-            <CardTitle className='text-lg flex items-center gap-2'>
-              <History className='w-5 h-5 text-amber-500' /> Đang chờ xử lý
-            </CardTitle>
-          </CardHeader>
-          <ScrollArea className='flex-1 overflow-y-auto'>
-            <div className='p-3 space-y-2'>
-              {disputes.map((dispute) => (
-                <button
-                  key={dispute.id}
-                  onClick={() => setSelectedId(dispute.id)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all border ${
-                    selectedId === dispute.id
-                      ? 'bg-amber-50 border-amber-200 shadow-sm'
-                      : ' border-transparent hover:'
-                  }`}
-                >
-                  <div className='flex items-start justify-between mb-2'>
-                    <Badge
-                      variant='outline'
-                      className={`text-[10px] rounded-lg px-2 border-none ${
-                        dispute.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                      }`}
-                    >
-                      {dispute.status === 'pending' ? 'Chờ xử lý' : 'Đang điều tra'}
-                    </Badge>
-                    <span className='text-[11px] text-slate-400 font-medium'>{dispute.date}</span>
-                  </div>
-                  <h4
-                    className={`font-medium text-sm leading-snug mb-1 ${selectedId === dispute.id ? 'text-amber-900' : ''}`}
+      {loading && disputes.length === 0 ? (
+        <div className='flex justify-center items-center py-20'>
+          <Loader2 className='w-8 h-8 animate-spin text-slate-400' />
+        </div>
+      ) : disputes.length === 0 ? (
+        <div className='border border-slate-200 rounded-2xl p-12 text-center bg-card shadow-sm'>
+          <Clock className='w-12 h-12 mx-auto mb-3 text-slate-300' />
+          <h3 className='text-lg font-semibold '>Không có khiếu nại nào</h3>
+          <p className='text-sm text-slate-400 mt-1'>Hệ thống hiện tại sạch bóng các khiếu nại tranh chấp.</p>
+        </div>
+      ) : (
+        <div className='grid gap-6 lg:grid-cols-[380px_1fr] items-start'>
+          {/* Left Column: List of Disputes */}
+          <Card>
+            <CardHeader className='py-5 px-6 border-b border-slate-100 bg-slate-50/50'>
+              <CardTitle className='text-lg flex items-center gap-2'>
+                <History className='w-5 h-5 text-indigo-500' /> Danh sách khiếu nại
+              </CardTitle>
+            </CardHeader>
+            <ScrollArea className='h-[300px] lg:h-[650px] overflow-y-auto'>
+              <div className='p-3 space-y-2'>
+                {disputes.map((dispute) => (
+                  <button
+                    key={dispute._id}
+                    onClick={() => setSelectedId(dispute._id)}
+                    className={`w-full text-left p-4 rounded-2xl transition-all border ${
+                      selectedId === dispute._id
+                        ? 'bg-indigo-50/50 border-indigo-200 shadow-sm'
+                        : 'border-transparent hover:bg-slate-50'
+                    }`}
                   >
-                    {dispute.title}
-                  </h4>
-                  <p className='text-xs  mb-3 line-clamp-1'>{dispute.groupName}</p>
-                  <div className='flex items-center gap-4 text-xs font-medium'>
-                    <div className='flex items-center gap-1.5 opacity-80'>
-                      <Avatar className='h-5 w-5'>
-                        <AvatarImage src={dispute.member.avatar} />
-                      </Avatar>
-                      <span className=''>{dispute.member.name}</span>
+                    <div className='flex items-start justify-between mb-2'>
+                      <Badge
+                        variant='outline'
+                        className={`text-[10px] rounded-lg px-2 border-none ${getStatusBadge(dispute.status)}`}
+                      >
+                        {getStatusLabel(dispute.status)}
+                      </Badge>
+                      <span className='text-[10px] text-slate-400 font-medium'>
+                        {new Date(dispute.createdAt).toLocaleDateString('vi-VN')}
+                      </span>
                     </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-        </Card>
-
-        {/* Right Column: Dispute Detail & Action */}
-        <div className=' flex flex-col gap-6 h-[calc(100vh-230px)]'>
-          <Card >
-            {/* Header Detail */}
-            <div className='p-6 border-b border-slate-100 flex items-center justify-between bg-linear-to-r from-amber-50/50 to-white'>
-              <div>
-                <div className='flex items-center gap-2 mb-2'>
-                  <Badge
-                    variant='secondary'
-                    className='bg-amber-100 text-amber-700 text-xs rounded-lg hover:bg-amber-100 border-none'
-                  >
-                    {currentDispute.id}
-                  </Badge>
-                  <span className='text-sm font-medium '>{currentDispute.groupName}</span>
-                </div>
-                <h3 className='text-xl font-semibold '>{currentDispute.title}</h3>
-              </div>
-
-              <div className='flex items-center gap-4'>
-                <div className='flex flex-col items-center'>
-                  <Avatar className='h-10 w-10 ring-2 ring-slate-100 mb-1'>
-                    <AvatarImage src={currentDispute.member.avatar} />
-                  </Avatar>
-                  <span className='text-[10px] font-medium '>Người khiếu nại</span>
-                </div>
-                <ChevronRight className='w-4 h-4 text-slate-300' />
-                <div className='flex flex-col items-center'>
-                  <Avatar className='h-10 w-10 ring-2 ring-amber-100 mb-1'>
-                    <AvatarImage src={currentDispute.owner.avatar} />
-                  </Avatar>
-                  <span className='text-[10px] font-medium text-amber-600'>Chủ nhóm</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Conversation & Evidence */}
-            <ScrollArea className='flex-1 p-6 overflow-y-auto'>
-              <div className='space-y-6'>
-                {/* Evidence Section */}
-                <div className=' rounded-2xl p-4 border border-slate-100'>
-                  <h4 className='flex items-center gap-2 text-sm font-medium  mb-3'>
-                    <ImageIcon className='w-4 h-4' /> Bằng chứng gửi kèm
-                  </h4>
-                  <ScrollArea className='w-full whitespace-nowrap rounded-xl'>
-                    <div className='flex w-max space-x-3 pb-4'>
-                      {evidences.map((src, i) => (
-                        <div
-                          key={i}
-                          className='relative rounded-xl overflow-hidden group cursor-pointer border border-slate-200'
-                        >
-                          <img
-                            src={src}
-                            alt='Evidence'
-                            className='h-32 w-48 object-cover transition-transform group-hover:scale-105'
-                          />
-                        </div>
-                      ))}
+                    <h4 className='font-semibold text-sm leading-snug mb-1 text-slate-900 dark:text-slate-100'>
+                      {getReason(dispute.reason)}
+                    </h4>
+                    <p className='text-xs text-slate-400 mb-2 truncate'>
+                      Mã: {dispute._id.substring(dispute._id.length - 8).toUpperCase()}
+                    </p>
+                    <div className='flex items-center gap-2 text-xs text-slate-500'>
+                      <User className='w-3 h-3' />
+                      <span className='truncate'>
+                        {dispute.raisedById?.displayName || dispute.raisedById?.name || dispute.raisedById?.email || 'N/A'}
+                      </span>
                     </div>
-                    <ScrollBar orientation='horizontal' />
-                  </ScrollArea>
-                </div>
-
-                <Separator className='bg-slate-100' />
-
-                {/* Chat History */}
-                <div>
-                  <h4 className='flex items-center gap-2 text-sm font-medium  mb-4'>
-                    <MessageSquare className='w-4 h-4' /> Lịch sử trao đổi
-                  </h4>
-                  <div className='space-y-4'>
-                    {messages.map((msg) => (
-                      <div key={msg.id} className={`flex gap-3 ${msg.role === 'owner' ? 'flex-row-reverse' : ''}`}>
-                        <Avatar className='h-8 w-8 mt-1'>
-                          <AvatarImage src={msg.avatar} />
-                        </Avatar>
-                        <div className={`flex flex-col ${msg.role === 'owner' ? 'items-end' : 'items-start'}`}>
-                          <div className='flex items-center gap-2 mb-1'>
-                            <span className='text-xs font-medium '>{msg.sender}</span>
-                            <span className='text-[10px] text-slate-400'>{msg.time}</span>
-                          </div>
-                          <div
-                            className={`px-4 py-2.5 rounded-2xl text-sm max-w-[85%] ${
-                              msg.role === 'owner'
-                                ? 'bg-amber-100 text-amber-900 rounded-tr-sm'
-                                : 'bg-slate-100  rounded-tl-sm'
-                            }`}
-                          >
-                            {msg.content}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </button>
+                ))}
               </div>
             </ScrollArea>
-
-            {/* Resolution Actions */}
-            <div className='p-4 border-t border-slate-100  flex items-center justify-end gap-3 mt-auto'>
-              <Button variant='ghost' className=' hover: hover:bg-slate-100 rounded-xl'>
-                <XCircle className='w-4 h-4 mr-2' /> Đóng khiếu nại
-              </Button>
-              <Button variant='outline' className='text-amber-700 border-amber-200 hover:bg-amber-50 rounded-xl'>
-                <Undo2 className='w-4 h-4 mr-2' /> Giao Owner xử lý lại
-              </Button>
-              <Button className='bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-sm'>
-                <ShieldCheck className='w-4 h-4 mr-2' /> Hoàn tiền cho Member
-              </Button>
-            </div>
           </Card>
+
+          {/* Right Column: Dispute Detail & Action */}
+          {currentDispute && (
+            <div className='flex flex-col gap-6'>
+              <Card>
+                {/* Header Detail */}
+                <div className='p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-50/30'>
+                  <div>
+                    <div className='flex items-center gap-2 mb-2'>
+                      <Badge
+                        variant='secondary'
+                        className={`text-xs rounded-lg border-none ${getStatusBadge(currentDispute.status)}`}
+                      >
+                        {getStatusLabel(currentDispute.status)}
+                      </Badge>
+                      <span className='text-sm font-semibold text-slate-700'>
+                        Mã đơn: #{currentDispute._id.toUpperCase()}
+                      </span>
+                    </div>
+                    <h3 className='text-xl font-bold text-slate-950 dark:text-slate-50'>
+                      Lý do: {getReason(currentDispute.reason)}
+                    </h3>
+                  </div>
+
+                  <div className='flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 shadow-sm'>
+                    <div className='text-right'>
+                      <div className='text-xs text-slate-400'>Số tiền bị đóng băng</div>
+                      <div className='text-xl font-bold text-rose-600'>
+                        {(currentDispute.transactionId?.amount || 0).toLocaleString('vi-VN')} ₫
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <CardContent className='p-6 space-y-6'>
+                  {/* Symmetrical split view for evidence and statements */}
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    {/* Left: Member Card */}
+                    <Card className='rounded-2xl border-slate-200 shadow-sm'>
+                      <CardHeader className='pb-3 border-b border-slate-50 bg-slate-50/50 p-4'>
+                        <CardTitle className='text-sm font-semibold text-rose-700 flex items-center gap-2'>
+                          <span className='flex size-6 items-center justify-center rounded-full bg-rose-100 text-rose-700 text-xs font-bold'>1</span>
+                          Khiếu nại từ Member
+                        </CardTitle>
+                        <CardDescription className='text-xs font-medium text-slate-500'>
+                          Tên: {currentDispute.raisedById?.displayName || currentDispute.raisedById?.name || 'N/A'} ({currentDispute.raisedById?.email || 'N/A'})
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className='p-4 space-y-4'>
+                        <div>
+                          <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1'>Lý do & mô tả khiếu nại</h4>
+                          <p className='text-sm font-semibold text-slate-800 dark:text-slate-200'>{getReason(currentDispute.reason)}</p>
+                        </div>
+                        <div>
+                          <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2'>Ảnh bằng chứng thành viên gửi</h4>
+                          {currentDispute.memberEvidence && currentDispute.memberEvidence.length > 0 ? (
+                            <div className='flex flex-col items-center gap-3 w-full'>
+                              {currentDispute.memberEvidence.map((src: string, i: number) => (
+                                <a
+                                  href={src}
+                                  target='_blank'
+                                  rel='noreferrer'
+                                  key={i}
+                                  className='relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 block bg-slate-50 group hover:shadow-md transition-all'
+                                >
+                                  <img
+                                    src={src}
+                                    alt='Member Evidence'
+                                    className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-300'
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className='text-xs text-slate-400 italic font-medium'>Không đính kèm ảnh.</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Right: Owner Card */}
+                    <Card className='rounded-2xl border-slate-200 shadow-sm'>
+                      <CardHeader className='pb-3 border-b border-slate-50 bg-slate-50/50 p-4'>
+                        <CardTitle className='text-sm font-semibold text-indigo-700 flex items-center gap-2'>
+                          <span className='flex size-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold'>2</span>
+                          Đối chất từ Chủ nhóm
+                        </CardTitle>
+                        <CardDescription className='text-xs font-medium text-slate-500'>
+                          Mã nhóm liên quan: {currentDispute.transactionId?.groupId || 'N/A'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className='p-4 space-y-4'>
+                        <div>
+                          <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1'>Mã giao dịch ký quỹ</h4>
+                          <p className='text-sm font-semibold text-slate-800 dark:text-slate-200 truncate'>{currentDispute.transactionId?._id || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <h4 className='text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2'>Ảnh đối chất chủ nhóm gửi</h4>
+                          {currentDispute.ownerEvidence && currentDispute.ownerEvidence.length > 0 ? (
+                            <div className='flex flex-col items-center gap-3 w-full'>
+                              {currentDispute.ownerEvidence.map((src: string, i: number) => (
+                                <a
+                                  href={src}
+                                  target='_blank'
+                                  rel='noreferrer'
+                                  key={i}
+                                  className='relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 block bg-slate-50 group hover:shadow-md transition-all'
+                                >
+                                  <img
+                                    src={src}
+                                    alt='Owner Evidence'
+                                    className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-300'
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className='text-xs text-slate-400 italic font-medium'>Chủ nhóm chưa cung cấp bằng chứng.</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Separator className='bg-slate-100' />
+
+                  {/* Resolution Info */}
+                  {currentDispute.status !== 'pending' && (
+                    <div className='bg-slate-50 dark:bg-slate-800/30 border rounded-2xl p-4 text-sm text-slate-600 dark:text-slate-400'>
+                      <p className='font-semibold text-slate-800 dark:text-slate-100 mb-1'>Phán quyết của Admin</p>
+                      {currentDispute.status === 'resolved_refund' 
+                        ? 'Đã xử Member thắng: Hệ thống đã hoàn lại 100% số tiền cọc cho Member và hủy giao dịch này.'
+                        : 'Đã xử Chủ nhóm thắng: Giao dịch đã được giải ngân thành công cho Chủ nhóm.'}
+                    </div>
+                  )}
+
+                  {/* Resolution Actions */}
+                  {currentDispute.status === 'pending' && (
+                    <div className='pt-4 border-t border-slate-100 flex flex-wrap items-center justify-end gap-3'>
+                      <Button
+                        variant='outline'
+                        onClick={() => handleResolve(currentDispute._id, 'payout')}
+                        className='text-indigo-700 border-indigo-200 hover:bg-indigo-50 rounded-xl'
+                        disabled={resolving}
+                      >
+                        {resolving ? <Loader2 className='w-4 h-4 mr-2 animate-spin' /> : <ShieldCheck className='w-4 h-4 mr-2' />}
+                        Giải ngân cho Owner (Chủ nhóm thắng)
+                      </Button>
+                      <Button
+                        onClick={() => handleResolve(currentDispute._id, 'refund')}
+                        className='bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm'
+                        disabled={resolving}
+                      >
+                        {resolving ? <Loader2 className='w-4 h-4 mr-2 animate-spin' /> : <XCircle className='w-4 h-4 mr-2' />}
+                        Hoàn tiền cho Member (Member thắng)
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }

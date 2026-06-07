@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BanknoteArrowUp, CalendarClock, CircleDollarSign, Landmark, ShieldCheck } from 'lucide-react'
+import { BanknoteArrowUp, CircleDollarSign, Landmark } from 'lucide-react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

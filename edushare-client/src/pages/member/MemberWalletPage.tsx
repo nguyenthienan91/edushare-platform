@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BanknoteArrowUp, CalendarClock, CircleDollarSign, Landmark, ShieldCheck } from 'lucide-react'
+import { BanknoteArrowUp, CircleDollarSign, Landmark } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -141,11 +141,11 @@ export default function MemberWalletPage() {
     switch (status) {
       case 'completed':
       case 'approved':
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10">Thành công</Badge>
+        return <Badge variant="default">Thành công</Badge>
       case 'pending':
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/10">Đang xử lý</Badge>
+        return <Badge variant="secondary">Đang xử lý</Badge>
       case 'rejected':
-        return <Badge variant="outline" className="bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/10">Bị từ chối</Badge>
+        return <Badge variant="destructive">Bị từ chối</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -159,7 +159,7 @@ export default function MemberWalletPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <p className="text-sm font-medium text-muted-foreground">Số dư khả dụng</p>
@@ -197,7 +197,7 @@ export default function MemberWalletPage() {
         </Card>
       </div>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Trạng thái escrow</CardTitle>
           <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
@@ -214,7 +214,7 @@ export default function MemberWalletPage() {
             </div>
           ))}
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>
@@ -225,7 +225,7 @@ export default function MemberWalletPage() {
           {/* Dialog Nạp tiền */}
           <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full">Nạp thêm</Button>
+              <Button className="rounded-md">Nạp thêm</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px]">
               <DialogHeader>
@@ -265,7 +265,7 @@ export default function MemberWalletPage() {
                             key={label}
                             type="button"
                             variant="secondary"
-                            className="rounded-full"
+                            className="rounded-md"
                             onClick={() => setDepositAmount(String(value))}
                           >
                             {label}
@@ -292,9 +292,9 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" className="rounded-full" onClick={() => setIsDepositOpen(false)}>Hủy</Button>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsDepositOpen(false)}>Hủy</Button>
                 <Button 
-                  className="rounded-full"
+                  className="rounded-md"
                   onClick={handleDeposit}
                   disabled={loading}
                 >
@@ -308,7 +308,7 @@ export default function MemberWalletPage() {
           {/* Dialog Rút tiền */}
           <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-full">Yêu cầu rút</Button>
+              <Button className="rounded-md">Yêu cầu rút</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px]">
               <DialogHeader>
@@ -336,7 +336,7 @@ export default function MemberWalletPage() {
                         key={value}
                         type="button"
                         variant="secondary"
-                        className="rounded-full"
+                        className="rounded-md"
                         onClick={() => setAmount(String(value))}
                       >
                         {value.toLocaleString('vi-VN')} đ
@@ -386,9 +386,9 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" className="rounded-full" onClick={() => setIsWithdrawOpen(false)}>Hủy</Button>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsWithdrawOpen(false)}>Hủy</Button>
                 <Button 
-                  className="rounded-full"
+                  className="rounded-md"
                   onClick={handleWithdraw}
                   disabled={loading}
                 >
@@ -402,9 +402,9 @@ export default function MemberWalletPage() {
           {/* Dialog Xem Lịch Sử */}
           <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="rounded-full">Xem lịch sử</Button>
+              <Button variant="outline" className="rounded-md">Xem lịch sử</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[720px]">
+            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[720px]">
               <DialogHeader>
                 <DialogTitle>Lịch sử giao dịch</DialogTitle>
                 <DialogDescription>
@@ -412,7 +412,7 @@ export default function MemberWalletPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="max-h-[400px] overflow-y-auto rounded-lg border">
+              <div className="max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-thin rounded-lg border">
                 <Table>
                   <TableHeader className="sticky top-0 bg-background">
                     <TableRow>
@@ -425,7 +425,7 @@ export default function MemberWalletPage() {
                   <TableBody>
                     {historyData.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                           Không có giao dịch nào
                         </TableCell>
                       </TableRow>
@@ -437,11 +437,11 @@ export default function MemberWalletPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                              <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
                               {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                             </div>
                           </TableCell>
-                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
                             {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
                           </TableCell>
                           <TableCell className="text-center">
@@ -455,7 +455,7 @@ export default function MemberWalletPage() {
               </div>
 
               <DialogFooter>
-                <Button className="rounded-full" onClick={() => setIsHistoryOpen(false)}>
+                <Button className="rounded-md" onClick={() => setIsHistoryOpen(false)}>
                   Đóng
                 </Button>
               </DialogFooter>
@@ -466,16 +466,17 @@ export default function MemberWalletPage() {
 
       {/* Table Lịch sử giao dịch trực tiếp trên trang */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 space-y-0">
           <div>
             <CardTitle>Lịch sử giao dịch gần đây</CardTitle>
             <CardDescription>Danh sách các giao dịch nạp và rút tiền gần nhất.</CardDescription>
           </div>
-          <Button variant="ghost" className="rounded-full" onClick={() => setIsHistoryOpen(true)}>
+          <Button variant="ghost" className="rounded-md" onClick={() => setIsHistoryOpen(true)}>
             Xem chi tiết
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto scrollbar-thin">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -488,7 +489,7 @@ export default function MemberWalletPage() {
               <TableBody>
                 {historyData.slice(0, 5).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                       Không có giao dịch nào
                     </TableCell>
                   </TableRow>
@@ -500,11 +501,11 @@ export default function MemberWalletPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
                           {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                         </div>
                       </TableCell>
-                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
                         {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
                       </TableCell>
                       <TableCell className="text-center">
@@ -515,6 +516,7 @@ export default function MemberWalletPage() {
                 )}
               </TableBody>
             </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

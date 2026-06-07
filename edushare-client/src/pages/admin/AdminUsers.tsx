@@ -80,7 +80,8 @@ export default function AdminUsers() {
           <CardDescription>Danh sách chi tiết các công dân của cộng đồng.</CardDescription>
         </CardHeader>
         <CardContent className='p-0'>
-          <Table>
+          <div className='overflow-x-auto scrollbar-thin'>
+            <Table>
             <TableHeader className='/50'>
               <TableRow className='hover:bg-transparent border-slate-100'>
                 <TableHead className='py-4 pl-6 font-medium '>Người dùng</TableHead>
@@ -174,6 +175,7 @@ export default function AdminUsers() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,12 +1,14 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
@@ -22,6 +24,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { fetchClient } from '@/utils/fetchClient'
 import {
   AlertTriangle,
@@ -32,11 +35,11 @@ import {
   CheckCircle2,
   ImagePlus,
   Loader2,
+  Lock,
   Search,
   ShieldCheck,
   Trash2,
   Users,
-  X,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -85,12 +88,12 @@ const STATUS_OPTIONS = [
   { value: 'closed', label: 'Đã đóng' },
 ]
 
-const STATUS_BADGE: Record<string, string> = {
-  available: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
-  full: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-  expired: 'bg-rose-100 text-rose-700 hover:bg-rose-100',
-  closed: 'bg-slate-100 text-slate-600 hover:bg-slate-100',
-  hidden: 'bg-purple-100 text-purple-700 hover:bg-purple-100',
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  available: 'secondary',
+  full: 'default',
+  expired: 'destructive',
+  closed: 'outline',
+  hidden: 'outline',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -101,14 +104,7 @@ const STATUS_LABEL: Record<string, string> = {
   hidden: 'Ẩn',
 }
 
-const TRANSACTION_STATUS_LABEL: Record<string, string> = {
-  held_in_escrow: 'Đang chờ duyệt',
-  approved_waiting_proof: 'Đã duyệt – Chờ minh chứng',
-  proof_submitted: 'Đã nộp minh chứng',
-  completed: 'Hoàn tất',
-  refunded: 'Đã hoàn tiền',
-  expired: 'Hết hạn',
-}
+// TRANSACTION_STATUS_LABEL removed because it is unused
 
 const ITEMS_PER_PAGE = 6
 
@@ -119,38 +115,33 @@ interface ConfirmDialogProps {
   title: string
   description: string
   loading?: boolean
+  confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
   onConfirm: () => void
   onCancel: () => void
 }
 
-function ConfirmDialog({ open, title, description, loading, onConfirm, onCancel }: ConfirmDialogProps) {
-  if (!open) return null
+function ConfirmDialog({ open, title, description, loading, confirmVariant = 'default', onConfirm, onCancel }: ConfirmDialogProps) {
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
-      <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={onCancel} />
-      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl'>
-        <div className='mb-4 flex items-center gap-3'>
-          <div className='flex size-10 items-center justify-center rounded-full bg-amber-100'>
-            <AlertTriangle className='size-5 text-amber-600' />
-          </div>
-          <h3 className='text-lg font-semibold text-slate-800'>{title}</h3>
-        </div>
-        <p className='mb-6 text-sm leading-relaxed text-slate-500'>{description}</p>
-        <div className='flex justify-end gap-3'>
-          <Button variant='outline' className='rounded-xl' onClick={onCancel} disabled={loading}>
+    <Dialog open={open} onOpenChange={(val) => !val && onCancel()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="size-5 text-amber-500" />
+            {title}
+          </DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             Hủy
           </Button>
-          <Button
-            className='rounded-xl bg-rose-600 text-white hover:bg-rose-700'
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading && <Loader2 className='mr-2 size-4 animate-spin' />}
+          <Button variant={confirmVariant} onClick={onConfirm} disabled={loading}>
+            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
             Xác nhận
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -208,73 +199,63 @@ function SubmitProofDialog({ open, transactionId, onClose, onSuccess }: SubmitPr
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
-      <div className='absolute inset-0 bg-black/40 backdrop-blur-sm' onClick={handleClose} />
-      <div className='relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl'>
-        <div className='mb-1 flex items-center justify-between'>
-          <h3 className='text-lg font-semibold text-slate-800'>Nộp minh chứng</h3>
-          <button
-            onClick={handleClose}
-            className='flex size-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100'
-          >
-            <X className='size-4' />
-          </button>
-        </div>
-        <p className='mb-4 text-sm text-slate-500'>
-          Tải lên ảnh chụp màn hình xác nhận bạn đã thêm thành viên vào gói.
-        </p>
+    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Nộp minh chứng</DialogTitle>
+          <DialogDescription>
+            Tải lên ảnh chụp màn hình xác nhận bạn đã thêm thành viên vào gói.
+          </DialogDescription>
+        </DialogHeader>
 
         <div
           onClick={() => inputRef.current?.click()}
-          className='mb-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-8 transition hover:border-indigo-400'
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 transition hover:bg-muted"
         >
           {preview ? (
-            <img src={preview} alt='preview' className='max-h-48 rounded-xl object-contain' />
+            <img src={preview} alt="preview" className="max-h-48 rounded-lg object-contain" />
           ) : (
             <>
-              <ImagePlus className='size-10 text-slate-300' />
-              <p className='text-sm font-medium text-slate-500'>Nhấn để chọn ảnh</p>
-              <p className='text-xs text-slate-400'>PNG, JPG, WEBP – tối đa 5MB</p>
+              <ImagePlus className="size-10 text-muted-foreground" />
+              <p className="text-sm font-medium">Nhấn để chọn ảnh</p>
+              <p className="text-xs text-muted-foreground">PNG, JPG, WEBP – tối đa 5MB</p>
             </>
           )}
         </div>
         <input
           ref={inputRef}
-          type='file'
-          accept='image/*'
-          className='hidden'
+          type="file"
+          accept="image/*"
+          className="hidden"
           onChange={handleFileChange}
         />
 
         {file && (
-          <div className='mb-3 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600'>
-            <CheckCircle2 className='size-4 text-emerald-500' />
+          <div className="flex items-center gap-2 rounded-lg border p-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="size-4 text-emerald-500" />
             {file.name}
           </div>
         )}
 
         {error && (
-          <p className='mb-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-600'>{error}</p>
+          <p className="rounded-lg bg-destructive/10 p-2 text-sm text-destructive">{error}</p>
         )}
 
-        <div className='flex justify-end gap-3'>
-          <Button variant='outline' className='rounded-xl' onClick={handleClose} disabled={loading}>
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
             Hủy
           </Button>
           <Button
-            className='rounded-xl bg-indigo-600 text-white hover:bg-indigo-700'
             onClick={handleSubmit}
             disabled={loading || !file}
           >
-            {loading && <Loader2 className='mr-2 size-4 animate-spin' />}
+            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
             Gửi minh chứng
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -288,8 +269,9 @@ interface ManageMembersDialogProps {
 }
 
 function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersDialogProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
   const [loadingTx, setLoadingTx] = useState(false)
+  const [joinedMembers, setJoinedMembers] = useState<GroupMember[]>([])
 
   // Confirm states
   const [approveConfirm, setApproveConfirm] = useState<string | null>(null) // transactionId
@@ -302,12 +284,23 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
     if (!group) return
     setLoadingTx(true)
     try {
-      // Fetch transactions for this group (admin endpoint – owner accessible in this context)
-      const res = await fetchClient(`/transactions?groupId=${group._id}`)
-      const list: Transaction[] = res?.data ?? res?.transactions ?? []
-      setTransactions(list.filter((t: Transaction) => t.groupId === group._id || true))
+      const res = await fetchClient(`/groups/${group._id}/members`)
+      
+      const pendingList = res?.data?.pending ?? []
+      const formattedPending = pendingList.map((tx: any) => ({
+        _id: tx.transactionId,
+        senderId: tx.user,
+        amount: tx.amount,
+        status: tx.status,
+        createdAt: tx.createdAt
+      }))
+      setTransactions(formattedPending)
+
+      const approvedList = res?.data?.approved ?? []
+      setJoinedMembers(approvedList)
     } catch {
       setTransactions([])
+      setJoinedMembers([])
     } finally {
       setLoadingTx(false)
     }
@@ -323,10 +316,11 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
     if (!approveConfirm) return
     setApprovingId(approveConfirm)
     try {
-      await fetchClient(`/transactions/${approveConfirm}/approve`, { method: 'POST' })
+      await fetchClient(`/transaction/${approveConfirm}/approve`, { method: 'POST' })
       await fetchTransactions()
+      toast.success('Duyệt thành viên thành công!')
     } catch (err: any) {
-      alert(err.message || 'Duyệt thất bại.')
+      toast.error(err.message || 'Duyệt thất bại.')
     } finally {
       setApprovingId(null)
       setApproveConfirm(null)
@@ -341,7 +335,6 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
   const approvedTransactions = transactions.filter(
     (t) => t.status === 'approved_waiting_proof',
   )
-  const joinedMembers = group.members ?? []
 
   const getSenderDisplay = (tx: Transaction) => {
     if (typeof tx.senderId === 'object' && tx.senderId !== null) {
@@ -359,130 +352,138 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className='min-w-[90vw] rounded-3xl'>
-          <DialogHeader>
-            <DialogTitle className='text-2xl'>Manage Members - {group.name}</DialogTitle>
+<DialogContent className='w-[calc(100%-2rem)] sm:w-[95vw] !max-w-6xl max-h-[90vh] flex flex-col p-6 rounded-lg'>          <DialogHeader>
+            <DialogTitle className='text-2xl'>Quản lý thành viên - {group.name}</DialogTitle>
             <DialogDescription>
               Danh sách người dùng đang chờ duyệt và người dùng đã tham gia.
             </DialogDescription>
           </DialogHeader>
 
-          <div className='grid gap-6 lg:grid-cols-2'>
-            {/* Pending – Approve + Submit Proof */}
-            <Card className='rounded-2xl border-slate-200 shadow-sm'>
-              <CardHeader className='border-b border-slate-100 pb-3'>
-                <CardTitle className='text-base'>Pending</CardTitle>
-                <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
-              </CardHeader>
-              <CardContent className='p-0'>
-                {loadingTx ? (
-                  <div className='flex justify-center py-8'>
-                    <Loader2 className='size-6 animate-spin text-slate-400' />
-                  </div>
-                ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
-                  <p className='py-6 text-center text-sm text-slate-400'>Không có yêu cầu nào.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tên</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead className='text-right'>Hành động</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingTransactions.map((tx) => (
-                        <TableRow key={tx._id}>
-                          <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
-                          <TableCell>{getSenderEmail(tx)}</TableCell>
-                          <TableCell>
-                            <div className='flex justify-end gap-2'>
-                              <Button
-                                size='sm'
-                                className='rounded-full bg-emerald-500 text-white hover:bg-emerald-600'
-                                disabled={approvingId === tx._id}
-                                onClick={() => setApproveConfirm(tx._id)}
-                              >
-                                {approvingId === tx._id ? (
-                                  <Loader2 className='mr-2 size-4 animate-spin' />
-                                ) : (
-                                  <ShieldCheck className='mr-2 size-4' />
-                                )}
-                                Approve
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {approvedTransactions.map((tx) => (
-                        <TableRow key={tx._id}>
-                          <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
-                          <TableCell>{getSenderEmail(tx)}</TableCell>
-                          <TableCell>
-                            <div className='flex justify-end gap-2'>
-                              <Button
-                                size='sm'
-                                className='rounded-full bg-indigo-600 text-white hover:bg-indigo-700'
-                                onClick={() => setProofTxId(tx._id)}
-                              >
-                                <ImagePlus className='mr-2 size-4' />
-                                Submit Proof
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+          <div className='flex-1 overflow-y-auto pr-1 scrollbar-thin'>
+            <div className='grid gap-6 lg:grid-cols-2 py-1'>
+              {/* Pending – Approve + Submit Proof */}
+              <Card className='shadow-sm'>
+                <CardHeader className=' pb-3'>
+                  <CardTitle className='text-base'>Đang chờ duyệt</CardTitle>
+                  <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
+                </CardHeader>
+                <CardContent className='p-0'>
+                  {loadingTx ? (
+                    <div className='flex justify-center py-8'>
+                      <Loader2 className='size-6 animate-spin ' />
+                    </div>
+                  ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
+                    <p className='py-6 text-center text-sm '>Không có yêu cầu nào.</p>
+                  ) : (
+                    <div className='overflow-x-auto scrollbar-thin'>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tên</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead className='text-right'>Hành động</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pendingTransactions.map((tx) => (
+                            <TableRow key={tx._id}>
+                              <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
+                              <TableCell>{getSenderEmail(tx)}</TableCell>
+                              <TableCell>
+                                <div className='flex justify-end gap-2'>
+                                  <Button
+                                    size='sm'
+                                    variant='default'
+                                    className='rounded-md'
+                                    disabled={approvingId === tx._id}
+                                    onClick={() => setApproveConfirm(tx._id)}
+                                  >
+                                    {approvingId === tx._id ? (
+                                      <Loader2 className='mr-2 size-4 animate-spin' />
+                                    ) : (
+                                      <ShieldCheck className='mr-2 size-4' />
+                                    )}
+                                    Duyệt
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {approvedTransactions.map((tx) => (
+                            <TableRow key={tx._id}>
+                              <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
+                              <TableCell>{getSenderEmail(tx)}</TableCell>
+                              <TableCell>
+                                <div className='flex justify-end gap-2'>
+                                  <Button
+                                    size='sm'
+                                    variant='secondary'
+                                    className='rounded-md'
+                                    onClick={() => setProofTxId(tx._id)}
+                                  >
+                                    <ImagePlus className='mr-2 size-4' />
+                                    Nộp minh chứng
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Joined Members */}
-            <Card className='rounded-2xl border-slate-200 shadow-sm'>
-              <CardHeader className='border-b border-slate-100 pb-3'>
-                <CardTitle className='text-base'>Joined</CardTitle>
-                <CardDescription>Người dùng đã tham gia nhóm.</CardDescription>
-              </CardHeader>
-              <CardContent className='p-0'>
-                {joinedMembers.length === 0 ? (
-                  <p className='py-6 text-center text-sm text-slate-400'>Chưa có thành viên.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tên</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead className='text-right'>Trạng thái</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {joinedMembers.map((member) => (
-                        <TableRow key={member._id}>
-                          <TableCell className='font-medium'>{member.displayName}</TableCell>
-                          <TableCell>{member.email}</TableCell>
-                          <TableCell className='text-right'>
-                            <Badge className='rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100'>
-                              <BadgeCheck className='mr-1 size-3.5' />
-                              Joined
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+              {/* Joined Members */}
+              <Card className='shadow-sm'>
+                <CardHeader className='border-b pb-3'>
+                  <CardTitle className='text-base'>Đã tham gia</CardTitle>
+                  <CardDescription>Người dùng đã tham gia nhóm.</CardDescription>
+                </CardHeader>
+                <CardContent className='p-0'>
+                  {joinedMembers.length === 0 ? (
+                    <p className='py-6 text-center text-sm '>Chưa có thành viên.</p>
+                  ) : (
+                    <div className='overflow-x-auto scrollbar-thin'>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tên</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead className='text-right'>Trạng thái</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {joinedMembers.map((member) => (
+                            <TableRow key={member._id}>
+                              <TableCell className='font-medium'>{member.displayName}</TableCell>
+                              <TableCell>{member.email}</TableCell>
+                              <TableCell className='text-right'>
+                                <Badge variant='secondary' className='rounded-full'>
+                                  <BadgeCheck className='mr-1 size-3.5' />
+                                  Đã tham gia
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
-
+ 
       {/* Confirm Approve */}
       <ConfirmDialog
         open={!!approveConfirm}
         title='Phê duyệt thành viên'
-        description='Bạn có chắc chắn muốn thêm thành viên này vào nhóm không? Sau khi duyệt, bạn cần nộp minh chứng đã thêm thành viên vào gói.'
+        description='Bạn có chắc chắn muốn thêm thành viên này vào nhóm không?'
+        confirmVariant='default'
         loading={!!approvingId}
         onConfirm={handleApprove}
         onCancel={() => setApproveConfirm(null)}
@@ -508,7 +509,10 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
 
 export default function MemberManageGroup() {
   const { user } = useAuth()
+  const navigate = useNavigate()
 
+  const [loadingUser, setLoadingUser] = useState(true)
+  const [isVip, setIsVip] = useState(false)
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -527,6 +531,35 @@ export default function MemberManageGroup() {
 
   // Manage members dialog
   const [managingGroup, setManagingGroup] = useState<Group | null>(null)
+
+  // VIP check status
+  useEffect(() => {
+    let active = true
+
+    const checkVipStatus = async () => {
+      try {
+        const res = await fetchClient('/users/me')
+        if (res && res.isSubscriptionActive === true) {
+          setIsVip(true)
+        } else {
+          setIsVip(false)
+        }
+      } catch (err) {
+        console.error('Error fetching user info:', err)
+        setIsVip(false)
+      } finally {
+        if (active) {
+          setLoadingUser(false)
+        }
+      }
+    }
+
+    checkVipStatus()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   // Debounce search query
   useEffect(() => {
@@ -548,40 +581,58 @@ export default function MemberManageGroup() {
     setLoading(true)
     setError(null)
     try {
-      let res: any
-
-      if (priceOrder) {
-        // Gọi search với ownerId, rồi sort client-side theo price
-        // vì endpoint sort/price không hỗ trợ filter ownerId
-        const params = new URLSearchParams()
-        params.set('ownerId', user.userID)
-        if (debouncedQuery.trim()) params.set('name', debouncedQuery.trim())
-        if (statusFilter !== 'all') params.set('status', statusFilter)
-        params.set('page', String(currentPage))
-        params.set('itemPerPage', String(ITEMS_PER_PAGE))
-        res = await fetchClient(`/groups/search?${params.toString()}`)
-        // Sort client-side theo price
-        if (res?.data) {
-          res.data = [...res.data].sort((a: Group, b: Group) =>
-            priceOrder === 'asc' ? a.price - b.price : b.price - a.price,
-          )
-        }
-      } else {
-        // Search/filter
-        const params = new URLSearchParams()
-        params.set('ownerId', user.userID)
-        if (debouncedQuery.trim()) params.set('name', debouncedQuery.trim())
-        if (statusFilter !== 'all') params.set('status', statusFilter)
-        params.set('page', String(currentPage))
-        params.set('itemPerPage', String(ITEMS_PER_PAGE))
-        res = await fetchClient(`/groups/search?${params.toString()}`)
+      // Build search params for the API call to /api/groups as requested
+      const params = new URLSearchParams()
+      params.set('ownerId', user.userID)
+      if (debouncedQuery.trim()) {
+        params.set('keyword', debouncedQuery.trim())
+      }
+      if (statusFilter !== 'all') {
+        params.set('status', statusFilter)
       }
 
-      const data: Group[] = res?.data ?? []
-      setGroups(data)
-      if (res?.totalPages) setTotalPages(res.totalPages)
-      else if (res?.meta?.totalPages) setTotalPages(res.meta.totalPages)
-      else setTotalPages(Math.max(1, Math.ceil((res?.totalItems ?? data.length) / ITEMS_PER_PAGE)))
+      // Call GET /api/groups with params
+      const res = await fetchClient(`/groups?${params.toString()}`)
+
+      // Since we don't touch the backend, the backend findAll endpoint returns all groups.
+      // We will perform client-side filtering to ensure correct results match the requested parameters.
+      let fetchedList: Group[] = res?.data ?? []
+
+      // 1. Filter by ownerId
+      fetchedList = fetchedList.filter((g) => {
+        const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId !== null
+          ? g.ownerId._id
+          : String(g.ownerId)
+        return ownerIdStr === user.userID
+      })
+
+      // 2. Filter by keyword (searching group name case-insensitively)
+      if (debouncedQuery.trim()) {
+        const queryLower = debouncedQuery.trim().toLowerCase()
+        fetchedList = fetchedList.filter((g) => g.name?.toLowerCase().includes(queryLower))
+      }
+
+      // 3. Filter by status
+      if (statusFilter !== 'all') {
+        fetchedList = fetchedList.filter((g) => g.status === statusFilter)
+      }
+
+      // Sort client-side by price if order is requested
+      if (priceOrder) {
+        fetchedList.sort((a, b) =>
+          priceOrder === 'asc' ? a.price - b.price : b.price - a.price,
+        )
+      }
+
+      const totalItems = fetchedList.length
+      const totalPagesCount = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE))
+      setTotalPages(totalPagesCount)
+
+      // Paginate client-side
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+      const paginatedList = fetchedList.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+      setGroups(paginatedList)
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách nhóm.')
       setGroups([])
@@ -601,12 +652,59 @@ export default function MemberManageGroup() {
     try {
       await fetchClient(`/groups/${removeConfirm}`, { method: 'DELETE' })
       setRemoveConfirm(null)
+      toast.success('Xóa nhóm thành công!')
       fetchGroups()
     } catch (err: any) {
-      alert(err.message || 'Xóa nhóm thất bại.')
+      toast.error(err.message || 'Xóa nhóm thất bại.')
     } finally {
       setRemoving(false)
     }
+  }
+
+  if (loadingUser) {
+    return (
+      <div className='flex h-[400px] items-center justify-center'>
+        <Loader2 className='size-8 animate-spin text-muted-foreground' />
+      </div>
+    )
+  }
+
+  if (!isVip) {
+    return (
+      <div className='flex items-center justify-center py-10 px-4'>
+        <Card className='max-w-md w-full rounded-lg shadow-md text-center p-8 relative overflow-hidden'>
+          <div className='relative flex flex-col items-center gap-6'>
+            <div className='flex size-16 items-center justify-center bg-muted text-muted-foreground shadow-sm'>
+              <Lock className='size-8' />
+            </div>
+            
+            <div className='space-y-2'>
+              <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
+                Tính năng quản lý nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
+              </p>
+            </div>
+
+            <div className='w-full pt-4 space-y-3 relative z-10'>
+              <Button 
+                onClick={() => navigate('/dashboard/wallet')}
+                variant='default'
+                className='w-full rounded-full h-12 font-medium'
+              >
+                Nâng cấp VIP (29,000đ/tháng)
+              </Button>
+              <Button 
+                onClick={() => navigate('/dashboard/overview')}
+                variant='outline'
+                className='w-full rounded-full h-12 font-medium'
+              >
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -614,11 +712,11 @@ export default function MemberManageGroup() {
       {/* Header */}
       <Card>
         <CardContent>
-          <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>
+          <Badge variant='secondary' className='rounded-full'>
             Manage Group
           </Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Quản lý nhóm của tôi</h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-500'>
+          <p className='mt-2 max-w-2xl text-sm leading-6 text-muted-foreground'>
             Xem nhanh trạng thái từng nhóm, tiến độ lấp đầy slot và các thao tác quan trọng ngay
             dưới card.
           </p>
@@ -631,13 +729,13 @@ export default function MemberManageGroup() {
           <div className='flex flex-col gap-3 md:flex-row md:items-center'>
             {/* Search */}
             <div className='relative w-full md:max-w-sm'>
-              <Search className='pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400' />
+              <Search className='pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 ' />
               <Input
                 id='search-group-input'
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder='Tìm nhóm...'
-                className='h-11 rounded-2xl border-slate-200 pl-11'
+                className='h-11 pl-11'
               />
             </div>
 
@@ -649,7 +747,7 @@ export default function MemberManageGroup() {
               >
                 <SelectTrigger
                   id='status-filter-select'
-                  className='!h-11 w-full rounded-2xl border-slate-200 px-4'
+                  className='!h-11 w-full px-4'
                 >
                   <SelectValue placeholder='Lọc trạng thái' />
                 </SelectTrigger>
@@ -666,12 +764,8 @@ export default function MemberManageGroup() {
             {/* Sort by price button */}
             <Button
               id='sort-price-btn'
-              variant='outline'
-              className={`h-11 rounded-2xl border-slate-200 px-4 transition-colors ${
-                priceOrder
-                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                  : 'hover:border-slate-300'
-              }`}
+              variant={priceOrder ? 'secondary' : 'outline'}
+              className='h-11 px-4'
               onClick={() =>
                 setPriceOrder((prev) =>
                   prev === null ? 'asc' : prev === 'asc' ? 'desc' : null,
@@ -679,9 +773,9 @@ export default function MemberManageGroup() {
               }
             >
               {priceOrder === 'asc' ? (
-                <ArrowUp className='mr-2 size-4 text-indigo-600' />
+                <ArrowUp className='mr-2 size-4' />
               ) : priceOrder === 'desc' ? (
-                <ArrowDown className='mr-2 size-4 text-indigo-600' />
+                <ArrowDown className='mr-2 size-4' />
               ) : (
                 <ArrowUpDown className='mr-2 size-4' />
               )}
@@ -690,7 +784,7 @@ export default function MemberManageGroup() {
             </Button>
 
             {loading && (
-              <div className='flex items-center gap-2 text-sm text-slate-400'>
+              <div className='flex items-center gap-2 text-sm '>
                 <Loader2 className='size-4 animate-spin' />
                 Đang tải...
               </div>
@@ -701,34 +795,34 @@ export default function MemberManageGroup() {
 
       {/* Error */}
       {error && (
-        <div className='rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600'>
+        <div className='rounded-lg border border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive'>
           {error}
         </div>
       )}
 
       {/* Groups Grid */}
       {!loading && groups.length === 0 && !error ? (
-        <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-16'>
-          <Users className='size-12 text-slate-300' />
-          <p className='mt-3 text-sm font-medium text-slate-500'>Bạn chưa có nhóm nào.</p>
-          <p className='mt-1 text-xs text-slate-400'>Hãy tạo nhóm đầu tiên của bạn!</p>
+        <div className='flex flex-col items-center justify-center border border-dashed py-16'>
+          <Users className='size-12 text-muted-foreground/40' />
+          <p className='mt-3 text-sm font-medium text-muted-foreground'>Bạn chưa có nhóm nào.</p>
+          <p className='mt-1 text-xs '>Hãy tạo nhóm đầu tiên của bạn!</p>
         </div>
       ) : (
         <div className='grid gap-6 md:grid-cols-2 xl:grid-cols-3'>
           {loading
             ? Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <Card key={i} className='animate-pulse rounded-2xl'>
+                <Card key={i} className='animate-pulse rounded-lg'>
                   <CardHeader className='space-y-4'>
-                    <div className='h-5 w-2/3 rounded-lg bg-slate-200' />
-                    <div className='h-3 w-1/2 rounded-lg bg-slate-100' />
-                    <div className='h-2.5 rounded-full bg-slate-100' />
+                    <div className='h-5 w-2/3 rounded-md bg-muted' />
+                    <div className='h-3 w-1/2 rounded-md bg-muted/70' />
+                    <div className='h-2.5 rounded-full bg-muted/70' />
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     <div className='grid grid-cols-2 gap-3'>
-                      <div className='h-14 rounded-2xl bg-slate-100' />
-                      <div className='h-14 rounded-2xl bg-slate-100' />
+                      <div className='h-14 bg-muted/70' />
+                      <div className='h-14 bg-muted/70' />
                     </div>
-                    <div className='h-10 rounded-2xl bg-slate-200' />
+                    <div className='h-10 bg-muted' />
                   </CardContent>
                 </Card>
               ))
@@ -739,7 +833,7 @@ export default function MemberManageGroup() {
                 return (
                   <Card
                     key={group._id}
-                    className='rounded-2xl border-slate-200/70 shadow-sm shadow-sky-100/30 transition hover:shadow-md'
+                    className='border transition hover:shadow-md'
                   >
                     <CardHeader className='space-y-4'>
                       <div className='flex items-start justify-between gap-4'>
@@ -749,29 +843,29 @@ export default function MemberManageGroup() {
                             {group.occupiedSlots}/{group.totalSlots} thành viên
                           </CardDescription>
                         </div>
-                        <Badge className={`rounded-full ${STATUS_BADGE[statusKey] ?? 'bg-slate-100 text-slate-600'}`}>
+                        <Badge variant={STATUS_VARIANTS[statusKey] ?? 'outline'} className='rounded-full'>
                           {STATUS_LABEL[statusKey] ?? group.status}
                         </Badge>
                       </div>
 
                       <div className='space-y-2'>
-                        <div className='flex items-center justify-between text-sm text-slate-600'>
+                        <div className='flex items-center justify-between text-sm text-muted-foreground'>
                           <span>Độ lấp đầy</span>
                           <span className='font-medium'>{progress}%</span>
                         </div>
-                        <Progress value={progress} className='h-2.5 bg-slate-100' />
+                        <Progress value={progress} className='h-2.5' />
                       </div>
                     </CardHeader>
 
                     <CardContent className='space-y-4'>
                       <div className='grid grid-cols-2 gap-3 text-sm'>
-                        <div className='rounded-2xl border border-slate-100 p-3'>
-                          <p className='text-xs text-slate-400'>Slot còn lại</p>
+                        <div className='border p-3'>
+                          <p className='text-xs '>Slot còn lại</p>
                           <p className='mt-1 font-semibold'>{group.totalSlots - group.occupiedSlots} slot</p>
                         </div>
-                        <div className='rounded-2xl border border-slate-100 p-3'>
-                          <p className='text-xs text-slate-400'>Giá / slot</p>
-                          <p className='mt-1 font-semibold text-indigo-600'>
+                        <div className='border p-3'>
+                          <p className='text-xs '>Giá / slot</p>
+                          <p className='mt-1 font-semibold'>
                             {group.price?.toLocaleString('vi-VN')}đ
                           </p>
                         </div>
@@ -780,11 +874,12 @@ export default function MemberManageGroup() {
                       {/* Manage Members button */}
                       <Button
                         id={`manage-members-btn-${group._id}`}
-                        className='w-full rounded-2xl bg-slate-950 text-white hover:bg-slate-800'
+                        variant='default'
+                        className='w-full rounded-md'
                         onClick={() => setManagingGroup(group)}
                       >
                         <Users className='mr-2 size-4' />
-                        Manage Members
+                        Quản lý thành viên
                       </Button>
 
                       {/* Action buttons */}
@@ -792,12 +887,12 @@ export default function MemberManageGroup() {
                         <Button
                           id={`remove-group-btn-${group._id}`}
                           size='sm'
-                          variant='outline'
-                          className='rounded-full border-rose-200 text-rose-600 hover:bg-rose-50'
+                          variant='destructive'
+                          className='rounded-md'
                           onClick={() => setRemoveConfirm(group._id)}
                         >
                           <Trash2 className='mr-2 size-4' />
-                          Remove Group
+                          xoá nhóm
                         </Button>
                       </div>
                     </CardContent>
@@ -851,7 +946,7 @@ export default function MemberManageGroup() {
                       e.preventDefault()
                       if (!loading) setCurrentPage(page)
                     }}
-                    className={currentPage === page ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white' : ''}
+                    className={currentPage === page ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : ''}
                   >
                     {page}
                   </PaginationLink>
@@ -879,7 +974,8 @@ export default function MemberManageGroup() {
       <ConfirmDialog
         open={!!removeConfirm}
         title='Xóa nhóm'
-        description='Bạn có chắc chắn muốn xóa nhóm này không? Hành động này không thể hoàn tác và toàn bộ dữ liệu nhóm sẽ bị xóa vĩnh viễn.'
+        description='Bạn có chắc chắn muốn xóa nhóm này không?'
+        confirmVariant='destructive'
         loading={removing}
         onConfirm={handleRemoveGroup}
         onCancel={() => setRemoveConfirm(null)}

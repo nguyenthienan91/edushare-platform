@@ -7,7 +7,6 @@ import {
   Search,
   Star,
   Clock3,
-  User as UserIcon,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,23 +14,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
 
-// ─── Types ──────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────----------------──────
 
 interface RatingSender {
   _id: string
   email: string
   displayName: string
   avatar: string | null
+  username?: string
 }
 
 interface RatingItem {
   _id: string
   senderId: RatingSender
   receiverId: RatingSender
-  transactionId: string
+  transactionId:
+    | {
+        _id: string
+        groupId?: {
+          _id: string
+          name: string
+          category: string
+        }
+      }
+    | string
   rating: number
   comment: string | null
   createdAt: string
@@ -68,7 +76,7 @@ function RatingBar({ label, count, total }: { label: string; count: number; tota
       <span className='w-12 text-sm font-medium'>{label}</span>
       <div className='h-2 flex-1 overflow-hidden rounded-full bg-secondary'>
         <div
-          className='h-full rounded-full bg-yellow-400 transition-all duration-500'
+          className='h-full rounded-full bg-primary transition-all duration-500'
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -80,15 +88,17 @@ function RatingBar({ label, count, total }: { label: string; count: number; tota
 function ReviewCard({
   item,
   activeTab,
+  groupName,
 }: {
   item: RatingItem
   activeTab: 'received' | 'sent'
+  groupName: string
 }) {
   const member = activeTab === 'received' ? item.senderId : item.receiverId
-  const memberName = member?.displayName || 'Thành viên'
+  const memberName = member?.username || member?.displayName || 'Thành viên'
   const initials = memberName
     .split(' ')
-    .map((w) => w[0])
+    .map((w: string) => w[0])
     .join('')
     .slice(0, 2)
     .toUpperCase()
@@ -96,7 +106,7 @@ function ReviewCard({
   const timeAgo = getRelativeTime(item.createdAt)
 
   return (
-    <div className='group relative rounded-xl border bg-card p-5 transition-colors hover:bg-accent/30'>
+    <div className='group relative rounded-lg border bg-card p-5 transition-colors hover:bg-accent/30'>
       {/* Header: Avatar + Name + Stars + Time */}
       <div className='flex items-start gap-4'>
         <Avatar className='size-10 border'>
@@ -107,11 +117,11 @@ function ReviewCard({
         </Avatar>
 
         <div className='flex-1 min-w-0'>
-          <div className='flex items-center justify-between gap-3'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3'>
             <div className='flex items-center gap-2 min-w-0'>
               <span className='font-semibold text-sm truncate'>{memberName}</span>
               <Badge variant='secondary' className='rounded-full text-[10px] px-2 py-0 shrink-0'>
-                {activeTab === 'received' ? 'Người gửi' : 'Người nhận'}
+                {activeTab === 'received' ? 'Đánh giá nhận được' : 'Đánh giá đã gửi'}
               </Badge>
             </div>
             <div className='flex items-center gap-1.5 text-xs text-muted-foreground shrink-0'>
@@ -120,10 +130,12 @@ function ReviewCard({
             </div>
           </div>
 
-          {/* Star Rating */}
-          <div className='mt-1.5 flex items-center gap-2'>
+          {/* Star Rating + Group Name */}
+          <div className='mt-1.5 flex flex-wrap items-center gap-2'>
             <StarRating rating={item.rating} />
             <span className='text-xs font-medium text-muted-foreground'>{item.rating}.0</span>
+            <span className='text-xs text-muted-foreground'>•</span>
+            <span className='text-xs font-semibold text-primary'>{groupName}</span>
           </div>
 
           {/* Comment */}
@@ -165,17 +177,96 @@ function getRelativeTime(iso: string) {
 // ─── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function MemberReviewsPage() {
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
   const [ratingFilter, setRatingFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [trustScore, setTrustScore] = useState<number>(5.0)
   const [ratings, setRatings] = useState<RatingItem[]>([])
+  const [txLookup, setTxLookup] = useState<Record<string, { groupName: string }>>({})
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const itemPerPage = 10
+
+  const getGroupName = (item: RatingItem) => {
+    if (typeof item.transactionId === 'object' && item.transactionId !== null) {
+      return item.transactionId.groupId?.name || 'Nhóm dùng chung'
+    }
+    if (typeof item.transactionId === 'string') {
+      return txLookup[item.transactionId]?.groupName || 'Nhóm dùng chung'
+    }
+    return 'Nhóm dùng chung'
+  }
+
+  const fetchTxLookup = async (currentUserId: string) => {
+    const lookup: Record<string, { groupName: string }> = {}
+    try {
+      // 1. Fetch transactions where I am the buyer
+      const buyerTxs = await fetchClient('/transactions/me?page=1&itemPerPage=100')
+      if (buyerTxs && buyerTxs.list) {
+        const groupIdsToFetch: string[] = Array.from(
+          new Set(
+            buyerTxs.list
+              .map((tx: any) => tx.groupId)
+              .filter((gId: any): gId is string => typeof gId === 'string')
+          )
+        )
+
+        const fetchedGroups: Record<string, any> = {}
+        await Promise.all(
+          groupIdsToFetch.map(async (gId) => {
+            try {
+              const gInfo = await fetchClient(`/groups/${gId}`)
+              if (gInfo) {
+                fetchedGroups[gId] = gInfo
+              }
+            } catch {}
+          })
+        )
+
+        buyerTxs.list.forEach((tx: any) => {
+          let gName = 'Nhóm dùng chung'
+          if (typeof tx.groupId === 'object' && tx.groupId) {
+            gName = tx.groupId.name
+          } else if (typeof tx.groupId === 'string' && fetchedGroups[tx.groupId]) {
+            gName = fetchedGroups[tx.groupId].name
+          }
+          lookup[tx._id] = { groupName: gName }
+        })
+      }
+
+      // 2. Fetch groups where I am the owner
+      const groupsRes = await fetchClient('/groups?page=1&itemPerPage=100')
+      if (groupsRes && groupsRes.data) {
+        const myOwnedGroups = groupsRes.data.filter((g: any) => {
+          const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId 
+            ? g.ownerId._id || g.ownerId.id 
+            : g.ownerId
+          return ownerIdStr === currentUserId
+        })
+
+        await Promise.all(
+          myOwnedGroups.map(async (g: any) => {
+            try {
+              const membersRes = await fetchClient(`/groups/${g._id}/members`)
+              if (membersRes && membersRes.data) {
+                const pending = membersRes.data.pending ?? []
+                pending.forEach((p: any) => {
+                  lookup[p.transactionId] = { groupName: g.name }
+                })
+              }
+            } catch (err) {
+              console.error(err)
+            }
+          })
+        )
+      }
+    } catch (error) {
+      console.error('Failed to build transaction lookup:', error)
+    }
+    setTxLookup((prev) => ({ ...prev, ...lookup }))
+  }
 
   // Fetch trust score
   const fetchTrustScore = async () => {
@@ -183,6 +274,10 @@ export default function MemberReviewsPage() {
       const res = await fetchClient('/users/me')
       if (res && res.trustScore !== undefined) {
         setTrustScore(res.trustScore)
+      }
+      const uId = res?._id || res?.id || res?.userID
+      if (uId) {
+        fetchTxLookup(uId)
       }
     } catch (error) {
       console.error('Failed to load trust score:', error)
@@ -222,10 +317,7 @@ export default function MemberReviewsPage() {
 
   const stats = useMemo(() => {
     const total = totalItems
-    const average =
-      ratings.length > 0
-        ? (ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length).toFixed(1)
-        : trustScore.toFixed(1)
+    const average = trustScore.toFixed(1)
 
     return {
       total,
@@ -321,14 +413,14 @@ export default function MemberReviewsPage() {
             <div className='flex flex-wrap gap-2'>
               <Button
                 variant={activeTab === 'received' ? 'default' : 'outline'}
-                className='rounded-full'
+                className='rounded-md'
                 onClick={() => setActiveTab('received')}
               >
                 Đánh giá nhận được
               </Button>
               <Button
                 variant={activeTab === 'sent' ? 'default' : 'outline'}
-                className='rounded-full'
+                className='rounded-md'
                 onClick={() => setActiveTab('sent')}
               >
                 Đánh giá đã gửi
@@ -382,7 +474,7 @@ export default function MemberReviewsPage() {
           {loading && (
             <div className='space-y-4'>
               {[1, 2, 3].map((i) => (
-                <div key={i} className='animate-pulse rounded-xl border p-5'>
+                <div key={i} className='animate-pulse rounded-lg border p-5'>
                   <div className='flex items-start gap-4'>
                     <div className='size-10 rounded-full bg-muted' />
                     <div className='flex-1 space-y-3'>
@@ -415,11 +507,16 @@ export default function MemberReviewsPage() {
             </div>
           )}
 
-          {/* Review cards */}
+          {/* Review comments list */}
           {!loading && filteredReviews.length > 0 && (
-            <div className='space-y-3'>
+            <div className='space-y-4'>
               {filteredReviews.map((item) => (
-                <ReviewCard key={item._id} item={item} activeTab={activeTab} />
+                <ReviewCard
+                  key={item._id}
+                  item={item}
+                  activeTab={activeTab}
+                  groupName={getGroupName(item)}
+                />
               ))}
             </div>
           )}
@@ -434,7 +531,7 @@ export default function MemberReviewsPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
@@ -444,7 +541,7 @@ export default function MemberReviewsPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='rounded-full'
+                  className='rounded-md'
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 >

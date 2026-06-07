@@ -1,8 +1,6 @@
 import {
   User,
   Lock,
-  Bell,
-  Shield,
   CreditCard,
   Camera,
   Eye,
@@ -20,7 +18,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -91,24 +88,7 @@ export default function MemberSettingsPage() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [address, setAddress] = useState('');
 
-  // ─── Notifications ──────────────────────────────────────────────────
-  const [notifications, setNotifications] = useState({
-    emailOrders: true,
-    emailDisputes: true,
-    emailReviews: false,
-    emailPromotions: true,
-    pushOrders: true,
-    pushMessages: true,
-    smsImportant: false,
-  });
-
-  // ─── Privacy ────────────────────────────────────────────────────────
-  const [privacy, setPrivacy] = useState({
-    showProfile: true,
-    showReviews: true,
-    showRating: true,
-    twoFactorAuth: false,
-  });
+  // ─── Unused notification & privacy states removed ───
 
   // ─── Fetch profile from API ─────────────────────────────────────────
   const fetchProfile = async () => {
@@ -238,7 +218,7 @@ export default function MemberSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold ">
@@ -252,7 +232,7 @@ export default function MemberSettingsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <TabsList className="flex w-full overflow-x-auto h-auto p-1 justify-start gap-1 lg:grid lg:grid-cols-3 scrollbar-thin">
           <TabsTrigger value="profile">
             <User className="w-4 h-4 mr-2" />
             Hồ sơ
@@ -261,16 +241,6 @@ export default function MemberSettingsPage() {
           <TabsTrigger value="security">
             <Lock className="w-4 h-4 mr-2" />
             Bảo mật
-          </TabsTrigger>
-
-          <TabsTrigger value="notifications">
-            <Bell className="w-4 h-4 mr-2" />
-            Thông báo
-          </TabsTrigger>
-
-          <TabsTrigger value="privacy">
-            <Shield className="w-4 h-4 mr-2" />
-            Quyền riêng tư
           </TabsTrigger>
 
           <TabsTrigger value="payment">
@@ -291,7 +261,7 @@ export default function MemberSettingsPage() {
               <div className="relative">
                 <Avatar className="size-20 border text-2xl">
                   {profile?.avatar && <AvatarImage src={profile.avatar} alt={displayName} />}
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold">
+                  <AvatarFallback className="bg-emerald-500/10 text-emerald-500 font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -502,8 +472,8 @@ export default function MemberSettingsPage() {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-4">
+                  <p className="text-sm text-blue-600">
                     Mật khẩu cần ít nhất 6 ký tự.
                   </p>
                 </div>
@@ -516,219 +486,11 @@ export default function MemberSettingsPage() {
               </div>
             </Card>
 
-            {/* 2FA */}
-            <Card className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg">
-                    Xác thực 2 lớp
-                  </h3>
-
-                  <p className=" text-sm mt-1">
-                    Tăng cường bảo mật tài khoản
-                  </p>
-                </div>
-
-                <Switch
-                  checked={privacy.twoFactorAuth}
-                  onCheckedChange={(checked) =>
-                    setPrivacy({
-                      ...privacy,
-                      twoFactorAuth: checked,
-                    })
-                  }
-                />
-              </div>
-
-              {privacy.twoFactorAuth && (
-                <div className="mt-5 border rounded-lg p-5 ">
-                  <div className="w-40 h-40  border rounded-lg mx-auto flex items-center justify-center">
-                    QR CODE
-                  </div>
-
-                  <Input
-                    className="mt-4"
-                    placeholder="Nhập mã 6 số"
-                  />
-                </div>
-              )}
-            </Card>
+            {/* 2FA removed */}
           </div>
         </TabsContent>
 
-        {/* NOTIFICATIONS */}
-        <TabsContent value="notifications">
-          <Card className="p-6">
-            <h2 className="font-semibold text-xl mb-6">
-              Thông báo
-            </h2>
-
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    Cập nhật đơn hàng
-                  </p>
-
-                  <p className="text-sm ">
-                    Email khi có thay đổi đơn hàng
-                  </p>
-                </div>
-
-                <Switch
-                  checked={notifications.emailOrders}
-                  onCheckedChange={(checked) =>
-                    setNotifications({
-                      ...notifications,
-                      emailOrders: checked,
-                    })
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    Khuyến mãi
-                  </p>
-
-                  <p className="text-sm ">
-                    Nhận thông báo ưu đãi
-                  </p>
-                </div>
-
-                <Switch
-                  checked={
-                    notifications.emailPromotions
-                  }
-                  onCheckedChange={(checked) =>
-                    setNotifications({
-                      ...notifications,
-                      emailPromotions: checked,
-                    })
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    Tin nhắn
-                  </p>
-
-                  <p className="text-sm ">
-                    Nhận thông báo tin nhắn mới
-                  </p>
-                </div>
-
-                <Switch
-                  checked={
-                    notifications.pushMessages
-                  }
-                  onCheckedChange={(checked) =>
-                    setNotifications({
-                      ...notifications,
-                      pushMessages: checked,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button>
-                  Lưu tùy chọn
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* PRIVACY */}
-        <TabsContent value="privacy">
-          <Card className="p-6">
-            <h2 className="font-semibold text-xl mb-6">
-              Quyền riêng tư
-            </h2>
-
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    Hiển thị hồ sơ
-                  </p>
-
-                  <p className="text-sm ">
-                    Người khác có thể xem hồ sơ
-                  </p>
-                </div>
-
-                <Switch
-                  checked={privacy.showProfile}
-                  onCheckedChange={(checked) =>
-                    setPrivacy({
-                      ...privacy,
-                      showProfile: checked,
-                    })
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    Hiển thị đánh giá
-                  </p>
-
-                  <p className="text-sm ">
-                    Công khai đánh giá của bạn
-                  </p>
-                </div>
-
-                <Switch
-                  checked={privacy.showReviews}
-                  onCheckedChange={(checked) =>
-                    setPrivacy({
-                      ...privacy,
-                      showReviews: checked,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <h4 className="font-semibold text-amber-800">
-                  Dữ liệu tài khoản
-                </h4>
-
-                <p className="text-sm text-amber-700 mt-2">
-                  Bạn có thể tải xuống hoặc xóa tài khoản.
-                </p>
-
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                  >
-                    Tải dữ liệu
-                  </Button>
-
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Xóa tài khoản
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
+        {/* NOTIFICATIONS and PRIVACY removed */}
 
         {/* PAYMENT */}
         <TabsContent value="payment">
@@ -739,10 +501,10 @@ export default function MemberSettingsPage() {
                 Thanh toán
               </h2>
 
-              <div className="p-4 border rounded-xl bg-emerald-50 border-emerald-200 flex items-center justify-between">
+              <div className="p-4 border rounded-lg bg-emerald-500/10 border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12  rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-emerald-600" />
+                    <CreditCard className="w-6 h-6 text-emerald-500" />
                   </div>
 
                   <div>
@@ -750,24 +512,16 @@ export default function MemberSettingsPage() {
                       Ví EduShare
                     </p>
 
-                    <p className="text-sm font-semibold text-emerald-700">
+                    <p className="text-sm font-semibold text-emerald-600">
                       Số dư: {formatCurrency(profile?.balance ?? 0)}
                     </p>
                   </div>
                 </div>
 
-                <span className="text-xs  px-3 py-1 rounded-full text-emerald-600 font-medium">
+                <span className="text-xs  px-3 py-1 rounded-full text-emerald-500 font-medium">
                   Mặc định
                 </span>
               </div>
-
-              <Button
-                variant="outline"
-                className="w-full mt-5"
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Thêm phương thức thanh toán
-              </Button>
             </Card>
 
             {/* VIP Subscription */}
@@ -820,8 +574,8 @@ export default function MemberSettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-lg border p-4 bg-amber-50/50 border-amber-200">
-                    <p className="text-sm text-amber-800">
+                  <div className="rounded-lg border p-4 bg-amber-500/10 border-amber-500/20">
+                    <p className="text-sm text-amber-600">
                       Nâng cấp gói VIP Member với giá <strong>29.000đ / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
                     </p>
                   </div>
@@ -848,38 +602,17 @@ export default function MemberSettingsPage() {
               <div className="space-y-4">
                 <div>
                   <Label>Ngân hàng</Label>
-
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn ngân hàng" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      <SelectItem value="vcb">
-                        Vietcombank
-                      </SelectItem>
-
-                      <SelectItem value="acb">
-                        ACB
-                      </SelectItem>
-
-                      <SelectItem value="bidv">
-                        BIDV
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input placeholder="Nhập tên ngân hàng (ví dụ: Vietcombank, Techcombank...)" />
                 </div>
 
                 <div>
                   <Label>Số tài khoản</Label>
-
                   <Input placeholder="Nhập số tài khoản" />
                 </div>
 
                 <div>
                   <Label>Tên chủ tài khoản</Label>
-
-                  <Input placeholder="Tên chủ tài khoản" />
+                  <Input placeholder="Nhập tên chủ tài khoản" />
                 </div>
 
                 <div className="flex justify-end">
