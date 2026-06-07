@@ -1,4 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  Inject,
+  forwardRef,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
+import 'multer'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -7,12 +24,48 @@ import { UserRole } from './entities/user.entity'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
 import { AuthGuard } from '../auth/auth.guard'
-import { ApiOperation } from '@nestjs/swagger'
+import { ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger'
+import { GroupsService } from '../groups/groups.service'
+import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
 
 @Controller('users')
 @Roles(UserRole.ADMIN)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(forwardRef(() => GroupsService))
+    private readonly groupsService: GroupsService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
+
+  @Patch('me/avatar')
+  @Roles()
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async updateAvatar(@User() user: UserInfo, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Please upload an avatar image.')
+    }
+    try {
+      const uploadResult = await this.cloudinaryService.uploadImage(file, 'edushare_avatars')
+      const secureUrl = uploadResult.secure_url
+      return await this.usersService.update(user.userID, { avatar: secureUrl })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      throw new BadRequestException('Failed to upload avatar: ' + message)
+    }
+  }
 
   @Patch('me')
   @Roles()
@@ -23,7 +76,13 @@ export class UsersController {
   @Get('me')
   @Roles()
   getMe(@User() user: UserInfo) {
-    return this.usersService.findById(user.userID)
+    return this.usersService.findByIdWithBalance(user.userID)
+  }
+
+  @Get('me/dashboard-stats')
+  @Roles()
+  getMeDashboardStats(@User() user: UserInfo) {
+    return this.groupsService.getDashboardStats(user.userID)
   }
 
   @Post('upgrade-vip')

@@ -172,10 +172,10 @@ function formatCurrency(value: number) {
 
 function Badge({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'emerald' | 'indigo' | 'sky' }) {
   const tones = {
-    slate: 'bg-slate-100  ring-slate-200',
-    emerald: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-    indigo: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-    sky: ' text-sky-700 ring-sky-200',
+    slate: 'bg-muted text-muted-foreground',
+    emerald: 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20',
+    indigo: 'bg-primary/10 text-primary ring-primary/20',
+    sky: 'bg-sky-500/10 text-sky-500 ring-sky-500/20',
   }
 
   return <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${tones[tone]}`}>{children}</span>
@@ -183,12 +183,12 @@ function Badge({ children, tone = 'slate' }: { children: React.ReactNode; tone?:
 
 function StatCard({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<{ className?: string }> }) {
   return (
-    <div className="rounded-2xl border border-slate-200  p-5 shadow-sm">
-      <div className="mb-3 inline-flex rounded-2xl  p-3 text-indigo-600">
+    <div className="rounded-lg border bg-card text-card-foreground p-5 shadow-sm">
+      <div className="mb-3 inline-flex rounded-lg p-3 bg-primary/10 text-primary">
         <Icon className="h-5 w-5" />
       </div>
-      <div className="text-2xl font-bold ">{value}</div>
-      <div className="mt-1 text-sm ">{label}</div>
+      <div className="text-2xl font-bold">{value}</div>
+      <div className="mt-1 text-sm text-muted-foreground">{label}</div>
     </div>
   )
 }
@@ -219,29 +219,29 @@ export default function MemberParticipantPageNew() {
   }, [search, selectedCategory, sortBy])
 
   return (
-    <div className="min-h-screen  from-slate-50 via-white to-sky-50 ">
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55 }}
-          className="overflow-hidden rounded-[32px] border border-slate-200  shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
+          className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm"
         >
           <div className="grid gap-8 px-6 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-10">
             <div>
               <Badge tone="indigo">Truy cập cộng tác đáng tin cậy cho sinh viên</Badge>
-              <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+              <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight sm:text-5xl">
                 Chia sẻ thuê bao đáng tin cậy dành cho sinh viên
               </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7  sm:text-lg">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
                 Tham gia các nhóm thuê bao đã xác minh với thanh toán được bảo vệ bởi escrow, điểm uy tín minh bạch và quy trình an toàn dành cho cộng đồng sinh viên.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-500">
+                <button className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-primary/95 shadow-sm">
                   Khám phá nhóm <ArrowRight className="h-4 w-4" />
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200  px-5 py-3 text-sm font-semibold  transition hover:-translate-y-0.5 hover:border-indigo-200 hover:text-indigo-700">
+                <button className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-muted">
                   Trở thành chủ nhóm <Sparkles className="h-4 w-4" />
                 </button>
               </div>
@@ -254,74 +254,74 @@ export default function MemberParticipantPageNew() {
               </div>
             </div>
 
-            <div className="rounded-[28px] r from-indigo-600 via-sky-500 to-emerald-500 p-[1px] shadow-lg">
-              <div className="h-full rounded-[27px]  p-6">
+            <div className="rounded-lg border p-[1px] shadow-sm">
+              <div className="h-full rounded-lg p-6 bg-card text-card-foreground">
                 <div className="flex items-center justify-between">
                   <Badge tone="emerald">Điểm nhấn chủ nhóm đã xác minh</Badge>
                   <Badge tone="sky">Thân thiện với sinh viên</Badge>
                 </div>
-                <div className="mt-6 rounded-3xl  p-5">
+                <div className="mt-6 rounded-lg bg-muted/40 p-5">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-3xl r from-indigo-500 to-sky-500 text-3xl text-white shadow-lg">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary text-3xl shadow-sm">
                       ✨
                     </div>
                     <div>
-                      <div className="text-lg font-bold ">ChatGPT Plus Study Hub</div>
-                      <div className="mt-1 text-sm ">Công cụ AI • còn 1 slot</div>
+                      <div className="text-lg font-bold">ChatGPT Plus Study Hub</div>
+                      <div className="mt-1 text-sm text-muted-foreground">Công cụ AI • còn 1 slot</div>
                     </div>
                   </div>
                   <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-2xl  p-4">
-                      <div className="">Điểm uy tín</div>
-                      <div className="mt-1 text-2xl font-bold ">96/100</div>
+                    <div className="rounded-lg border bg-card p-4">
+                      <div className="text-muted-foreground">Điểm uy tín</div>
+                      <div className="mt-1 text-2xl font-bold">96/100</div>
                     </div>
-                    <div className="rounded-2xl  p-4">
-                      <div className="">Tỷ lệ thành công</div>
-                      <div className="mt-1 text-2xl font-bold ">98%</div>
+                    <div className="rounded-lg border bg-card p-4">
+                      <div className="text-muted-foreground">Tỷ lệ thành công</div>
+                      <div className="mt-1 text-2xl font-bold">98%</div>
                     </div>
                   </div>
-                  <div className="mt-4 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                  <div className="mt-4 rounded-lg border border-dashed border-primary/20 bg-primary/5 p-4 text-sm text-primary">
                     Escrow giữ tiền an toàn cho đến khi quyền truy cập được xác nhận, giúp sinh viên tham gia một cách yên tâm.
                   </div>
                 </div>
-                <div className="mt-5 space-y-3 text-sm ">
-                  <div className="flex items-center gap-3"><BadgeCheck className="h-4 w-4 text-emerald-500" /> Chủ nhóm đã xác minh và lịch sử hồ sơ rõ ràng</div>
-                  <div className="flex items-center gap-3"><TrendingUp className="h-4 w-4 text-sky-500" /> Điểm tin cậy cao với nhiều lượt tham gia thành công</div>
-                  <div className="flex items-center gap-3"><Wallet className="h-4 w-4 text-indigo-500" /> Luồng thanh toán an toàn qua ví</div>
+                <div className="mt-5 space-y-3 text-sm">
+                  <div className="flex items-center gap-3"><BadgeCheck className="h-4 w-4 text-primary" /> Chủ nhóm đã xác minh và lịch sử hồ sơ rõ ràng</div>
+                  <div className="flex items-center gap-3"><TrendingUp className="h-4 w-4 text-primary" /> Điểm tin cậy cao với nhiều lượt tham gia thành công</div>
+                  <div className="flex items-center gap-3"><Wallet className="h-4 w-4 text-primary" /> Luồng thanh toán an toàn qua ví</div>
                 </div>
               </div>
             </div>
           </div>
         </motion.section>
 
-        <section className="mt-8 rounded-[32px] border border-slate-200  p-6 shadow-sm">
+        <section className="mt-8 rounded-lg border bg-card text-card-foreground p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-slate-950">Khám phá các nhóm thuê bao</h2>
-              <p className="mt-1 text-sm ">Tìm kiếm các nhóm đã xác minh với quy trình tham gia được bảo vệ bởi escrow và huy hiệu chủ nhóm đáng tin cậy.</p>
+              <h2 className="text-2xl font-bold">Khám phá các nhóm thuê bao</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Tìm kiếm các nhóm đã xác minh với quy trình tham gia được bảo vệ bởi escrow và huy hiệu chủ nhóm đáng tin cậy.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm Canva, ChatGPT Plus, Microsoft 365..."
-                  className="w-full rounded-2xl border border-slate-200  py-3 pl-11 pr-4 text-sm outline-none transition focus:border-indigo-300 focus: sm:w-80"
+                  className="w-full rounded-lg border bg-background py-2 pl-11 pr-4 text-sm outline-none transition focus-visible:ring-1 focus-visible:ring-ring sm:w-80"
                 />
               </div>
               <div className="relative">
-                <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="appearance-none rounded-2xl border border-slate-200  py-3 pl-11 pr-10 text-sm outline-none transition focus:border-indigo-300 focus:"
+                  className="appearance-none rounded-lg border bg-background py-2 pl-11 pr-10 text-sm outline-none transition focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   {sortOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
           </div>
@@ -331,7 +331,7 @@ export default function MemberParticipantPageNew() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${selectedCategory === category ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-slate-100  hover:bg-slate-200'}`}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${selectedCategory === category ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
               >
                 {category}
               </button>
@@ -348,18 +348,18 @@ export default function MemberParticipantPageNew() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: index * 0.05 }}
                 whileHover={{ y: -6 }}
-                className="overflow-hidden rounded-[28px] border border-slate-200  shadow-sm transition-shadow hover:shadow-xl"
+                className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="h-2 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
+                <div className="h-1 bg-primary" />
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl  text-3xl">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-lg text-3xl">
                         {group.emoji}
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-slate-950">{group.platform}</h3>
-                        <p className="mt-1 text-sm ">{group.category}</p>
+                        <h3 className="text-xl font-bold">{group.platform}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">{group.category}</p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -368,29 +368,29 @@ export default function MemberParticipantPageNew() {
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 ">{group.description}</p>
+                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{group.description}</p>
 
                   <div className="mt-5 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl  p-4">
-                      <div className="text-xs ">Trust Score</div>
-                      <div className="mt-1 flex items-center gap-2 text-lg font-bold ">
-                        {group.trustScore}/100 <Star className="h-4 w-4 text-amber-500" />
+                    <div className="rounded-lg bg-muted/40 p-4">
+                      <div className="text-xs text-muted-foreground">Trust Score</div>
+                      <div className="mt-1 flex items-center gap-2 text-lg font-bold">
+                        {group.trustScore}/100 <Star className="h-4 w-4 text-primary fill-primary" />
                       </div>
                     </div>
-                    <div className="rounded-2xl  p-4">
-                      <div className="text-xs ">Success Rate</div>
-                      <div className="mt-1 text-lg font-bold ">{group.successRate}%</div>
+                    <div className="rounded-lg bg-muted/40 p-4">
+                      <div className="text-xs text-muted-foreground">Success Rate</div>
+                      <div className="mt-1 text-lg font-bold">{group.successRate}%</div>
                     </div>
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-2xl border border-slate-200 p-4 ">
-                      <div className="text-xs uppercase tracking-wide text-slate-400">Slots</div>
-                      <div className="mt-1 font-semibold ">{group.availableSlots}/{group.totalSlots} available</div>
+                    <div className="rounded-lg border p-4">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Slots</div>
+                      <div className="mt-1 font-semibold">{group.availableSlots}/{group.totalSlots} available</div>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4 ">
-                      <div className="text-xs uppercase tracking-wide text-slate-400">Giá / tháng</div>
-                      <div className="mt-1 font-semibold ">{formatCurrency(group.price)}</div>
+                    <div className="rounded-lg border p-4">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Giá / tháng</div>
+                      <div className="mt-1 font-semibold">{formatCurrency(group.price)}</div>
                     </div>
                   </div>
 
@@ -409,7 +409,7 @@ export default function MemberParticipantPageNew() {
                       setSelectedGroup(group)
                       setTermsAccepted(false)
                     }}
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold transition hover:bg-primary/95"
                   >
                     Tham gia an toàn <ArrowRight className="h-4 w-4" />
                   </button>
@@ -418,22 +418,22 @@ export default function MemberParticipantPageNew() {
             ))
           ) : (
             <div className="md:col-span-2 xl:col-span-3">
-              <div className="rounded-[28px] border border-dashed border-slate-300  px-6 py-14 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl  text-3xl">🔎</div>
-                <h3 className="mt-4 text-xl font-bold text-slate-950">Không tìm thấy nhóm phù hợp</h3>
-                <p className="mt-2 text-sm ">Hãy thử từ khóa khác hoặc đổi danh mục để khám phá thêm các nhóm thuê bao đáng tin cậy.</p>
+              <div className="rounded-lg border border-dashed p-12 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg text-3xl">🔎</div>
+                <h3 className="mt-4 text-xl font-bold">Không tìm thấy nhóm phù hợp</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Hãy thử từ khóa khác hoặc đổi danh mục để khám phá thêm các nhóm thuê bao đáng tin cậy.</p>
               </div>
             </div>
           )}
         </section>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-          <div className="rounded-[32px] border border-slate-200  p-6 shadow-sm">
+          <div className="rounded-lg border bg-card text-card-foreground p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-indigo-50 p-3 text-indigo-600"><ShieldCheck className="h-5 w-5" /></div>
+              <div className="rounded-lg bg-primary/10 p-3 text-primary"><ShieldCheck className="h-5 w-5" /></div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-950">Quy trình bảo vệ bởi escrow</h2>
-                <p className="text-sm ">A transparent 4-step flow designed to keep students safe.</p>
+                <h2 className="text-2xl font-bold">Quy trình bảo vệ bởi escrow</h2>
+                <p className="text-sm text-muted-foreground">A transparent 4-step flow designed to keep students safe.</p>
               </div>
             </div>
 
@@ -444,45 +444,45 @@ export default function MemberParticipantPageNew() {
                 { step: 'Step 3', title: 'Thành viên xác nhận', icon: MessageSquareQuote, desc: 'You confirm successful access or raise a dispute if something is wrong.' },
                 { step: 'Step 4', title: 'Tiền được giải ngân tự động', icon: Wallet, desc: 'If there is no dispute, the system releases funds safely to the owner.' },
               ].map(({ step, title, icon: Icon, desc }) => (
-                <div key={step} className="flex gap-4 rounded-2xl border border-slate-200  p-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl  text-indigo-600 shadow-sm">
+                <div key={step} className="flex gap-4 rounded-lg border p-4 bg-muted/20">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-primary shadow-sm">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-indigo-600">{step}</div>
-                    <div className="mt-1 text-base font-bold text-slate-950">{title}</div>
-                    <div className="mt-1 text-sm leading-6 ">{desc}</div>
+                    <div className="text-sm font-semibold text-primary">{step}</div>
+                    <div className="mt-1 text-base font-bold">{title}</div>
+                    <div className="mt-1 text-sm leading-6 text-muted-foreground">{desc}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-slate-200  p-6 shadow-sm">
+          <div className="rounded-lg border bg-card text-card-foreground p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-600"><CalendarClock className="h-5 w-5" /></div>
+              <div className="rounded-lg bg-primary/10 p-3 text-primary"><CalendarClock className="h-5 w-5" /></div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-950">Hoạt động gần đây</h2>
-                <p className="text-sm ">Live-style updates from successful joins and escrow events.</p>
+                <h2 className="text-2xl font-bold">Hoạt động gần đây</h2>
+                <p className="text-sm text-muted-foreground">Live-style updates from successful joins and escrow events.</p>
               </div>
             </div>
 
             <div className="mt-6 space-y-3">
               {activities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-4 rounded-2xl border border-slate-200 p-4">
-                  <div className={`rounded-2xl p-3 ${activity.type === 'join' ? 'bg-emerald-50 text-emerald-600' : activity.type === 'release' ? 'bg-indigo-50 text-indigo-600' : ' text-sky-600'}`}>
+                <div key={activity.id} className="flex items-start gap-4 rounded-lg border p-4">
+                  <div className={`rounded-lg p-3 bg-muted/40 text-primary`}>
                     {activity.type === 'join' ? <CheckCircle2 className="h-5 w-5" /> : activity.type === 'release' ? <Lock className="h-5 w-5" /> : <BadgeCheck className="h-5 w-5" />}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-slate-950">{activity.title}</div>
-                    <div className="mt-1 text-sm ">{activity.subtitle}</div>
+                    <div className="font-semibold">{activity.title}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">{activity.subtitle}</div>
                   </div>
-                  <div className="text-xs text-slate-400">{activity.time}</div>
+                  <div className="text-xs text-muted-foreground">{activity.time}</div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 rounded-2xl border border-dashed border-slate-300  p-5 text-center text-sm ">
+            <div className="mt-6 rounded-lg border border-dashed p-5 text-center text-sm bg-muted/20 text-muted-foreground">
               Các cập nhật mới sẽ xuất hiện tại đây khi thành viên tham gia nhóm và các sự kiện escrow hoàn tất.
             </div>
           </div>
@@ -495,7 +495,7 @@ export default function MemberParticipantPageNew() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm"
             onClick={() => setSelectedGroup(null)}
           >
             <motion.div
@@ -504,59 +504,65 @@ export default function MemberParticipantPageNew() {
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-[32px]  p-6 shadow-2xl"
+              className="w-full max-w-lg rounded-lg border bg-card text-card-foreground p-6 shadow-lg"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <Badge tone="emerald">Escrow Protected</Badge>
-                  <h3 className="mt-3 text-2xl font-bold text-slate-950">Tham gia an toàn</h3>
-                  <p className="mt-1 text-sm ">Xem lại thông tin nhóm trước khi thực hiện thanh toán an toàn.</p>
+                  <h3 className="mt-3 text-2xl font-bold">Tham gia an toàn</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">Xem lại thông tin nhóm trước khi thực hiện thanh toán an toàn.</p>
                 </div>
-                <button onClick={() => setSelectedGroup(null)} className="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:">
+                <button onClick={() => setSelectedGroup(null)} className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="mt-5 rounded-3xl  p-5">
+              <div className="mt-5 rounded-lg bg-muted/40 p-5">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl  text-3xl shadow-sm">{selectedGroup.emoji}</div>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-lg text-3xl shadow-sm">{selectedGroup.emoji}</div>
                   <div>
-                    <div className="text-lg font-bold text-slate-950">{selectedGroup.platform}</div>
-                    <div className="text-sm ">{selectedGroup.category} • {selectedGroup.availableSlots} slots available</div>
+                    <div className="text-lg font-bold">{selectedGroup.platform}</div>
+                    <div className="text-sm text-muted-foreground">{selectedGroup.category} • {selectedGroup.availableSlots} slots available</div>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-2xl  p-4"><div className="">Trust Score</div><div className="mt-1 font-bold text-slate-950">{selectedGroup.trustScore}/100</div></div>
-                  <div className="rounded-2xl  p-4"><div className="">Price</div><div className="mt-1 font-bold text-slate-950">{formatCurrency(selectedGroup.price)}</div></div>
+                  <div className="rounded-lg border bg-card p-4">
+                    <div className="text-muted-foreground">Trust Score</div>
+                    <div className="mt-1 font-bold">{selectedGroup.trustScore}/100</div>
+                  </div>
+                  <div className="rounded-lg border bg-card p-4">
+                    <div className="text-muted-foreground">Price</div>
+                    <div className="mt-1 font-bold">{formatCurrency(selectedGroup.price)}</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-5 space-y-3 rounded-3xl border border-slate-200 p-5 text-sm ">
-                <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-4 w-4 text-emerald-500" /><span>Your payment will be held securely in escrow until access is confirmed.</span></div>
-                <div className="flex items-start gap-3"><Lock className="mt-0.5 h-4 w-4 text-indigo-500" /><span>Only verified group owners can complete the joining workflow.</span></div>
-                <div className="flex items-start gap-3"><TrendingUp className="mt-0.5 h-4 w-4 text-sky-500" /><span>Lưu ý pháp lý: việc phối hợp thuê bao dùng chung cần tuân thủ quy định của nền tảng và pháp luật địa phương.</span></div>
+              <div className="mt-5 space-y-3 rounded-lg border p-5 text-sm">
+                <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-4 w-4 text-primary" /><span>Your payment will be held securely in escrow until access is confirmed.</span></div>
+                <div className="flex items-start gap-3"><Lock className="mt-0.5 h-4 w-4 text-primary" /><span>Only verified group owners can complete the joining workflow.</span></div>
+                <div className="flex items-start gap-3"><TrendingUp className="mt-0.5 h-4 w-4 text-primary" /><span>Lưu ý pháp lý: việc phối hợp thuê bao dùng chung cần tuân thủ quy định của nền tảng và pháp luật địa phương.</span></div>
               </div>
 
-              <div className="mt-5 rounded-2xl  p-4">
+              <div className="mt-5 rounded-lg border bg-card p-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="">Số dư ví</span>
-                  <span className="font-semibold text-slate-950">128,000đ</span>
+                  <span className="text-muted-foreground">Số dư ví</span>
+                  <span className="font-semibold">128,000đ</span>
                 </div>
               </div>
 
-              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 p-4 text-sm ">
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border p-4 text-sm">
                 <input
                   type="checkbox"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-ring"
                 />
-                <span>I agree to the group terms and understand that funds are released automatically after successful confirmation.</span>
+                <span className="text-muted-foreground">I agree to the group terms and understand that funds are released automatically after successful confirmation.</span>
               </label>
 
               <button
                 disabled={!termsAccepted}
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-5 py-3 text-sm font-semibold transition hover:bg-primary/95 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
               >
                 Thanh toán an toàn <ArrowRight className="h-4 w-4" />
               </button>
@@ -571,22 +577,22 @@ export default function MemberParticipantPageNew() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
             onClick={() => setShowVipPopup(false)}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl"
+              className="w-full max-w-md overflow-hidden rounded-lg border bg-card text-card-foreground p-6 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col items-center text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                  <Star className="h-8 w-8" />
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Star className="h-8 w-8 fill-primary" />
                 </div>
-                <h3 className="mb-2 text-2xl font-bold text-slate-900">Nâng cấp gói VIP</h3>
-                <p className="mb-6 text-sm text-slate-600">
+                <h3 className="mb-2 text-2xl font-bold">Nâng cấp gói VIP</h3>
+                <p className="mb-6 text-sm text-muted-foreground">
                   Tính năng này chỉ dành cho thành viên VIP. Bạn cần nâng cấp lên gói VIP (29.000đ) để có thể tham gia vào các nhóm chia sẻ tài khoản.
                 </p>
                 <div className="flex w-full flex-col gap-3">
@@ -595,13 +601,13 @@ export default function MemberParticipantPageNew() {
                       setShowVipPopup(false);
                       navigate('/dashboard/wallet');
                     }}
-                    className="flex w-full items-center justify-center rounded-2xl bg-emerald-500 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                    className="flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/95 shadow-sm"
                   >
                     Nâng cấp VIP ngay
                   </button>
                   <button
                     onClick={() => setShowVipPopup(false)}
-                    className="flex w-full items-center justify-center rounded-2xl border border-slate-200 py-3 text-sm font-semibold transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-center rounded-lg border py-3 text-sm font-semibold transition hover:bg-muted"
                   >
                     Để sau
                   </button>

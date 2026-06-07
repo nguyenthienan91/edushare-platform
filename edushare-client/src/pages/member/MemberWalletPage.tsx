@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import { BanknoteArrowUp, CalendarClock, CircleDollarSign, Landmark, ShieldCheck } from 'lucide-react'
-import { DashboardLayout } from '@/components/dashboard-layout'
+import { useEffect, useMemo, useState } from 'react'
+import { BanknoteArrowUp, CircleDollarSign, Landmark } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,14 +9,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
-const history = [
-  { date: '12/05/2026', type: 'Nạp tiền', amount: '+500.000đ', status: 'Thành công' },
-  { date: '11/05/2026', type: 'Rút tiền', amount: '-100.000đ', status: 'Đang xử lý' },
-  { date: '10/05/2026', type: 'Escrow hoàn tất', amount: '+250.000đ', status: 'Thành công' },
-]
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { fetchClient } from '@/utils/fetchClient'
 
 export default function MemberWalletPage() {
+  const [wallet, setWallet] = useState<{ balance: number; frozenBalance: number } | null>(null)
+  const [historyData, setHistoryData] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  
+  const [isDepositOpen, setIsDepositOpen] = useState(false)
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+
   const [amount, setAmount] = useState('50000')
   const [bankName, setBankName] = useState('mbbank')
   const [accountNumber, setAccountNumber] = useState('')
@@ -25,303 +29,496 @@ export default function MemberWalletPage() {
   const [depositMethod, setDepositMethod] = useState('bank')
 
   const quickAmounts = [50000, 100000, 500000]
-
   const depositQuick = useMemo(() => ['50.000đ', '100.000đ', '500.000đ'], [])
 
-  return (
-   
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card >
-            <CardContent className="p-5">
-              <p className="text-sm ">Số dư khả dụng</p>
-              <p className="mt-2 text-3xl font-semibold ">$120.50</p>
-              <Badge className="mt-3 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Đang hoạt động</Badge>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm ">Tiền đang giữ</p>
-              <p className="mt-2 text-3xl font-semibold ">$48.00</p>
-              <p className="mt-3 text-sm ">Đang chờ hoàn tất giao dịch</p>
-            </CardContent>
-          </Card>
-          <Card >
-            <CardContent className="p-5">
-              <p className="text-sm ">Yêu cầu rút tiền</p>
-              <p className="mt-2 text-3xl font-semibold ">2</p>
-              <p className="mt-3 text-sm ">Đang chờ duyệt</p>
-            </CardContent>
-          </Card>
-          <Card >
-            <CardContent className="p-5">
-              <p className="text-sm ">Tổng giao dịch</p>
-              <p className="mt-2 text-3xl font-semibold ">18</p>
-              <p className="mt-3 text-sm ">Trong 30 ngày gần nhất</p>
-            </CardContent>
-          </Card>
-        </div>
+  const fetchWalletData = async () => {
+    try {
+      const walletRes = await fetchClient('/wallets/me')
+      setWallet(walletRes)
+      
+      const historyRes = await fetchClient('/wallets/history?page=1&itemPerPage=50')
+      if (historyRes && historyRes.list) {
+        setHistoryData(historyRes.list)
+      }
+    } catch (error) {
+      console.error('Failed to load wallet data:', error)
+    }
+  }
 
+  useEffect(() => {
+    fetchWalletData()
+  }, [])
+
+  const handleDeposit = async () => {
+    const amountNum = Number(depositAmount)
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast.error('Vui lòng nhập số tiền nạp hợp lệ')
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetchClient('/payment-gateway/create-link', {
+        method: 'POST',
+        body: JSON.stringify({ amount: amountNum }),
+      })
+      if (res && res.checkoutUrl) {
+        window.open(res.checkoutUrl, '_blank')
+        toast.success('Đã mở cổng thanh toán PayOS. Vui lòng hoàn thành giao dịch.')
+        setIsDepositOpen(false)
+        fetchWalletData()
+      } else {
+        toast.error('Không nhận được link thanh toán từ hệ thống')
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi nạp tiền:', error)
+      toast.error(error.message || 'Lỗi khi tạo link thanh toán')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    const amountNum = Number(amount)
+    if (isNaN(amountNum) || amountNum < 50000) {
+      toast.error('Số tiền rút tối thiểu là 50.000đ')
+      return
+    }
+    if (!bankName) {
+      toast.error('Vui lòng chọn ngân hàng')
+      return
+    }
+    if (!accountNumber.trim()) {
+      toast.error('Vui lòng nhập số tài khoản')
+      return
+    }
+    if (!accountName.trim()) {
+      toast.error('Vui lòng nhập tên chủ tài khoản')
+      return
+    }
+
+    // Tên chủ tài khoản: uppercase và không dấu
+    const cleanAccountName = accountName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/Đ/g, 'D')
+      .replace(/đ/g, 'd')
+      .toUpperCase()
+      .trim()
+
+    if (!/^[A-Z0-9\s]+$/.test(cleanAccountName)) {
+      toast.error('Tên chủ tài khoản chỉ được chứa chữ cái không dấu và số')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await fetchClient('/withdrawals', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: amountNum,
+          bankName,
+          accountNumber: accountNumber.trim(),
+          accountName: cleanAccountName,
+        }),
+      })
+
+      toast.success('Tạo lệnh rút thành công, vui lòng đợi Admin duyệt trong 24h')
+      setIsWithdrawOpen(false)
+      // Reset form
+      setAmount('50000')
+      setAccountNumber('')
+      setAccountName('')
+      fetchWalletData()
+    } catch (error: any) {
+      console.error('Lỗi khi rút tiền:', error)
+      toast.error(error.message || 'Lỗi khi gửi yêu cầu rút tiền')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+      case 'approved':
+        return <Badge variant="default">Thành công</Badge>
+      case 'pending':
+        return <Badge variant="secondary">Đang xử lý</Badge>
+      case 'rejected':
+        return <Badge variant="destructive">Bị từ chối</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
+  const pendingWithdrawalsCount = useMemo(() => {
+    return historyData.filter(item => item.type === 'withdrawal' && item.status === 'pending').length
+  }, [historyData])
+
+  const totalTransactionsCount = historyData.length
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Trạng thái escrow</CardTitle>
-            <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 lg:grid-cols-3">
-            {[
-              { title: 'Chờ cấp quyền', desc: 'Đang chờ chủ nhóm xác nhận.' },
-              { title: 'Đã xác nhận', desc: 'Người tham gia đã nhận quyền truy cập.' },
-              { title: 'Đã giải phóng', desc: 'Tiền đã chuyển về owner.' },
-            ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-slate-200  p-5">
-                <p className="font-medium ">{item.title}</p>
-                <p className="mt-2 text-sm ">{item.desc}</p>
-              </div>
-            ))}
+          <CardContent className="p-5">
+            <p className="text-sm font-medium text-muted-foreground">Số dư khả dụng</p>
+            <p className="mt-2 text-3xl font-bold">
+              {(wallet?.balance ?? 0).toLocaleString('vi-VN')} đ
+            </p>
+            <Badge className="mt-3 rounded-full" variant="outline">Đang hoạt động</Badge>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm font-medium text-muted-foreground">Số dư đóng băng</p>
+            <p className="mt-2 text-3xl font-bold">
+              {(wallet?.frozenBalance ?? 0).toLocaleString('vi-VN')} đ
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">Đang chờ hoàn tất giao dịch</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Hành động nhanh</CardTitle>
-            <CardDescription>Thao tác nhanh với ví và giao dịch.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Nạp thêm</Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[560px]">
-                <DialogHeader>
-                  <DialogTitle>Nạp tiền vào ví</DialogTitle>
-                  <DialogDescription>
-                    Chọn phương thức và số tiền muốn nạp.
-                  </DialogDescription>
-                </DialogHeader>
+          <CardContent className="p-5">
+            <p className="text-sm font-medium text-muted-foreground">Yêu cầu rút tiền</p>
+            <p className="mt-2 text-3xl font-bold">{pendingWithdrawalsCount}</p>
+            <p className="mt-3 text-sm text-muted-foreground">Đang chờ duyệt</p>
+          </CardContent>
+        </Card>
 
-                <Tabs value={depositMethod} onValueChange={setDepositMethod} className="space-y-5">
-                  <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-                    <TabsTrigger value="bank" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
-                      Ngân hàng
-                    </TabsTrigger>
-                    <TabsTrigger value="qr" className="rounded-xl data-[state=active]: data-[state=active]:text-indigo-700">
-                      QR / Ví
-                    </TabsTrigger>
-                  </TabsList>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-sm font-medium text-muted-foreground">Tổng giao dịch</p>
+            <p className="mt-2 text-3xl font-bold">{totalTransactionsCount}</p>
+            <p className="mt-3 text-sm text-muted-foreground">Trong 30 ngày gần nhất</p>
+          </CardContent>
+        </Card>
+      </div>
 
-                  <TabsContent value="bank" className="space-y-4">
-                    <div className="grid gap-2">
-                      <Label className="">Số tiền nạp</Label>
-                      <Input
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                        className="h-12 rounded-2xl border-slate-200  px-4"
-                        placeholder="100000"
-                      />
-                    </div>
+      {/* <Card>
+        <CardHeader>
+          <CardTitle>Trạng thái escrow</CardTitle>
+          <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 lg:grid-cols-3">
+          {[
+            { title: 'Chờ cấp quyền', desc: 'Đang chờ chủ nhóm xác nhận.' },
+            { title: 'Đã xác nhận', desc: 'Người tham gia đã nhận quyền truy cập.' },
+            { title: 'Đã giải phóng', desc: 'Tiền đã chuyển về chủ nhóm (Owner).' },
+          ].map((item) => (
+            <div key={item.title} className="rounded-lg border p-5">
+              <p className="font-medium">{item.title}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card> */}
 
-                    <div className="grid gap-3">
-                      <Label className="">Nạp nhanh</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {depositQuick.map((label, index) => {
-                          const value = quickAmounts[index]
-                          return (
-                            <Button
-                              key={label}
-                              type="button"
-                              variant="secondary"
-                              className="rounded-full bg-slate-100  hover:bg-slate-200"
-                              onClick={() => setDepositAmount(String(value))}
-                            >
-                              {label}
-                            </Button>
-                          )
-                        })}
-                      </div>
-                    </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Hành động nhanh</CardTitle>
+          <CardDescription>Thao tác nhanh với ví và giao dịch.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {/* Dialog Nạp tiền */}
+          <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-md">Nạp thêm</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[560px]">
+              <DialogHeader>
+                <DialogTitle>Nạp tiền vào ví</DialogTitle>
+                <DialogDescription>
+                  Chọn phương thức và số tiền muốn nạp.
+                </DialogDescription>
+              </DialogHeader>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="grid gap-2">
-                        <Label className="">Ngân hàng</Label>
-                        <Select value={bankName} onValueChange={setBankName}>
-                          <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
-                            <SelectValue placeholder="Chọn ngân hàng" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="mbbank">MB Bank</SelectItem>
-                            <SelectItem value="vcb">Vietcombank</SelectItem>
-                            <SelectItem value="acb">ACB</SelectItem>
-                            <SelectItem value="tcb">Techcombank</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label className="">Số tài khoản</Label>
-                        <Input
-                          value={accountNumber}
-                          onChange={(e) => setAccountNumber(e.target.value)}
-                          className="h-12 rounded-2xl border-slate-200  px-4"
-                          placeholder="Nhập số tài khoản"
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
+              <Tabs value={depositMethod} onValueChange={setDepositMethod} className="space-y-5">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="bank">
+                    Ngân hàng
+                  </TabsTrigger>
+                  <TabsTrigger value="qr">
+                    QR / Ví
+                  </TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="qr" className="space-y-4">
-                    <div className="rounded-3xl border border-dashed border-slate-200  p-6 text-center">
-                      <div className="mx-auto flex size-14 items-center justify-center rounded-full  shadow-sm ring-1 ring-slate-200">
-                        <CircleDollarSign className="size-6 text-indigo-500" />
-                      </div>
-                      <p className="mt-4 font-medium ">Quét QR để nạp tiền</p>
-                      <p className="mt-1 text-sm ">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <div className="rounded-2xl  p-4 text-sm leading-6 ">
-                  Giao dịch nạp tiền sẽ được xác nhận tự động sau khi hệ thống nhận được thanh toán.
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" className="rounded-full">Hủy</Button>
-                  <Button className="rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
-                    <Landmark className="mr-2 size-4" />
-                    Xác nhận nạp
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">Xem lịch sử</Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[720px]">
-                <DialogHeader>
-                  <DialogTitle>Lịch sử giao dịch</DialogTitle>
-                  <DialogDescription>
-                    Theo dõi các giao dịch nạp tiền, rút tiền và escrow gần đây.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-3">
-                  {history.map((item) => (
-                    <div key={`${item.date}-${item.type}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200  p-4">
-                      <div>
-                        <p className="font-medium ">{item.type}</p>
-                        <p className="text-sm ">{item.date}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold ">{item.amount}</p>
-                        <Badge className="mt-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                          {item.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <DialogFooter>
-                  <Button className="rounded-full bg-slate-950 text-white hover:bg-slate-800">
-                    Đóng
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Yêu cầu rút</Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[560px]">
-                <DialogHeader>
-                  <DialogTitle>Rút tiền</DialogTitle>
-                  <DialogDescription>
-                    Nhập thông tin ngân hàng để gửi yêu cầu rút tiền.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-5 py-2">
+                <TabsContent value="bank" className="space-y-4">
                   <div className="grid gap-2">
-                    <Label className="">Số tiền rút</Label>
+                    <Label>Số tiền nạp</Label>
                     <Input
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="h-12 rounded-2xl border-slate-200  px-4"
-                      placeholder="50000"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      placeholder="100000"
                     />
                   </div>
 
                   <div className="grid gap-3">
-                    <Label className="">Chọn nhanh</Label>
+                    <Label>Nạp nhanh</Label>
                     <div className="flex flex-wrap gap-2">
-                      {quickAmounts.map((value) => (
-                        <Button
-                          key={value}
-                          type="button"
-                          variant="secondary"
-                          className="rounded-full bg-slate-100  hover:bg-slate-200"
-                          onClick={() => setAmount(String(value))}
-                        >
-                          {value.toLocaleString('vi-VN')} đ
-                        </Button>
-                      ))}
+                      {depositQuick.map((label, index) => {
+                        const value = quickAmounts[index]
+                        return (
+                          <Button
+                            key={label}
+                            type="button"
+                            variant="secondary"
+                            className="rounded-md"
+                            onClick={() => setDepositAmount(String(value))}
+                          >
+                            {label}
+                          </Button>
+                        )
+                      })}
                     </div>
                   </div>
+                </TabsContent>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="grid gap-2">
-                      <Label className="">Ngân hàng</Label>
-                      <Select value={bankName} onValueChange={setBankName}>
-                        <SelectTrigger className="h-12 rounded-2xl border-slate-200  px-4">
-                          <SelectValue placeholder="Chọn ngân hàng" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mbbank">MB Bank</SelectItem>
-                          <SelectItem value="vcb">Vietcombank</SelectItem>
-                          <SelectItem value="acb">ACB</SelectItem>
-                          <SelectItem value="tcb">Techcombank</SelectItem>
-                        </SelectContent>
-                      </Select>
+                <TabsContent value="qr" className="space-y-4">
+                  <div className="rounded-lg border border-dashed p-6 text-center">
+                    <div className="mx-auto flex size-12 items-center justify-center rounded-full border">
+                      <CircleDollarSign className="size-6" />
                     </div>
-
-                    <div className="grid gap-2">
-                      <Label className="">Số tài khoản</Label>
-                      <Input
-                        value={accountNumber}
-                        onChange={(e) => setAccountNumber(e.target.value)}
-                        className="h-12 rounded-2xl border-slate-200  px-4"
-                        placeholder="Nhập số tài khoản"
-                      />
-                    </div>
+                    <p className="mt-4 font-medium">Quét QR để nạp tiền</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
                   </div>
+                </TabsContent>
+              </Tabs>
 
-                  <div className="grid gap-2">
-                    <Label className="">Tên chủ tài khoản</Label>
-                    <Input
-                      value={accountName}
-                      onChange={(e) => setAccountName(e.target.value)}
-                      className="h-12 rounded-2xl border-slate-200  px-4"
-                      placeholder="Nhập tên chủ tài khoản"
-                    />
-                  </div>
+              <div className="rounded-lg bg-secondary p-4 text-sm leading-6">
+                Giao dịch nạp tiền sẽ được xác nhận tự động sau khi hệ thống nhận được thanh toán từ PayOS.
+              </div>
 
-                  <div className="rounded-2xl  p-4 text-sm leading-6 ">
-                    Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng ShareBuddy
+              <DialogFooter>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsDepositOpen(false)}>Hủy</Button>
+                <Button 
+                  className="rounded-md"
+                  onClick={handleDeposit}
+                  disabled={loading}
+                >
+                  <Landmark className="mr-2 size-4" />
+                  {loading ? 'Đang tạo link...' : 'Xác nhận nạp'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog Rút tiền */}
+          <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-md">Yêu cầu rút</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[560px]">
+              <DialogHeader>
+                <DialogTitle>Rút tiền</DialogTitle>
+                <DialogDescription>
+                  Nhập thông tin ngân hàng để gửi yêu cầu rút tiền.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-5 py-2">
+                <div className="grid gap-2">
+                  <Label>Số tiền rút (Tối thiểu 50.000đ)</Label>
+                  <Input
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="50000"
+                  />
+                </div>
+
+                <div className="grid gap-3">
+                  <Label>Chọn nhanh</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {quickAmounts.map((value) => (
+                      <Button
+                        key={value}
+                        type="button"
+                        variant="secondary"
+                        className="rounded-md"
+                        onClick={() => setAmount(String(value))}
+                      >
+                        {value.toLocaleString('vi-VN')} đ
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
-                <DialogFooter>
-                  <Button variant="outline" className="rounded-full">Hủy</Button>
-                  <Button className="rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
-                    <BanknoteArrowUp className="mr-2 size-4" />
-                    Gửi yêu cầu
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Ngân hàng</Label>
+                    <Select value={bankName} onValueChange={setBankName}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn ngân hàng" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mbbank">MB Bank</SelectItem>
+                        <SelectItem value="vcb">Vietcombank</SelectItem>
+                        <SelectItem value="acb">ACB</SelectItem>
+                        <SelectItem value="tcb">Techcombank</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Số tài khoản</Label>
+                    <Input
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="Nhập số tài khoản"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Tên chủ tài khoản (Hệ thống sẽ tự động in hoa và bỏ dấu)</Label>
+                  <Input
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="Nhập tên chủ tài khoản"
+                  />
+                </div>
+
+                <div className="rounded-lg bg-secondary p-4 text-sm leading-6">
+                  Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng ShareBuddy.
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" className="rounded-md" onClick={() => setIsWithdrawOpen(false)}>Hủy</Button>
+                <Button 
+                  className="rounded-md"
+                  onClick={handleWithdraw}
+                  disabled={loading}
+                >
+                  <BanknoteArrowUp className="mr-2 size-4" />
+                  {loading ? 'Đang gửi...' : 'Gửi yêu cầu'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog Xem Lịch Sử */}
+          <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="rounded-md">Xem lịch sử</Button>
+            </DialogTrigger>
+            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[720px]">
+              <DialogHeader>
+                <DialogTitle>Lịch sử giao dịch</DialogTitle>
+                <DialogDescription>
+                  Theo dõi các giao dịch nạp tiền và rút tiền gần đây.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-thin rounded-lg border">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background">
+                    <TableRow>
+                      <TableHead className="w-[180px]">Ngày tạo</TableHead>
+                      <TableHead>Loại giao dịch</TableHead>
+                      <TableHead className="text-right">Số tiền</TableHead>
+                      <TableHead className="text-center w-[120px]">Trạng thái</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historyData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                          Không có giao dịch nào
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      historyData.map((item) => (
+                        <TableRow key={item.id || item._id}>
+                          <TableCell className="font-medium">
+                            {new Date(item.createdAt).toLocaleString('vi-VN')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
+                              {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
+                            </div>
+                          </TableCell>
+                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
+                            {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {getStatusBadge(item.status)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <DialogFooter>
+                <Button className="rounded-md" onClick={() => setIsHistoryOpen(false)}>
+                  Đóng
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+
+      {/* Table Lịch sử giao dịch trực tiếp trên trang */}
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 space-y-0">
+          <div>
+            <CardTitle>Lịch sử giao dịch gần đây</CardTitle>
+            <CardDescription>Danh sách các giao dịch nạp và rút tiền gần nhất.</CardDescription>
+          </div>
+          <Button variant="ghost" className="rounded-md" onClick={() => setIsHistoryOpen(true)}>
+            Xem chi tiết
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto scrollbar-thin">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[180px]">Ngày tạo</TableHead>
+                  <TableHead>Loại giao dịch</TableHead>
+                  <TableHead className="text-right">Số tiền</TableHead>
+                  <TableHead className="text-center w-[120px]">Trạng thái</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historyData.slice(0, 5).length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                      Không có giao dịch nào
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  historyData.slice(0, 5).map((item) => (
+                    <TableRow key={item.id || item._id}>
+                      <TableCell className="font-medium">
+                        {new Date(item.createdAt).toLocaleString('vi-VN')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${item.type === 'topup' ? 'bg-primary' : 'bg-destructive'}`} />
+                          {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
+                        </div>
+                      </TableCell>
+                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
+                        {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {getStatusBadge(item.status)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

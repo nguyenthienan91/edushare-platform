@@ -12,7 +12,7 @@ import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagin
 import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('groups')
-@Roles(UserRole.ADMIN, UserRole.GROUP_OWNER)
+@Roles(UserRole.ADMIN, UserRole.MEMBER)
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
@@ -87,5 +87,10 @@ export class GroupsController {
   @Roles()
   removeMember(@Param('id') id: string, @Param('userId') userId: string) {
     return this.groupsService.removeMember(id, userId)
+  }
+
+  @Get(':id/members')
+  getMembers(@Param('id') id: string, @User() user: UserInfo) {
+    return this.groupsService.getGroupMembers(id, user.userID, user.role)
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
@@ -7,14 +7,19 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { UsersService } from '../users/users.service'
 import type { UserDocument } from '../users/entities/user.entity'
+import { UserRole } from '../users/entities/user.entity'
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
 import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
+import { Transaction, TransactionDocument } from '../transactions/schemas/transaction.schema'
+import { EscrowStatus } from '../transactions/enums/escrow-status.enum'
 
 @Injectable()
 export class GroupsService {
   constructor(
     @InjectModel(Group.name)
     private readonly groupModel: Model<Group>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
     private readonly usersService: UsersService,
     private readonly paginationUtilService: PaginationUtilService,
   ) {}
@@ -508,6 +513,63 @@ export class GroupsService {
     return {
       message: 'Group status restored successfully',
       data: updatedGroup,
+    }
+  }
+
+  async getDashboardStats(ownerId: string): Promise<{ totalMembers: number }> {
+    const groups = await this.groupModel
+      .find({ ownerId } as any)
+      .select('members')
+      .exec()
+    const totalMembers = groups.reduce((sum, group) => sum + (group.members?.length || 0), 0)
+    return { totalMembers }
+  }
+
+  async getGroupMembers(groupId: string, userId: string, userRole: UserRole) {
+    if (!Types.ObjectId.isValid(groupId)) {
+      throw new BadRequestException('Invalid group ID')
+    }
+
+    const group = await this.groupModel
+      .findById(groupId)
+      .populate('members', 'id email displayName avatar trustScore')
+      .exec()
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    // Authorization check: Only the group owner or system admin can retrieve members (including pending ones)
+    if (group.ownerId.toString() !== userId && userRole !== UserRole.ADMIN) {
+      throw new ForbiddenException('Access denied. Only the group owner or an administrator can view this information.')
+    }
+
+    // Retrieve pending members from active transactions with HELD_IN_ESCROW status
+    const pendingTransactions = (await this.transactionModel
+      .find({
+        groupId: new Types.ObjectId(groupId),
+        status: EscrowStatus.HELD_IN_ESCROW,
+      })
+      .populate('senderId', 'id email displayName avatar trustScore')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec()) as any[]
+
+    // Map pending transactions to a clean response structure
+    const pending = pendingTransactions.map((tx) => ({
+      transactionId: tx._id,
+      user: tx.senderId,
+      amount: tx.amount,
+      status: tx.status,
+      createdAt: tx.createdAt,
+    }))
+
+    return {
+      message: 'Group members retrieved successfully',
+      data: {
+        approved: group.members,
+        pending,
+      },
     }
   }
 }

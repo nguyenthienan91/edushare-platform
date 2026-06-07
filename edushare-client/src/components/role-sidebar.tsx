@@ -9,7 +9,6 @@ import {
   Upload,
   Wallet,
   Home,
-  LayoutDashboard,
   CreditCard,
   Star,
   ShieldAlert,
@@ -82,8 +81,8 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
         items: [
           { title: 'Tạo nhóm', url: '/dashboard/groups/create', icon: FolderPlus },
           { title: 'Quản lý nhóm', url: '/dashboard/groups', icon: Group },
-          { title: 'Tải bằng chứng', url: '/dashboard/evidence', icon: Upload },
-          { title: 'Nhắc gia hạn', url: '/dashboard/renewals', icon: RefreshCw },
+          // { title: 'Tải bằng chứng', url: '/dashboard/evidence', icon: Upload },
+          // { title: 'Nhắc gia hạn', url: '/dashboard/renewals', icon: RefreshCw },
         ],
       },
       {

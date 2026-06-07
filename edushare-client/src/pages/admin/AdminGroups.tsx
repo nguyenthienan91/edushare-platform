@@ -1,4 +1,4 @@
-import { Users, FileText, AlertTriangle, CheckCircle2, PlayCircle, Eye, ShieldAlert } from 'lucide-react'
+import { Users, PlayCircle, Eye, ShieldAlert } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -160,8 +160,8 @@ export default function AdminGroups() {
       </Card>
 
       <Tabs defaultValue='active' className='w-full'>
-        <div className='flex items-center justify-between mb-6'>
-          <TabsList className=' border border-slate-200/60 p-1 rounded-2xl shadow-sm h-auto'>
+        <div className='flex items-center justify-between mb-6 w-full'>
+          <TabsList className='flex w-full overflow-x-auto justify-start gap-1 p-1 h-auto sm:grid sm:grid-cols-3 border border-slate-200/60 rounded-2xl shadow-sm scrollbar-none'>
             <TabsTrigger
               value='active'
               className='rounded-xl px-5 py-2.5 text-sm data-[state=active]:0 data-[state=active]:text-white data-[state=active]:shadow-sm'

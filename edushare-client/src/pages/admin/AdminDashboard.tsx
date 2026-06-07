@@ -104,7 +104,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+      <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'>
         {stats.map((item) => {
           const Icon = item.icon
           return (
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
                   boxShadow: '0 20px 25px -5px rgb(15 23 42 / 0.1)',
                 }}
                 labelStyle={{ color: '#0f172a', fontWeight: 600 }}
-                formatter={(value: number | string) => [`${value} users`, 'Tăng trưởng']}
+                formatter={(value: any) => [`${value} users`, 'Tăng trưởng']}
               />
               <Area
                 type='monotone'
