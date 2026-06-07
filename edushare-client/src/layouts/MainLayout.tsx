@@ -1,12 +1,25 @@
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Moon, Sun } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
 import { useAuth } from '@/contexts/AuthContext';
+import { WalletService } from '@/services/wallet.service';
 
 const NAV_ITEMS = [
-  { label: 'Trang chủ', href: '#' },
+  { label: 'Trang chủ', href: '/' },
+  { label: 'Nhóm', href: '/groups' },
   { label: 'Tính năng', href: '#' },
   { label: 'FAQ', href: '#' },
   { label: 'Liên hệ', href: '#' },
@@ -14,8 +27,22 @@ const NAV_ITEMS = [
 
 export default function MainLayout() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      WalletService.getWalletInfo()
+        .then((data: any) => {
+          const balance = data?.data?.balance ?? data?.balance;
+          if (balance !== undefined && balance !== null) {
+            setWalletBalance(parseFloat(balance));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -42,15 +69,29 @@ export default function MainLayout() {
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="transition-colors hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isAdminOrOwner = isAuthenticated && user && ['admin', 'owner'].includes(user?.role?.toLowerCase() || '');
+
+              const handleClick = (e: React.MouseEvent) => {
+                if (item.href === '/groups' && !isAdminOrOwner) {
+                  e.preventDefault();
+                  toast.error('Truy cập bị từ chối', {
+                    description: 'Tính năng Nhóm hiện chỉ dành cho Quản trị viên và Chủ nhóm.',
+                  });
+                }
+              };
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={item.href === '/groups' ? handleClick : undefined}
+                  className={`transition-colors hover:text-primary ${item.href === '/groups' ? 'font-bold text-indigo-600' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -77,9 +118,55 @@ export default function MainLayout() {
             </ThemeToggler>
 
             {isAuthenticated ? (
-              <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
-                Đăng xuất
-              </Button>
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:ring-0">
+                      <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-lg">
+                    <DropdownMenuLabel className="text-base font-semibold">Ví EduShare</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/topup">
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          <span>Nạp tiền</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/dashboard/participant/orders">
+                          <Receipt className="mr-2 h-4 w-4" />
+                          <span>Giao Dịch</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2">
+                        <Link to="/dashboard/participant/orders">
+                          <Eye className="mr-2 h-4 w-4" />
+                          <span>Nội dung đã mở khóa</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem disabled className="opacity-100 font-medium text-slate-500 py-2">
+                      Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} đ
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button asChild variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                  <Link 
+                    to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
+                    title="Về Dashboard"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
+                  Đăng xuất
+                </Button>
+              </>
             ) : (
               <>
                 <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
