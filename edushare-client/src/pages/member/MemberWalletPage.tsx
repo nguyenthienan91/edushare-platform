@@ -22,11 +22,13 @@ export default function MemberWalletPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const [amount, setAmount] = useState('50000')
-  const [bankName, setBankName] = useState('mbbank')
+  const [bankName, setBankName] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [depositAmount, setDepositAmount] = useState('100000')
   const [depositMethod, setDepositMethod] = useState('bank')
+  const [bankAccounts, setBankAccounts] = useState<any[]>([])
+  const [selectedBankAccountId, setSelectedBankAccountId] = useState<string>('')
 
   const quickAmounts = [50000, 100000, 500000]
   const depositQuick = useMemo(() => ['50.000đ', '100.000đ', '500.000đ'], [])
@@ -40,8 +42,29 @@ export default function MemberWalletPage() {
       if (historyRes && historyRes.list) {
         setHistoryData(historyRes.list)
       }
+
+      const bankRes = await fetchClient('/bank-accounts')
+      setBankAccounts(bankRes || [])
+      
+      const defaultAccount = (bankRes || []).find((acc: any) => acc.isDefault) || (bankRes || [])[0]
+      if (defaultAccount) {
+        setSelectedBankAccountId(defaultAccount._id)
+        setBankName(defaultAccount.bankName)
+        setAccountNumber(defaultAccount.accountNumber)
+        setAccountName(defaultAccount.accountName)
+      }
     } catch (error) {
       console.error('Failed to load wallet data:', error)
+    }
+  }
+
+  const handleSelectBankAccount = (id: string) => {
+    setSelectedBankAccountId(id)
+    const acc = bankAccounts.find(a => a._id === id)
+    if (acc) {
+      setBankName(acc.bankName)
+      setAccountNumber(acc.accountNumber)
+      setAccountName(acc.accountName)
     }
   }
 
@@ -345,39 +368,48 @@ export default function MemberWalletPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label>Ngân hàng</Label>
-                    <Select value={bankName} onValueChange={setBankName}>
+                <div className="grid gap-2">
+                  <Label>Tài khoản nhận tiền</Label>
+                  {bankAccounts.length === 0 ? (
+                    <div className="text-xs text-amber-600 border border-amber-500/20 bg-amber-500/10 p-3 rounded-md leading-relaxed">
+                      Bạn chưa liên kết tài khoản ngân hàng nào. Vui lòng truy cập trang <strong>Cài đặt tài khoản &gt; Thanh toán</strong> để thêm tài khoản trước khi thực hiện rút tiền.
+                    </div>
+                  ) : (
+                    <Select value={selectedBankAccountId} onValueChange={handleSelectBankAccount}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Chọn ngân hàng" />
+                        <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="mbbank">MB Bank</SelectItem>
-                        <SelectItem value="vcb">Vietcombank</SelectItem>
-                        <SelectItem value="acb">ACB</SelectItem>
-                        <SelectItem value="tcb">Techcombank</SelectItem>
+                        {bankAccounts.map((acc) => (
+                          <SelectItem key={acc._id} value={acc._id}>
+                            {acc.bankName} - {acc.accountNumber} ({acc.accountName}){acc.isDefault ? ' [Mặc định]' : ''}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  )}
+                </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>Số tài khoản</Label>
                     <Input
                       value={accountNumber}
-                      onChange={(e) => setAccountNumber(e.target.value)}
-                      placeholder="Nhập số tài khoản"
+                      disabled
+                      className="bg-muted cursor-not-allowed"
+                      placeholder="Số tài khoản tự động điền"
                     />
                   </div>
-                </div>
 
-                <div className="grid gap-2">
-                  <Label>Tên chủ tài khoản (Hệ thống sẽ tự động in hoa và bỏ dấu)</Label>
-                  <Input
-                    value={accountName}
-                    onChange={(e) => setAccountName(e.target.value)}
-                    placeholder="Nhập tên chủ tài khoản"
-                  />
+                  <div className="grid gap-2">
+                    <Label>Tên chủ tài khoản</Label>
+                    <Input
+                      value={accountName}
+                      disabled
+                      className="bg-muted cursor-not-allowed"
+                      placeholder="Tên chủ tài khoản tự động điền"
+                    />
+                  </div>
                 </div>
 
                 <div className="rounded-lg bg-secondary p-4 text-sm leading-6">
@@ -390,7 +422,7 @@ export default function MemberWalletPage() {
                 <Button 
                   className="rounded-md"
                   onClick={handleWithdraw}
-                  disabled={loading}
+                  disabled={loading || bankAccounts.length === 0}
                 >
                   <BanknoteArrowUp className="mr-2 size-4" />
                   {loading ? 'Đang gửi...' : 'Gửi yêu cầu'}

@@ -424,7 +424,7 @@ export default function MemberSettingsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="flex w-full overflow-x-auto h-auto p-1 justify-start gap-1 lg:grid lg:grid-cols-3 scrollbar-thin">
+        <TabsList className="flex w-full  h-auto p-1 justify-start gap-1 lg:grid lg:grid-cols-3 scrollbar-thin">
           <TabsTrigger value="profile">
             <User className="w-4 h-4 mr-2" />
             Hồ sơ
