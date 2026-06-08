@@ -282,7 +282,7 @@ export default function MemberWalletPage() {
                       <CircleDollarSign className="size-6" />
                     </div>
                     <p className="mt-4 font-medium">Quét QR để nạp tiền</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Kết nối ví hoặc quét mã QR ngân hàng của ShareBuddy.</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Kết nối ví hoặc quét mã QR ngân hàng của EduShare.</p>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -381,7 +381,7 @@ export default function MemberWalletPage() {
                 </div>
 
                 <div className="rounded-lg bg-secondary p-4 text-sm leading-6">
-                  Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng ShareBuddy.
+                  Yêu cầu của bạn sẽ được xử lý trong vòng 24h. Cảm ơn bạn đã đồng hành cùng EduShare.
                 </div>
               </div>
 
