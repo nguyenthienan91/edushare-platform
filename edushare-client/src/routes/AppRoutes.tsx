@@ -13,7 +13,7 @@ import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import TopupPage from '@/pages/wallet/TopupPage'
 import GroupsPage from '@/pages/GroupsPage'
-import MemberParticipantPage from '@/pages/member/MemberParticipantPageNew'
+import MemberJoinGroup from '@/pages/member/MemberJoinGroup'
 import MemberParticipantOrdersPage from '@/pages/member/MemberParticipantOrdersPage'
 import MemberWalletPage from '@/pages/member/MemberWalletPage'
 import MemberReviewsPage from '@/pages/member/MemberReviewsPage'
@@ -146,8 +146,8 @@ export default function AppRoutes() {
       <Route
         path='/dashboard/participant'
         element={
-          <DashboardRoute role='member' title='Thị trường' description='Khám phá các nhóm và cơ hội tham gia.'>
-            <MemberParticipantPage />
+          <DashboardRoute role='member' title='Gia nhập nhóm' description='Khám phá các nhóm và cơ hội tham gia.'>
+            <MemberJoinGroup />
           </DashboardRoute>
         }
       />
