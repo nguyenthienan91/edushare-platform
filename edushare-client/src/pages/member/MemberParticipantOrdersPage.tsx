@@ -12,6 +12,8 @@ import {
   X,
   CheckCircle2,
   Eye,
+  Plus,
+  Minus,
 } from 'lucide-react'
 import {
   Dialog,
@@ -73,38 +75,44 @@ interface TransactionsResponse {
 function getStatusMeta(status: string) {
   switch (status) {
     case 'pending':
+      return {
+        label: 'Chờ thanh toán',
+        nextAction: 'Hệ thống đang xử lý yêu cầu thanh toán của bạn.',
+        badgeVariant: 'secondary' as const,
+        actionIcon: Clock3,
+      }
     case 'approved_waiting_proof':
       return {
-        label: 'Chờ chủ nhóm cấp quyền',
-        nextAction: 'Đang xử lý giao dịch thanh toán của bạn.',
+        label: 'Chờ cấp quyền & minh chứng',
+        nextAction: 'Chủ nhóm đã phê duyệt yêu cầu của bạn. Đang chờ chủ nhóm thêm tài khoản của bạn và tải ảnh minh chứng lên.',
         badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'held':
       return {
         label: 'Chờ chủ nhóm duyệt',
-        nextAction: 'Tiền đã được giữ. Đang chờ chủ nhóm phê duyệt yêu cầu tham gia.',
+        nextAction: 'Tiền đã được đóng băng trong ví treo hệ thống. Đang chờ chủ nhóm phê duyệt yêu cầu tham gia của bạn.',
         badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'proof':
       return {
-        label: 'Chủ nhóm đang xác nhận',
-        nextAction: 'Chủ nhóm đã nộp minh chứng. Hãy kiểm tra và xác nhận bạn đã vào nhóm thành công.',
+        label: 'Chờ bạn xác nhận',
+        nextAction: 'Chủ nhóm đã gửi minh chứng cấp quyền thành công. Vui lòng kiểm tra tài khoản của bạn và bấm "Xác nhận đã nhận quyền truy cập" bên dưới để giải ngân.',
         badgeVariant: 'secondary' as const,
         actionIcon: ShieldCheck,
       }
     case 'completed':
       return {
         label: 'Đã hoàn tất / Đã giải ngân',
-        nextAction: 'Giao dịch hoàn tất. Tiền đã được giải ngân cho chủ nhóm.',
+        nextAction: 'Đơn hàng hoàn tất. Bạn đã tham gia nhóm thành công và tiền đã được giải ngân cho chủ nhóm.',
         badgeVariant: 'default' as const,
         actionIcon: ShieldCheck,
       }
     case 'disputed':
       return {
         label: 'Đang tranh chấp / Đang chờ admin xử lý',
-        nextAction: 'Giao dịch đang được tranh chấp. Đang chờ admin xem xét và xử lý.',
+        nextAction: 'Đơn hàng đang trong trạng thái khiếu nại. Vui lòng đợi Ban quản trị (Admin) kiểm tra và đưa ra phán quyết.',
         badgeVariant: 'destructive' as const,
         actionIcon: Info,
       }
@@ -112,7 +120,7 @@ function getStatusMeta(status: string) {
     case 'refunded':
       return {
         label: 'Đã hoàn tiền về ví',
-        nextAction: 'Giao dịch thất bại. Tiền đã được hoàn về ví của bạn.',
+        nextAction: 'Giao dịch thất bại. Tiền đóng băng đã được hoàn trả đầy đủ vào ví của bạn.',
         badgeVariant: 'destructive' as const,
         actionIcon: X,
       }
@@ -216,8 +224,8 @@ function renderSteps(status: string) {
         <>
           <StepCard label='Tiền được giữ' done />
           <StepCard label='Chủ nhóm duyệt' done />
-          <StepCard label='Đã nộp minh chứng' active />
-          <StepCard label='Xác nhận → Giải ngân' />
+          <StepCard label='Đã nộp minh chứng' done />
+          <StepCard label='Xác nhận → Giải ngân' active />
         </>
       )
     case 'approved_waiting_proof':
@@ -270,10 +278,8 @@ export default function MemberParticipantOrdersPage() {
 
   const getResolvedGroup = (groupId: PopulatedGroup | string | null): PopulatedGroup | null => {
     if (!groupId) return null
-    if (typeof groupId === 'string') {
-      return groupsCache[groupId] || null
-    }
-    return groupId
+    const id = typeof groupId === 'string' ? groupId : (groupId as any)._id
+    return groupsCache[id] || (typeof groupId === 'object' ? (groupId as any) : null)
   }
 
   // Fetch orders using /transactions/me
@@ -289,11 +295,10 @@ export default function MemberParticipantOrdersPage() {
       setTotalPages(res.totalPages ?? 1)
       setTotalItems(res.totalItems ?? 0)
 
-      // Fetch group details for string groupIds that are not in the cache yet
       const missingGroupIds = Array.from(
         new Set(
           list
-            .map((t) => (typeof t.groupId === 'string' ? t.groupId : t.groupId?._id))
+            .map((t) => (typeof t.groupId === 'string' ? t.groupId : (t.groupId as any)?._id))
             .filter((id): id is string => !!id && !groupsCache[id])
         )
       )
@@ -460,7 +465,22 @@ export default function MemberParticipantOrdersPage() {
                           </div>
                         </TableCell>
                         <TableCell className='text-right font-semibold'>
-                          {formatVnd(order.amount)}
+                          {(() => {
+                            const isBuyer = (typeof order.senderId === 'object' && order.senderId !== null)
+                              ? (order.senderId as any)._id === user?.userID
+                              : String(order.senderId) === user?.userID
+                            return isBuyer ? (
+                              <span className='inline-flex items-center text-rose-600 dark:text-rose-400 font-bold'>
+                                <Minus className='mr-0.5 size-3.5 shrink-0' />
+                                {formatVnd(order.amount)}
+                              </span>
+                            ) : (
+                              <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
+                                <Plus className='mr-0.5 size-3.5 shrink-0' />
+                                {formatVnd(order.amount)}
+                              </span>
+                            )
+                          })()}
                         </TableCell>
                         <TableCell className='text-center'>
                           <Badge variant={meta.badgeVariant} className='rounded-md'>
@@ -555,7 +575,22 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Giá</span>
-                      <span className='font-semibold'>{formatVnd(selectedOrder.amount)}</span>
+                      {(() => {
+                        const isBuyer = (typeof selectedOrder.senderId === 'object' && selectedOrder.senderId !== null)
+                          ? (selectedOrder.senderId as any)._id === user?.userID
+                          : String(selectedOrder.senderId) === user?.userID
+                        return isBuyer ? (
+                          <span className='font-semibold flex items-center text-rose-600 dark:text-rose-400'>
+                            <Minus className='mr-0.5 size-3.5' />
+                            {formatVnd(selectedOrder.amount)}
+                          </span>
+                        ) : (
+                          <span className='font-semibold flex items-center text-emerald-600 dark:text-emerald-400'>
+                            <Plus className='mr-0.5 size-3.5' />
+                            {formatVnd(selectedOrder.amount)}
+                          </span>
+                        )
+                      })()}
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Nền tảng</span>
