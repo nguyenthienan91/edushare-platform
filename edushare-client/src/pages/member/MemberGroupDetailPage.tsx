@@ -516,7 +516,7 @@ export default function MemberGroupDetailPage() {
                           {renderStars(rating.rating)}
                         </div>
                         {rating.comment && (
-                          <p className='text-xs text-muted-foreground leading-relaxed pl-10'>
+                          <p className='text-xs text-muted-foreground leading-relaxed pl-10 break-words'>
                             "{rating.comment}"
                           </p>
                         )}
