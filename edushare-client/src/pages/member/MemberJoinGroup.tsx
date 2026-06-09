@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -102,7 +102,8 @@ export default function MemberJoinGroup() {
     setError(null)
     try {
       const response = await fetchClient('/groups', { method: 'GET', requireAuth: true })
-      setGroups(Array.isArray(response.data) ? response.data : [])
+      const data = response.data ?? response.list
+      setGroups(Array.isArray(data) ? data : [])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể tải danh sách nhóm'
       setError(message)

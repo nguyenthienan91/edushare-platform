@@ -238,8 +238,9 @@ export default function MemberReviewsPage() {
 
       // 2. Fetch groups where I am the owner
       const groupsRes = await fetchClient('/groups?page=1&itemPerPage=100')
-      if (groupsRes && groupsRes.data) {
-        const myOwnedGroups = groupsRes.data.filter((g: any) => {
+      const groupsData = groupsRes?.data ?? groupsRes?.list
+      if (groupsData) {
+        const myOwnedGroups = groupsData.filter((g: any) => {
           const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId 
             ? g.ownerId._id || g.ownerId.id 
             : g.ownerId

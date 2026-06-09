@@ -581,22 +581,22 @@ export default function MemberManageGroup() {
     setLoading(true)
     setError(null)
     try {
-      // Build search params for the API call to /api/groups as requested
+      // Build search params for the API call to /api/groups/search as requested
       const params = new URLSearchParams()
       params.set('ownerId', user.userID)
       if (debouncedQuery.trim()) {
-        params.set('keyword', debouncedQuery.trim())
+        params.set('name', debouncedQuery.trim())
       }
       if (statusFilter !== 'all') {
         params.set('status', statusFilter)
       }
 
-      // Call GET /api/groups with params
-      const res = await fetchClient(`/groups?${params.toString()}`)
+      // Call GET /api/groups/search with params
+      const res = await fetchClient(`/groups/search?${params.toString()}`)
 
       // Since we don't touch the backend, the backend findAll endpoint returns all groups.
       // We will perform client-side filtering to ensure correct results match the requested parameters.
-      let fetchedList: Group[] = res?.data ?? []
+      let fetchedList: Group[] = res?.data ?? res?.list ?? []
 
       // 1. Filter by ownerId
       fetchedList = fetchedList.filter((g) => {
