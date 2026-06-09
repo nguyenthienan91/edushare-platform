@@ -82,7 +82,7 @@ interface Transaction {
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tất cả trạng thái' },
-  { value: 'available', label: 'Đang chờ' },
+  { value: 'available', label: 'Có sẵn' },
   { value: 'full', label: 'Đã đủ' },
   { value: 'expired', label: 'Hết hạn' },
   { value: 'closed', label: 'Đã đóng' },
@@ -97,7 +97,7 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  available: 'Đang chờ',
+  available: 'Có sẵn',
   full: 'Đã đủ',
   expired: 'Hết hạn',
   closed: 'Đã đóng',
@@ -355,7 +355,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
 <DialogContent className='w-[calc(100%-2rem)] sm:w-[95vw] !max-w-6xl max-h-[90vh] flex flex-col p-6 rounded-lg'>          <DialogHeader>
             <DialogTitle className='text-2xl'>Quản lý thành viên - {group.name}</DialogTitle>
             <DialogDescription>
-              Danh sách người dùng đang chờ duyệt và người dùng đã tham gia.
+              Danh sách người dùng Có sẵn duyệt và người dùng đã tham gia.
             </DialogDescription>
           </DialogHeader>
 
@@ -364,8 +364,8 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
               {/* Pending – Approve + Submit Proof */}
               <Card className='shadow-sm'>
                 <CardHeader className=' pb-3'>
-                  <CardTitle className='text-base'>Đang chờ duyệt</CardTitle>
-                  <CardDescription>Người dùng đang chờ duyệt.</CardDescription>
+                  <CardTitle className='text-base'>Có sẵn duyệt</CardTitle>
+                  <CardDescription>Người dùng Có sẵn duyệt.</CardDescription>
                 </CardHeader>
                 <CardContent className='p-0'>
                   {loadingTx ? (

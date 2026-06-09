@@ -595,26 +595,12 @@ export default function MemberParticipantOrdersPage() {
                     <p className='text-sm leading-6 text-muted-foreground'>{meta.nextAction}</p>
                   </div>
 
-                  {/* Proof details / Credentials (Tài khoản mật khẩu hoặc link proof) */}
-                  {selectedOrder.status === 'completed' && selectedOrder.proofUrl && (
-                    <div className='rounded-lg border p-4 bg-muted/20'>
-                      <div className='mb-2 flex items-center gap-2 text-sm font-semibold'>
-                        <ShieldCheck className='h-4 w-4 text-muted-foreground' />
-                        Thông tin tài khoản & Mật khẩu
-                      </div>
-                      <div className='rounded-md border p-3 font-mono text-sm bg-background break-all select-all'>
-                        {selectedOrder.proofUrl}
-                      </div>
-                      <p className='mt-2 text-xs text-muted-foreground'>
-                        Vui lòng sử dụng thông tin đăng nhập trên để truy cập gói dịch vụ chia sẻ.
-                      </p>
-                    </div>
-                  )}
 
-                  {/* Standard Proof image (nếu có và trạng thái khác completed) */}
-                  {selectedOrder.status !== 'completed' && selectedOrder.proofUrl && (
+
+                  {/* Standard Proof image (nếu có) */}
+                  {selectedOrder.proofUrl && (
                     <div>
-  <div className='mb-3 flex items-center gap-2 text-sm font-semibold'>
+                      <div className='mb-3 flex items-center gap-2 text-sm font-semibold'>
                         <ImageIcon className='h-4 w-4 text-muted-foreground' />
                         Minh chứng từ chủ nhóm
                       </div>
@@ -626,7 +612,6 @@ export default function MemberParticipantOrdersPage() {
                         style={{ maxHeight: 280 }}
                       />
                     </div>
-                  
                   )}
                 </div>
 
