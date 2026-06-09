@@ -69,7 +69,7 @@ export default function AdminUsers() {
           <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>Users</Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Danh sách người dùng</h2>
           <p className='mt-2 max-w-2xl text-sm leading-6'>
-            Quản lý, hỗ trợ và theo dõi mức độ uy tín của các thành viên trong cộng đồng ShareBuddy.
+            Quản lý, hỗ trợ và theo dõi mức độ uy tín của các thành viên trong cộng đồng EduShare.
           </p>
         </CardContent>
       </Card>

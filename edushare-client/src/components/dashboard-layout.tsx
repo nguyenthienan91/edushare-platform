@@ -221,10 +221,18 @@ export function DashboardLayout({
             </div>
             <button
               type='button'
-              className='flex size-9 items-center justify-center rounded-full bg-emerald-500 text-white'
+              className='flex size-9 items-center justify-center rounded-full bg-emerald-500 text-white overflow-hidden '
               aria-label='User profile'
             >
-              <UserCircle2 className='size-4' />
+              {profile?.avatar ? (
+                <img
+                  src={profile.avatar}
+                  alt={displayUserName}
+                  className='size-full object-cover'
+                />
+              ) : (
+                <UserCircle2 className='size-5' />
+              )}
             </button>
           </div>
         </header>

@@ -110,4 +110,45 @@ export class RatingsService {
 
     return this.paginationUtilService.format(ratings)
   }
+
+  async getRatingsByOwner(ownerId: string, pagination: Pagination) {
+    const ownerObjectId = new Types.ObjectId(ownerId)
+    const filter = { receiverId: ownerObjectId }
+
+    const totalItems = await this.ratingModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const ratings = await this.ratingModel
+      .find(filter)
+      .populate('senderId', 'displayName avatar')
+      .sort({ createdAt: -1 })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .exec()
+
+    // Tính averageRating tổng hợp của owner
+    type RatingAggregate = { _id: Types.ObjectId; averageRating: number; totalRatings: number }
+    const stats = await this.ratingModel
+      .aggregate<RatingAggregate>([
+        { $match: { receiverId: ownerObjectId } },
+        {
+          $group: {
+            _id: '$receiverId',
+            averageRating: { $avg: '$rating' },
+            totalRatings: { $sum: 1 },
+          },
+        },
+      ])
+      .exec()
+
+    return {
+      averageRating: stats[0]?.averageRating ?? 0,
+      totalRatings: stats[0]?.totalRatings ?? 0,
+      ...this.paginationUtilService.format(ratings),
+    }
+  }
 }
