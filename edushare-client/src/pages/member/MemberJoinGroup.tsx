@@ -148,11 +148,12 @@ export default function MemberJoinGroup() {
 
     setJoiningId(groupId)
     try {
-      await fetchClient(`/groups/${groupId}/join/members/${user.userID}`, {
+      await fetchClient('/transactions/join-request', {
         method: 'POST',
+        body: JSON.stringify({ groupId }),
         requireAuth: true,
       })
-      toast.success('Tham gia nhóm thành công')
+      toast.success('Yêu cầu tham gia nhóm đã được gửi thành công!')
       await fetchGroups()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Không thể tham gia nhóm')
