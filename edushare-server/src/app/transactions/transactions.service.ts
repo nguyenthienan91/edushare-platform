@@ -7,9 +7,6 @@ import { EscrowStatus } from './enums/escrow-status.enum'
 import { Group, GroupDocument, GroupStatus } from '../groups/entities/group.entity'
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
 import { NotificationsService } from '../notifications/notification.service'
-import { async } from 'rxjs'
-import { query } from 'winston'
-import { string, number } from 'zod'
 import { User, UserDocument } from '../users/entities/user.entity'
 
 @Injectable()
@@ -62,6 +59,20 @@ export class TransactionsService {
       // Kiểm tra xem nhóm còn slot trống hay không hoặc có đang bị khóa/hết hạn không
       if (group.status !== GroupStatus.AVAILABLE || group.occupiedSlots >= group.totalSlots) {
         throw new BadRequestException('Group is full or no longer available to join.')
+      }
+
+      // Kiểm tra user đã có pending transaction cho group này chưa
+      const existingTransaction = await this.transactionModel
+        .findOne({
+          senderId: userObjectId,
+          groupId: groupObjectId,
+          status: {
+            $in: [EscrowStatus.HELD_IN_ESCROW, EscrowStatus.APPROVED_WAITING_PROOF, EscrowStatus.PROOF_SUBMITTED],
+          },
+        })
+        .session(session)
+      if (existingTransaction) {
+        throw new BadRequestException('You already have a pending join request for this group.')
       }
 
       // ĐỒNG BỘ: Sử dụng trực tiếp trường group.price từ Schema của bạn cùng team
@@ -328,7 +339,19 @@ export class TransactionsService {
 
   async findMyTransactions(userId: string, pagination: { page?: number; itemPerPage?: number }) {
     const userObjectId = new Types.ObjectId(userId)
-    const filter: any = { senderId: userObjectId }
+
+    // Lấy tất cả group mà user là owner để build filter $or
+    const ownedGroups = await this.groupModel
+      .find({ ownerId: userObjectId as any })
+      .select('_id')
+      .lean()
+      .exec()
+    const ownedGroupIds = ownedGroups.map((g) => g._id)
+
+    // $or: là người mua (senderId) HOẶC là chủ nhóm (groupId thuộc về group của mình)
+    const filter: any = {
+      $or: [{ senderId: userObjectId }, { groupId: { $in: ownedGroupIds } }],
+    }
 
     const totalItems = await this.transactionModel.countDocuments(filter).exec()
 
@@ -340,7 +363,9 @@ export class TransactionsService {
 
     const transactions = await this.transactionModel
       .find(filter)
-      .select('_id senderId groupId amount status proofUrl createdAt')
+      .select('_id senderId groupId amount status proofUrl createdAt expiresAt')
+      .populate('senderId', 'displayName email avatar')
+      .populate('groupId', 'name category ownerId')
       .sort({ createdAt: -1 })
       .skip(this.paginationUtil.skip)
       .limit(this.paginationUtil.itemPerPage)
