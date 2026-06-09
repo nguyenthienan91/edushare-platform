@@ -70,14 +70,13 @@ export default function MainLayout() {
 
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
             {NAV_ITEMS.map((item) => {
-              const isAdminOrOwner = isAuthenticated && user && ['admin', 'owner'].includes(user?.role?.toLowerCase() || '');
-
               const handleClick = (e: React.MouseEvent) => {
-                if (item.href === '/groups' && !isAdminOrOwner) {
+                if (item.href === '/groups' && !isAuthenticated) {
                   e.preventDefault();
-                  toast.error('Truy cập bị từ chối', {
-                    description: 'Tính năng Nhóm hiện chỉ dành cho Quản trị viên và Chủ nhóm.',
+                  toast.error('Yêu cầu đăng nhập', {
+                    description: 'Bạn cần đăng nhập để xem danh sách nhóm.',
                   });
+                  navigate('/login');
                 }
               };
 
