@@ -85,8 +85,18 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    const { iat: _iat, exp: _exp, ...user } = await this.verifyToken(refreshToken)
-    return this.createToken(user)
+    const { iat: _iat, exp: _exp, userID } = await this.verifyToken(refreshToken)
+
+    // Lấy thông tin mới nhất từ DB để đảm bảo role/status được cập nhật
+    const freshUser = await this.usersService.getUser({ _id: userID })
+    if (!freshUser) throw new UnauthorizedException('User not found')
+    if (!freshUser.isActive) throw new ForbiddenException('Account has been banned')
+
+    return this.createToken({
+      userID: freshUser.id,
+      userEmail: freshUser.email,
+      role: freshUser.role,
+    })
   }
 
   sendSMS() {
