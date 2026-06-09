@@ -10,6 +10,8 @@ import { ArrowDown, ArrowUp, ArrowUpDown, BadgeCheck, Loader2, Search, Star, Use
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { useNavigate } from 'react-router-dom'
+
 interface GroupMember {
   _id: string
   email?: string
@@ -89,12 +91,12 @@ function isCurrentUserInGroup(group: Group, userId?: string) {
 
 export default function MemberJoinGroup() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [groups, setGroups] = useState<Group[]>([])
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('available')
   const [priceOrder, setPriceOrder] = useState<'asc' | 'desc' | null>(null)
   const [loading, setLoading] = useState(false)
-  const [joiningId, setJoiningId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const fetchGroups = useCallback(async () => {
@@ -139,28 +141,6 @@ export default function MemberJoinGroup() {
         return (getOwnerTrustScore(b.ownerId) ?? -1) - (getOwnerTrustScore(a.ownerId) ?? -1)
       })
   }, [groups, priceOrder, query, statusFilter, user?.userID])
-
-  const handleJoinGroup = async (groupId: string) => {
-    if (!user?.userID) {
-      toast.error('Bạn cần đăng nhập để tham gia nhóm')
-      return
-    }
-
-    setJoiningId(groupId)
-    try {
-      await fetchClient('/transactions/join-request', {
-        method: 'POST',
-        body: JSON.stringify({ groupId }),
-        requireAuth: true,
-      })
-      toast.success('Yêu cầu tham gia nhóm đã được gửi thành công!')
-      await fetchGroups()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Không thể tham gia nhóm')
-    } finally {
-      setJoiningId(null)
-    }
-  }
 
   return (
     <div className='space-y-6'>
@@ -314,11 +294,9 @@ export default function MemberJoinGroup() {
 
                       <Button
                         className='w-full rounded-md'
-                        disabled={!isJoinable || joiningId === group._id}
-                        onClick={() => handleJoinGroup(group._id)}
+                        onClick={() => navigate(`/dashboard/participant/${group._id}`)}
                       >
-                        {joiningId === group._id ? <Loader2 className='mr-2 size-4 animate-spin' /> : <BadgeCheck className='mr-2 size-4' />}
-                        {isJoinable ? 'Tham gia nhóm' : 'Không thể tham gia'}
+                        Xem chi tiết
                       </Button>
                     </CardContent>
                   </Card>
