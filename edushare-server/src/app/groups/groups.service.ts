@@ -210,20 +210,15 @@ export class GroupsService {
 
     const data = await this.groupModel
       .find()
+      .sort({ createdAt: -1 })
       .skip(paging.skip)
       .limit(paging.itemPerPage)
-      .populate('ownerId', 'id email displayName')
+      .populate('ownerId', 'username displayName avatar trustScore')
       .populate('members', 'id email displayName')
       .exec()
 
     return {
       message: 'Groups retrieved successfully',
-      data: await this.groupModel
-        .find()
-        .sort({ 'ownerId.trustScore': -1 })
-        .populate('ownerId', 'username displayName avatar trustScore')
-        .populate('members', 'id email displayName')
-        .exec(),
       ...this.paginationUtilService.format(data),
     }
   }

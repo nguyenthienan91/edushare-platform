@@ -6,7 +6,7 @@ import { CreateGroupDto } from './dto/create-group.dto'
 import { UpdateGroupDto } from './dto/update-group.dto'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
-import { Roles } from '../../common/decorators/roles.decorator'
+import { Roles, Public } from '../../common/decorators/roles.decorator'
 import { UserRole } from '../users/entities/user.entity'
 import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
 import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
@@ -22,6 +22,7 @@ export class GroupsController {
   }
 
   @Get()
+  @Public()
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'itemPerPage', required: false, type: Number })
   findAll(@Query(new ParseParamsPaginationPipe()) pagination: Pagination) {
