@@ -6,6 +6,7 @@ import { AuthService } from './auth.service'
 import { UserInfo } from '../../common/decorators/user.decorator'
 import { TokenKeys } from './consts/jwt.const'
 import { UsersService } from '../users/users.service'
+import { PUBLIC_KEY } from '../../common/decorators/roles.decorator'
 
 interface AuthenticatedRequest extends Request {
   user?: UserInfo
@@ -24,9 +25,14 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ])
-    if (isSkipAuth) {
-      return true
-    }
+    if (isSkipAuth) return true
+
+    // Bypass auth hoàn toàn nếu route được đánh dấu @Public()
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
+    if (isPublic) return true
 
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>()
     const token = this.extractTokenFromHeader(req)

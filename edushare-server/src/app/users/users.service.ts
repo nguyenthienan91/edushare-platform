@@ -156,11 +156,24 @@ export class UsersService {
       wallet.balance -= VIP_PRICE
       await wallet.save({ session })
 
-      // 3. Gọi hàm nâng cấp quyền User lên MEMBER (Tái sử dụng hàm bạn đã viết)
+      // 3. Tính ngày hết hạn mới: nếu user còn hạn thì gia hạn từ ngày hết hạn cũ (cộng dồn),
+      //    nếu đã hết hạn hoặc chưa có thì tính từ hôm nay
       const durationInDays = 30
-      const startedAt = new Date()
-      const expiresAt = new Date()
-      expiresAt.setDate(startedAt.getDate() + durationInDays)
+      const now = new Date()
+
+      const existingUser = await this.userModel.findById(userId).session(session)
+      if (!existingUser) throw new NotFoundException('User account not found.')
+
+      // Lấy mốc bắt đầu tính: nếu subscription vẫn còn hiệu lực thì kéo dài từ ngày hết hạn cũ
+      const baseDate =
+        existingUser.isSubscriptionActive && existingUser.membershipExpiresAt && existingUser.membershipExpiresAt > now
+          ? new Date(existingUser.membershipExpiresAt)
+          : now
+
+      const expiresAt = new Date(baseDate)
+      expiresAt.setDate(baseDate.getDate() + durationInDays)
+
+      const startedAt = now
 
       const updatedUser = await this.userModel.findByIdAndUpdate(
         userId,
