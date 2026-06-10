@@ -58,12 +58,22 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
   const sizeClass = size === 'md' ? 'size-5' : 'size-4'
   return (
     <div className='flex gap-0.5'>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`${sizeClass} ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`}
-        />
-      ))}
+      {[1, 2, 3, 4, 5].map((star) => {
+        const fillAmount = Math.max(0, Math.min(100, (rating - (star - 1)) * 100))
+        return (
+          <div key={star} className='relative inline-block'>
+            <Star className={`${sizeClass} text-muted-foreground/30`} />
+            {fillAmount > 0 && (
+              <div
+                className='absolute top-0 left-0 overflow-hidden'
+                style={{ width: `${fillAmount}%` }}
+              >
+                <Star className={`${sizeClass} fill-yellow-400 text-yellow-400`} />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -357,7 +367,7 @@ export default function MemberReviewsPage() {
           </Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Đánh giá & Xếp hạng</h2>
           <p className='mt-2 max-w-2xl text-sm text-muted-foreground'>
-            Quản lý đánh giá từ các giao dịch của bạn với hệ thống Shadcn nguyên bản.
+            Quản lý đánh giá từ các giao dịch 
           </p>
         </CardContent>
       </Card>

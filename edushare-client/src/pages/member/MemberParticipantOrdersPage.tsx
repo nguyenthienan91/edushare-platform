@@ -14,6 +14,7 @@ import {
   Eye,
   Plus,
   Minus,
+  Star,
 } from 'lucide-react'
 import {
   Dialog,
@@ -274,6 +275,8 @@ export default function MemberParticipantOrdersPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [disputeTxId, setDisputeTxId] = useState<string | null>(null)
+  const [ratedTxIds, setRatedTxIds] = useState<Set<string>>(new Set())
+  const [ratingTx, setRatingTx] = useState<Transaction | null>(null)
   const itemPerPage = 10
 
   const getResolvedGroup = (groupId: PopulatedGroup | string | null): PopulatedGroup | null => {
@@ -334,9 +337,33 @@ export default function MemberParticipantOrdersPage() {
     }
   }
 
+  const fetchRatedTransactions = async () => {
+    try {
+      const res = await fetchClient('/ratings/me?type=sent&page=1&itemPerPage=100')
+      if (res && res.list) {
+        const ids = new Set<string>()
+        res.list.forEach((item: any) => {
+          let txId = ''
+          if (typeof item.transactionId === 'object' && item.transactionId) {
+            txId = item.transactionId._id
+          } else if (typeof item.transactionId === 'string') {
+            txId = item.transactionId
+          }
+          if (txId) {
+            ids.add(txId)
+          }
+        })
+        setRatedTxIds(ids)
+      }
+    } catch (err) {
+      console.error('Failed to fetch rated transactions:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.userID) {
       fetchOrders()
+      fetchRatedTransactions()
     }
   }, [user?.userID, page])
 
@@ -431,7 +458,7 @@ export default function MemberParticipantOrdersPage() {
                     <TableHead>Loại</TableHead>
                     <TableHead className='text-right'>Giá</TableHead>
                     <TableHead className='text-center w-[180px]'>Trạng thái</TableHead>
-                    <TableHead className='text-right w-[150px]'>hành động</TableHead>
+                    <TableHead className='text-right w-[240px]'>hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -488,17 +515,48 @@ export default function MemberParticipantOrdersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className='text-right'>
-                          <Button
-                            size='sm'
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedOrder(order)
-                              setConfirmSuccess(false)
-                            }}
-                          >
-                            <Eye/>
-                            xem chi tiết
-                          </Button>
+                          <div className='flex justify-end gap-2'>
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedOrder(order)
+                                setConfirmSuccess(false)
+                              }}
+                            >
+                              <Eye className='mr-1.5 size-4' />
+                              xem chi tiết
+                            </Button>
+                            {(() => {
+                              const isBuyer = (typeof order.senderId === 'object' && order.senderId !== null)
+                                ? (order.senderId as any)._id === user?.userID
+                                : String(order.senderId) === user?.userID
+                              const isRated = ratedTxIds.has(order._id)
+
+                              if (order.status === 'completed' && isBuyer) {
+                                return isRated ? (
+                                  <Button size='sm' variant='ghost' disabled className='text-muted-foreground gap-1.5'>
+                                    <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
+                                    Đã đánh giá
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size='sm'
+                                    className='bg-amber-500 hover:bg-amber-600 text-white gap-1.5'
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setRatingTx(order)
+                                    }}
+                                  >
+                                    <Star className='size-4 fill-white text-white' />
+                                    Đánh giá
+                                  </Button>
+                                )
+                              }
+                              return null
+                            })()}
+                          </div>
                         </TableCell>
                       </TableRow>
                     )
@@ -550,6 +608,9 @@ export default function MemberParticipantOrdersPage() {
             const selectedGroupInfo = getGroupInfo(resolvedGroup)
             const groupName = selectedGroupInfo.name
             const category = selectedGroupInfo.category
+            const isBuyer = (typeof selectedOrder.senderId === 'object' && selectedOrder.senderId !== null)
+              ? (selectedOrder.senderId as any)._id === user?.userID
+              : String(selectedOrder.senderId) === user?.userID
 
             return (
               <>
@@ -575,22 +636,17 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Giá</span>
-                      {(() => {
-                        const isBuyer = (typeof selectedOrder.senderId === 'object' && selectedOrder.senderId !== null)
-                          ? (selectedOrder.senderId as any)._id === user?.userID
-                          : String(selectedOrder.senderId) === user?.userID
-                        return isBuyer ? (
-                          <span className='font-semibold flex items-center text-rose-600 dark:text-rose-400'>
-                            <Minus className='mr-0.5 size-3.5' />
-                            {formatVnd(selectedOrder.amount)}
-                          </span>
-                        ) : (
-                          <span className='font-semibold flex items-center text-emerald-600 dark:text-emerald-400'>
-                            <Plus className='mr-0.5 size-3.5' />
-                            {formatVnd(selectedOrder.amount)}
-                          </span>
-                        )
-                      })()}
+                      {isBuyer ? (
+                        <span className='font-semibold flex items-center text-rose-600 dark:text-rose-400'>
+                          <Minus className='mr-0.5 size-3.5' />
+                          {formatVnd(selectedOrder.amount)}
+                        </span>
+                      ) : (
+                        <span className='font-semibold flex items-center text-emerald-600 dark:text-emerald-400'>
+                          <Plus className='mr-0.5 size-3.5' />
+                          {formatVnd(selectedOrder.amount)}
+                        </span>
+                      )}
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Nền tảng</span>
@@ -682,9 +738,29 @@ export default function MemberParticipantOrdersPage() {
                     )}
 
                     {confirmSuccess && (
-                      <Badge variant='secondary' className='rounded-md px-4 py-2'>
+                      <Badge variant='secondary' className='rounded-md px-4 py-2 mr-2'>
                         ✓ Đã xác nhận! Tiền đang được giải ngân.
                       </Badge>
+                    )}
+
+                    {(selectedOrder.status === 'completed' || confirmSuccess) && isBuyer && (
+                      ratedTxIds.has(selectedOrder._id) ? (
+                        <Button variant='ghost' disabled className='rounded-md text-muted-foreground gap-1.5'>
+                          <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
+                          Đã đánh giá
+                        </Button>
+                      ) : (
+                        <Button
+                          className='bg-amber-500 hover:bg-amber-600 text-white rounded-md gap-1.5'
+                          onClick={() => {
+                            setRatingTx(selectedOrder)
+                            setSelectedOrder(null)
+                          }}
+                        >
+                          <Star className='size-4 fill-white text-white' />
+                          Đánh giá chủ nhóm
+                        </Button>
+                      )
                     )}
 
                     <DialogClose asChild>
@@ -707,6 +783,21 @@ export default function MemberParticipantOrdersPage() {
         onClose={() => setDisputeTxId(null)}
         onSuccess={() => {
           if (user?.userID) fetchOrders()
+        }}
+      />
+
+      {/* Create Rating Dialog */}
+      <CreateRatingDialog
+        open={!!ratingTx}
+        transaction={ratingTx}
+        onClose={() => setRatingTx(null)}
+        onSuccess={(txId) => {
+          setRatedTxIds((prev) => {
+            const updated = new Set(prev)
+            updated.add(txId)
+            return updated
+          })
+          fetchOrders()
         }}
       />
     </div>
@@ -872,6 +963,160 @@ function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: Create
           >
             {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
             Gửi yêu cầu khiếu nại
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+interface CreateRatingDialogProps {
+  open: boolean
+  transaction: Transaction | null
+  onClose: () => void
+  onSuccess: (txId: string) => void
+}
+
+function StarRatingInput({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
+  return (
+    <div className='flex gap-2 justify-center py-2'>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type='button'
+          onClick={() => onChange(star)}
+          className='transition transform hover:scale-110 focus:outline-none'
+        >
+          <Star
+            className={`size-8 ${star <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
+          />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function CreateRatingDialog({ open, transaction, onClose, onSuccess }: CreateRatingDialogProps) {
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async () => {
+    if (!transaction) return
+    setLoading(true)
+    setError(null)
+    try {
+      await fetchClient('/ratings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionId: transaction._id,
+          rating,
+          comment: comment.trim(),
+        }),
+      })
+
+      toast.success('Đánh giá chủ nhóm thành công!')
+      onSuccess(transaction._id)
+      handleClose()
+    } catch (err: any) {
+      setError(err.message || 'Đánh giá thất bại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setRating(5)
+    setComment('')
+    setError(null)
+    onClose()
+  }
+
+  if (!transaction) return null
+
+  // Resolve group and owner names
+  let groupName = 'Nhóm dùng chung'
+  let ownerName = 'N/A'
+
+  if (transaction.groupId && typeof transaction.groupId === 'object') {
+    groupName = transaction.groupId.name || 'Nhóm dùng chung'
+    if (transaction.groupId.ownerId && typeof transaction.groupId.ownerId === 'object') {
+      ownerName = (transaction.groupId.ownerId as any).displayName || (transaction.groupId.ownerId as any).username || 'N/A'
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent className='sm:max-w-md'>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className='size-2 rounded-full bg-amber-500 animate-pulse' />
+            Đánh giá chủ nhóm
+          </DialogTitle>
+          <DialogDescription>
+            Đóng góp ý kiến để giúp cải thiện chất lượng dịch vụ của cộng đồng. Đánh giá của bạn sẽ tự động cập nhật điểm uy tín (Trust Score) của chủ nhóm.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='space-y-4 py-4'>
+          <div className='rounded-lg border p-4 bg-muted/20 text-sm space-y-1.5'>
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Tên nhóm:</span>
+              <span className='font-semibold'>{groupName}</span>
+            </div>
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Chủ nhóm:</span>
+              <span className='font-semibold'>{ownerName}</span>
+            </div>
+          </div>
+
+          <div className='space-y-2 text-center'>
+            <Label className='text-sm font-bold uppercase tracking-wider text-muted-foreground'>
+              Chọn mức độ hài lòng
+            </Label>
+            <StarRatingInput rating={rating} onChange={setRating} />
+            <div className='text-sm font-semibold text-amber-500'>
+              {rating === 5 && 'Rất hài lòng (5/5)'}
+              {rating === 4 && 'Hài lòng (4/5)'}
+              {rating === 3 && 'Bình thường (3/5)'}
+              {rating === 2 && 'Không hài lòng (2/5)'}
+              {rating === 1 && 'Rất tệ (1/5)'}
+            </div>
+          </div>
+
+          <div className='space-y-1.5'>
+            <Label className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
+              Bình luận / Ý kiến đóng góp (tùy chọn)
+            </Label>
+            <textarea
+              className='mt-1.5 w-full rounded-lg border p-3 text-sm focus:outline-none bg-card focus:border-amber-500 transition-colors'
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder='Nhập ý kiến của bạn về quá trình cấp quyền tài khoản của chủ nhóm...'
+            />
+          </div>
+
+          {error && (
+            <p className='rounded-lg bg-destructive/10 p-2 text-sm text-destructive'>{error}</p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant='outline' onClick={handleClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button
+            className='bg-amber-500 hover:bg-amber-600 text-white'
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
+            Gửi đánh giá
           </Button>
         </DialogFooter>
       </DialogContent>
