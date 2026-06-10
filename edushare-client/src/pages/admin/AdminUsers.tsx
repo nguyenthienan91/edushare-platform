@@ -74,7 +74,7 @@ export default function AdminUsers() {
         </CardContent>
       </Card>
 
-      <Card className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden'>
+      <Card className='rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden'>
         <CardHeader className='pb-4'>
           <CardTitle className=''>Tất cả người dùng</CardTitle>
           <CardDescription>Danh sách chi tiết các công dân của cộng đồng.</CardDescription>

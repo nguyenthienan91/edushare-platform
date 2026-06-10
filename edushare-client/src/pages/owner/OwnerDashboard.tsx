@@ -61,7 +61,7 @@ export default function OwnerDashboard() {
       description="Theo dõi hoạt động cộng đồng của bạn một cách nhanh gọn và tin cậy."
     >
       <div className="space-y-6 ">
-        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
+        <div className="rounded-xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
               <Badge className="rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100">Owner Dashboard</Badge>
@@ -83,7 +83,7 @@ export default function OwnerDashboard() {
           {stats.map((item) => {
             const Icon = item.icon
             return (
-              <Card key={item.label} className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+              <Card key={item.label} className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3">
@@ -105,13 +105,13 @@ export default function OwnerDashboard() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Tăng trưởng thành viên trong tuần</CardTitle>
               <CardDescription>Biểu đồ</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-3xl /70 p-4">
+              <div className="rounded-xl /70 p-4">
                 <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[260px] w-full overflow-visible">
                   <defs>
                     <linearGradient id="memberArea" x1="0" x2="0" y1="0" y2="1">
@@ -140,14 +140,14 @@ export default function OwnerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Nhóm nổi bật</CardTitle>
               <CardDescription>Các nhóm có nhiều tương tác nhất trong tuần.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {featuredGroups.map((group) => (
-                <div key={group.name} className="rounded-3xl border border-slate-200/70  p-4 transition-colors hover:/60">
+                <div key={group.name} className="rounded-xl border border-slate-200/70  p-4 transition-colors hover:/60">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium ">{group.name}</p>

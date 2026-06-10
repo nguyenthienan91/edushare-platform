@@ -20,7 +20,7 @@ export default function OwnerEvidence() {
       description="Gửi ảnh/chứng từ để đảm bảo giao dịch minh bạch và đáng tin cậy."
     >
       <div className="space-y-6 ">
-        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
+        <div className="rounded-xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
           <Badge className="rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100">Upload Evidence</Badge>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight ">Tải bằng chứng</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 ">
@@ -29,14 +29,14 @@ export default function OwnerEvidence() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Khu vực tải lên</CardTitle>
               <CardDescription>Kéo thả ảnh hoặc bấm để chọn file từ máy tính.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <label className="group block cursor-pointer">
-                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-sky-200 /70 p-6 text-center transition-colors hover:border-sky-300 hover:">
+                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 /70 p-6 text-center transition-colors hover:border-sky-300 hover:">
                   <div className="flex size-16 items-center justify-center rounded-full  shadow-sm ring-1 ring-sky-100">
                     <CloudUpload className="size-7 text-sky-500" />
                   </div>
@@ -80,7 +80,7 @@ export default function OwnerEvidence() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Preview</CardTitle>
               <CardDescription>Xem trước ảnh bằng chứng trước khi gửi.</CardDescription>
@@ -96,7 +96,7 @@ export default function OwnerEvidence() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-3xl border border-slate-200 ">
+              <div className="overflow-hidden rounded-xl border border-slate-200 ">
                 {previewUrl ? (
                   <img src={previewUrl} alt="Evidence preview" className="h-[320px] w-full object-cover" />
                 ) : (

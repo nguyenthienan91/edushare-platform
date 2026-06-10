@@ -25,7 +25,7 @@ export default function OwnerRenewals() {
       description="Theo dõi các nhóm sắp hết hạn và gửi lời nhắc nhanh chóng."
     >
       <div className="space-y-6 ">
-        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
+        <div className="rounded-xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
           <Badge className="rounded-full bg-sky-100 text-sky-700 hover:bg-sky-100">Renewal Center</Badge>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight ">Nhắc nhở gia hạn</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 ">
@@ -42,7 +42,7 @@ export default function OwnerRenewals() {
         </Alert>
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Danh sách nhóm cần chú ý</CardTitle>
               <CardDescription>Các nhóm được ưu tiên theo thời gian sắp hết hạn.</CardDescription>
@@ -87,7 +87,7 @@ export default function OwnerRenewals() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Gợi ý nhanh</CardTitle>
               <CardDescription>Những điều nên làm để giữ cộng đồng ổn định.</CardDescription>

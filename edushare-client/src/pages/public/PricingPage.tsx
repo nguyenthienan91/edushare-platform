@@ -120,7 +120,7 @@ export default function PricingPage() {
           <h2 className='text-2xl font-bold'>Monthly membership comparison</h2>
           <div className='mt-6 grid gap-4 md:grid-cols-3'>
             {COMPARISON.map((item) => (
-              <div key={item.label} className='rounded-3xl  p-5'>
+              <div key={item.label} className='rounded-xl  p-5'>
                 <p className='text-sm font-semibold '>{item.label}</p>
                 <div className='mt-2 text-xl font-bold '>{item.value}</div>
                 <p className='mt-2 text-sm leading-relaxed '>{item.note}</p>

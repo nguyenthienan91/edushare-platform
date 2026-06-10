@@ -86,7 +86,7 @@ export function DisputeDetailDialog({ dispute, onClose, onRefresh }: DisputeDeta
 
   return (
     <Dialog open={!!dispute} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className='w-[calc(100%-2rem)] sm:max-w-3xl md:max-w-4xl rounded-3xl overflow-hidden p-6 gap-0 max-h-[90vh] flex flex-col'>
+      <DialogContent className='w-[calc(100%-2rem)] sm:max-w-3xl md:max-w-4xl rounded-xl overflow-hidden p-6 gap-0 max-h-[90vh] flex flex-col'>
         <DialogHeader className='pb-4 border-b shrink-0'>
           <div className='flex flex-wrap items-center gap-2 mb-1.5'>
             <Badge className={`rounded-full border-none font-semibold ${status.color}`}>

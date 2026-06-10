@@ -108,7 +108,7 @@ export default function AdminDashboard() {
         {stats.map((item) => {
           const Icon = item.icon
           return (
-            <Card key={item.label} className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30'>
+            <Card key={item.label} className='rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30'>
               <CardContent className='p-5'>
                 <div className='flex items-start justify-between gap-4'>
                   <div className='space-y-3'>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className='h-[320px] rounded-3xl bg-emerald-50/60 p-4'>
+          <div className='h-[320px] rounded-xl bg-emerald-50/60 p-4'>
             <ResponsiveContainer width='100%' height='100%'>
               <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
               <defs>
