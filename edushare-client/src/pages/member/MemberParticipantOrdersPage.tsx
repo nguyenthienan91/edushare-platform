@@ -25,6 +25,15 @@ import {
   DialogClose,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -387,6 +396,70 @@ export default function MemberParticipantOrdersPage() {
     }
   }
 
+  const renderPaginationItems = () => {
+    const items = []
+    
+    // Button Previous
+    items.push(
+      <PaginationItem key="prev">
+        <PaginationPrevious
+          href="#"
+          text="Trước"
+          onClick={(e) => {
+            e.preventDefault()
+            if (page > 1) setPage(page - 1)
+          }}
+          className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    )
+
+    // Page Numbers
+    const range = 1
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= page - range && i <= page + range)) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              href="#"
+              isActive={page === i}
+              onClick={(e) => {
+                e.preventDefault()
+                setPage(i)
+              }}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      } else if (i === page - range - 1 || i === page + range + 1) {
+        items.push(
+          <PaginationItem key={`ellipsis-${i}`}>
+            <PaginationEllipsis />
+          </PaginationItem>
+        )
+      }
+    }
+
+    // Button Next
+    items.push(
+      <PaginationItem key="next">
+        <PaginationNext
+          href="#"
+          text="Sau"
+          onClick={(e) => {
+            e.preventDefault()
+            if (page < totalPages) setPage(page + 1)
+          }}
+          className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    )
+
+    return items
+  }
+
   const activeOrdersCount = useMemo(() => {
     return orders.filter(o => !['completed', 'refunded'].includes(o.status)).length
   }, [orders])
@@ -568,32 +641,15 @@ export default function MemberParticipantOrdersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className='flex items-center justify-between border-t px-6 py-3'>
+            <div className='flex flex-col sm:flex-row items-center justify-between border-t px-6 py-4 gap-4'>
               <p className='text-sm text-muted-foreground'>
                 Trang {page} / {totalPages} · Tổng {totalItems} đơn hàng
               </p>
-              <div className='flex items-center gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='rounded-md'
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft className='size-4' />
-                  Trước
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='rounded-md'
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                >
-                  Sau
-                  <ChevronRight className='size-4' />
-                </Button>
-              </div>
+              <Pagination className='mx-0 w-auto'>
+                <PaginationContent>
+                  {renderPaginationItems()}
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </Card>
