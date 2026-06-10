@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+
 import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -70,21 +70,10 @@ export default function MainLayout() {
 
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
             {NAV_ITEMS.map((item) => {
-              const handleClick = (e: React.MouseEvent) => {
-                if (item.href === '/groups' && !isAuthenticated) {
-                  e.preventDefault();
-                  toast.error('Yêu cầu đăng nhập', {
-                    description: 'Bạn cần đăng nhập để xem danh sách nhóm.',
-                  });
-                  navigate('/login');
-                }
-              };
-
               return (
                 <Link
                   key={item.label}
                   to={item.href}
-                  onClick={item.href === '/groups' ? handleClick : undefined}
                   className={`transition-colors hover:text-primary ${item.href === '/groups' ? 'font-bold text-indigo-600' : ''}`}
                 >
                   {item.label}

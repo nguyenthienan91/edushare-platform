@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { GroupService } from '@/services/group.service'
-import ForbiddenPage from '@/pages/error/ForbiddenPage'
+
 import {
   ArrowRight,
   Filter,
@@ -35,24 +35,27 @@ export default function GroupsPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category>('All')
   const [sortBy, setSortBy] = useState<SortOption>('Uy tín cao')
   const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const itemPerPage = 10
   
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchGroups()
-    } else {
-      setIsLoading(false)
-    }
-  }, [isAuthenticated])
+    fetchGroups(currentPage)
+  }, [currentPage])
 
-  const fetchGroups = async () => {
+  const fetchGroups = async (page: number) => {
     setIsLoading(true)
     try {
-      const res: any = await GroupService.getGroups({ page: 1, itemPerPage: 100 })
-      if (res?.data) {
-        setGroups(res.data)
+      const res: any = await GroupService.getGroups({ page, itemPerPage })
+      const groupsData = res?.list || res?.data;
+      if (groupsData) {
+        setGroups(groupsData)
+      }
+      if (res?.totalPages) {
+        setTotalPages(res.totalPages)
       }
     } catch (error) {
       console.error('Failed to fetch groups', error)
@@ -89,10 +92,7 @@ export default function GroupsPage() {
     }
   }
 
-  // Nếu chưa đăng nhập, hiển thị ForbiddenPage
-  if (!isLoading && !isAuthenticated) {
-    return <ForbiddenPage />
-  }
+  // Cho phép khách truy cập xem danh sách nhóm công khai
 
   return (
     <div className="min-h-screen bg-background">
@@ -275,6 +275,31 @@ export default function GroupsPage() {
               </div>
             )}
           </section>
+        )}
+        
+        {/* Phân trang */}
+        {!isLoading && totalPages > 1 && (
+          <div className="mt-12 flex justify-center gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              className="rounded-full"
+            >
+              Trang trước
+            </Button>
+            <div className="flex items-center px-4 font-medium">
+              Trang {currentPage} / {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              className="rounded-full"
+            >
+              Trang sau
+            </Button>
+          </div>
         )}
       </div>
     </div>
