@@ -108,7 +108,7 @@ export default function GroupsPage() {
           </p>
         </div>
 
-        <Card className="mb-8 rounded-3xl border-border/60 shadow-sm bg-card overflow-visible hidden md:block">
+        <Card className="mb-8 rounded-xl border-border/60 shadow-sm bg-card overflow-visible hidden md:block">
           <CardContent className="p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -213,7 +213,7 @@ export default function GroupsPage() {
                     transition={{ duration: 0.45, delay: index * 0.05 }}
                     whileHover={{ y: -4 }}
                   >
-                    <Card className="overflow-hidden rounded-3xl border-border/60 shadow-sm transition-shadow hover:shadow-md h-full flex flex-col">
+                    <Card className="overflow-hidden rounded-xl border-border/60 shadow-sm transition-shadow hover:shadow-md h-full flex flex-col">
                       <div className="h-2 bg-gradient-to-r from-primary to-blue-500" />
                       <CardHeader className="pb-4">
                         <div className="flex flex-row items-start justify-between gap-4">
@@ -265,7 +265,7 @@ export default function GroupsPage() {
               <div className="md:col-span-2 xl:col-span-3">
                 <Card className="rounded-[28px] border-dashed shadow-sm">
                   <CardContent className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-primary">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-secondary text-primary">
                       <Inbox className="h-8 w-8" />
                     </div>
                     <h3 className="mt-4 text-xl font-bold text-foreground">Không tìm thấy nhóm phù hợp</h3>

@@ -74,7 +74,7 @@ export default function AdminGroups() {
 
     if (filteredGroups.length === 0) {
       return (
-        <div className='flex flex-col items-center justify-center p-12 text-center text-slate-400  rounded-3xl border border-dashed border-slate-200'>
+        <div className='flex flex-col items-center justify-center p-12 text-center text-slate-400  rounded-xl border border-dashed border-slate-200'>
           <PlayCircle className='h-12 w-12 mb-4 text-slate-200' />
           <p>Không có nhóm nào trong danh mục này.</p>
         </div>
@@ -86,7 +86,7 @@ export default function AdminGroups() {
         {filteredGroups.map((group) => (
           <Card
             key={group.id}
-            className='rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden flex flex-col hover:border-sky-200 hover:shadow-md transition-all'
+            className='rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30 overflow-hidden flex flex-col hover:border-sky-200 hover:shadow-md transition-all'
           >
             <CardHeader className='pb-4'>
               <div className='flex items-start justify-between'>

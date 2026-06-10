@@ -12,6 +12,9 @@ import {
   X,
   CheckCircle2,
   Eye,
+  Plus,
+  Minus,
+  Star,
 } from 'lucide-react'
 import {
   Dialog,
@@ -22,6 +25,15 @@ import {
   DialogClose,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -73,38 +85,44 @@ interface TransactionsResponse {
 function getStatusMeta(status: string) {
   switch (status) {
     case 'pending':
+      return {
+        label: 'Chờ thanh toán',
+        nextAction: 'Hệ thống đang xử lý yêu cầu thanh toán của bạn.',
+        badgeVariant: 'secondary' as const,
+        actionIcon: Clock3,
+      }
     case 'approved_waiting_proof':
       return {
-        label: 'Chờ chủ nhóm cấp quyền',
-        nextAction: 'Đang xử lý giao dịch thanh toán của bạn.',
+        label: 'Chờ cấp quyền & minh chứng',
+        nextAction: 'Chủ nhóm đã phê duyệt yêu cầu của bạn. Đang chờ chủ nhóm thêm tài khoản của bạn và tải ảnh minh chứng lên.',
         badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'held':
       return {
         label: 'Chờ chủ nhóm duyệt',
-        nextAction: 'Tiền đã được giữ. Đang chờ chủ nhóm phê duyệt yêu cầu tham gia.',
+        nextAction: 'Tiền đã được đóng băng trong ví treo hệ thống. Đang chờ chủ nhóm phê duyệt yêu cầu tham gia của bạn.',
         badgeVariant: 'secondary' as const,
         actionIcon: Clock3,
       }
     case 'proof':
       return {
-        label: 'Chủ nhóm đang xác nhận',
-        nextAction: 'Chủ nhóm đã nộp minh chứng. Hãy kiểm tra và xác nhận bạn đã vào nhóm thành công.',
+        label: 'Chờ bạn xác nhận',
+        nextAction: 'Chủ nhóm đã gửi minh chứng cấp quyền thành công. Vui lòng kiểm tra tài khoản của bạn và bấm "Xác nhận đã nhận quyền truy cập" bên dưới để giải ngân.',
         badgeVariant: 'secondary' as const,
         actionIcon: ShieldCheck,
       }
     case 'completed':
       return {
         label: 'Đã hoàn tất / Đã giải ngân',
-        nextAction: 'Giao dịch hoàn tất. Tiền đã được giải ngân cho chủ nhóm.',
+        nextAction: 'Đơn hàng hoàn tất. Bạn đã tham gia nhóm thành công và tiền đã được giải ngân cho chủ nhóm.',
         badgeVariant: 'default' as const,
         actionIcon: ShieldCheck,
       }
     case 'disputed':
       return {
         label: 'Đang tranh chấp / Đang chờ admin xử lý',
-        nextAction: 'Giao dịch đang được tranh chấp. Đang chờ admin xem xét và xử lý.',
+        nextAction: 'Đơn hàng đang trong trạng thái khiếu nại. Vui lòng đợi Ban quản trị (Admin) kiểm tra và đưa ra phán quyết.',
         badgeVariant: 'destructive' as const,
         actionIcon: Info,
       }
@@ -112,7 +130,7 @@ function getStatusMeta(status: string) {
     case 'refunded':
       return {
         label: 'Đã hoàn tiền về ví',
-        nextAction: 'Giao dịch thất bại. Tiền đã được hoàn về ví của bạn.',
+        nextAction: 'Giao dịch thất bại. Tiền đóng băng đã được hoàn trả đầy đủ vào ví của bạn.',
         badgeVariant: 'destructive' as const,
         actionIcon: X,
       }
@@ -216,8 +234,8 @@ function renderSteps(status: string) {
         <>
           <StepCard label='Tiền được giữ' done />
           <StepCard label='Chủ nhóm duyệt' done />
-          <StepCard label='Đã nộp minh chứng' active />
-          <StepCard label='Xác nhận → Giải ngân' />
+          <StepCard label='Đã nộp minh chứng' done />
+          <StepCard label='Xác nhận → Giải ngân' active />
         </>
       )
     case 'approved_waiting_proof':
@@ -266,14 +284,14 @@ export default function MemberParticipantOrdersPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [disputeTxId, setDisputeTxId] = useState<string | null>(null)
+  const [ratedTxIds, setRatedTxIds] = useState<Set<string>>(new Set())
+  const [ratingTx, setRatingTx] = useState<Transaction | null>(null)
   const itemPerPage = 10
 
   const getResolvedGroup = (groupId: PopulatedGroup | string | null): PopulatedGroup | null => {
     if (!groupId) return null
-    if (typeof groupId === 'string') {
-      return groupsCache[groupId] || null
-    }
-    return groupId
+    const id = typeof groupId === 'string' ? groupId : (groupId as any)._id
+    return groupsCache[id] || (typeof groupId === 'object' ? (groupId as any) : null)
   }
 
   // Fetch orders using /transactions/me
@@ -289,11 +307,10 @@ export default function MemberParticipantOrdersPage() {
       setTotalPages(res.totalPages ?? 1)
       setTotalItems(res.totalItems ?? 0)
 
-      // Fetch group details for string groupIds that are not in the cache yet
       const missingGroupIds = Array.from(
         new Set(
           list
-            .map((t) => (typeof t.groupId === 'string' ? t.groupId : t.groupId?._id))
+            .map((t) => (typeof t.groupId === 'string' ? t.groupId : (t.groupId as any)?._id))
             .filter((id): id is string => !!id && !groupsCache[id])
         )
       )
@@ -329,9 +346,33 @@ export default function MemberParticipantOrdersPage() {
     }
   }
 
+  const fetchRatedTransactions = async () => {
+    try {
+      const res = await fetchClient('/ratings/me?type=sent&page=1&itemPerPage=100')
+      if (res && res.list) {
+        const ids = new Set<string>()
+        res.list.forEach((item: any) => {
+          let txId = ''
+          if (typeof item.transactionId === 'object' && item.transactionId) {
+            txId = item.transactionId._id
+          } else if (typeof item.transactionId === 'string') {
+            txId = item.transactionId
+          }
+          if (txId) {
+            ids.add(txId)
+          }
+        })
+        setRatedTxIds(ids)
+      }
+    } catch (err) {
+      console.error('Failed to fetch rated transactions:', err)
+    }
+  }
+
   useEffect(() => {
     if (user?.userID) {
       fetchOrders()
+      fetchRatedTransactions()
     }
   }, [user?.userID, page])
 
@@ -353,6 +394,70 @@ export default function MemberParticipantOrdersPage() {
     } finally {
       setConfirming(false)
     }
+  }
+
+  const renderPaginationItems = () => {
+    const items = []
+    
+    // Button Previous
+    items.push(
+      <PaginationItem key="prev">
+        <PaginationPrevious
+          href="#"
+          text="Trước"
+          onClick={(e) => {
+            e.preventDefault()
+            if (page > 1) setPage(page - 1)
+          }}
+          className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    )
+
+    // Page Numbers
+    const range = 1
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= page - range && i <= page + range)) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              href="#"
+              isActive={page === i}
+              onClick={(e) => {
+                e.preventDefault()
+                setPage(i)
+              }}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        )
+      } else if (i === page - range - 1 || i === page + range + 1) {
+        items.push(
+          <PaginationItem key={`ellipsis-${i}`}>
+            <PaginationEllipsis />
+          </PaginationItem>
+        )
+      }
+    }
+
+    // Button Next
+    items.push(
+      <PaginationItem key="next">
+        <PaginationNext
+          href="#"
+          text="Sau"
+          onClick={(e) => {
+            e.preventDefault()
+            if (page < totalPages) setPage(page + 1)
+          }}
+          className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+        />
+      </PaginationItem>
+    )
+
+    return items
   }
 
   const activeOrdersCount = useMemo(() => {
@@ -426,7 +531,7 @@ export default function MemberParticipantOrdersPage() {
                     <TableHead>Loại</TableHead>
                     <TableHead className='text-right'>Giá</TableHead>
                     <TableHead className='text-center w-[180px]'>Trạng thái</TableHead>
-                    <TableHead className='text-right w-[150px]'>hành động</TableHead>
+                    <TableHead className='text-right w-[240px]'>hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -436,6 +541,7 @@ export default function MemberParticipantOrdersPage() {
                     const groupInfo = getGroupInfo(resolvedGroup)
                     const category = groupInfo.category
                     const ownerName = getOwnerName(resolvedGroup)
+                    const hasGroup = !!resolvedGroup
 
                     return (
                       <TableRow 
@@ -454,13 +560,30 @@ export default function MemberParticipantOrdersPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className='font-semibold text-base'>{category || 'N/A'}</div>
+                          <div className={`font-semibold text-base ${!hasGroup ? 'text-muted-foreground italic' : ''}`}>
+                            {hasGroup ? (category || 'N/A') : 'Nhóm đã bị xóa (N/A)'}
+                          </div>
                           <div className='mt-1 text-xs text-muted-foreground'>
                             Chủ nhóm: {ownerName}
                           </div>
                         </TableCell>
                         <TableCell className='text-right font-semibold'>
-                          {formatVnd(order.amount)}
+                          {(() => {
+                            const isBuyer = (typeof order.senderId === 'object' && order.senderId !== null)
+                              ? (order.senderId as any)._id === user?.userID
+                              : String(order.senderId) === user?.userID
+                            return isBuyer ? (
+                              <span className='inline-flex items-center text-rose-600 dark:text-rose-400 font-bold'>
+                                <Minus className='mr-0.5 size-3.5 shrink-0' />
+                                {formatVnd(order.amount)}
+                              </span>
+                            ) : (
+                              <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
+                                <Plus className='mr-0.5 size-3.5 shrink-0' />
+                                {formatVnd(order.amount)}
+                              </span>
+                            )
+                          })()}
                         </TableCell>
                         <TableCell className='text-center'>
                           <Badge variant={meta.badgeVariant} className='rounded-md'>
@@ -468,17 +591,48 @@ export default function MemberParticipantOrdersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className='text-right'>
-                          <Button
-                            size='sm'
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedOrder(order)
-                              setConfirmSuccess(false)
-                            }}
-                          >
-                            <Eye/>
-                            xem chi tiết
-                          </Button>
+                          <div className='flex justify-end gap-2'>
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedOrder(order)
+                                setConfirmSuccess(false)
+                              }}
+                            >
+                              <Eye className='mr-1.5 size-4' />
+                              xem chi tiết
+                            </Button>
+                            {(() => {
+                              const isBuyer = (typeof order.senderId === 'object' && order.senderId !== null)
+                                ? (order.senderId as any)._id === user?.userID
+                                : String(order.senderId) === user?.userID
+                              const isRated = ratedTxIds.has(order._id)
+
+                              if (order.status === 'completed' && isBuyer && hasGroup) {
+                                return isRated ? (
+                                  <Button size='sm' variant='ghost' disabled className='text-muted-foreground gap-1.5'>
+                                    <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
+                                    Đã đánh giá
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size='sm'
+                                    className='bg-amber-500 hover:bg-amber-600 text-white gap-1.5'
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setRatingTx(order)
+                                    }}
+                                  >
+                                    <Star className='size-4 fill-white text-white' />
+                                    Đánh giá
+                                  </Button>
+                                )
+                              }
+                              return null
+                            })()}
+                          </div>
                         </TableCell>
                       </TableRow>
                     )
@@ -490,32 +644,15 @@ export default function MemberParticipantOrdersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className='flex items-center justify-between border-t px-6 py-3'>
+            <div className='flex flex-col sm:flex-row items-center justify-between border-t px-6 py-4 gap-4'>
               <p className='text-sm text-muted-foreground'>
                 Trang {page} / {totalPages} · Tổng {totalItems} đơn hàng
               </p>
-              <div className='flex items-center gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='rounded-md'
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft className='size-4' />
-                  Trước
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='rounded-md'
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                >
-                  Sau
-                  <ChevronRight className='size-4' />
-                </Button>
-              </div>
+              <Pagination className='mx-0 w-auto'>
+                <PaginationContent>
+                  {renderPaginationItems()}
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </Card>
@@ -530,12 +667,17 @@ export default function MemberParticipantOrdersPage() {
             const selectedGroupInfo = getGroupInfo(resolvedGroup)
             const groupName = selectedGroupInfo.name
             const category = selectedGroupInfo.category
+            const isBuyer = (typeof selectedOrder.senderId === 'object' && selectedOrder.senderId !== null)
+              ? (selectedOrder.senderId as any)._id === user?.userID
+              : String(selectedOrder.senderId) === user?.userID
+
+            const hasGroup = !!resolvedGroup
 
             return (
               <>
                 <DialogHeader>
                   <DialogTitle className='text-2xl font-bold'>
-                    {groupName} · {shortId(selectedOrder._id)}
+                    {hasGroup ? groupName : 'Nhóm đã bị xóa'} · {shortId(selectedOrder._id)}
                   </DialogTitle>
                   <DialogDescription>
                     Gói bạn vừa tham gia đang được theo dõi trong hệ thống ký quỹ.
@@ -555,15 +697,25 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Giá</span>
-                      <span className='font-semibold'>{formatVnd(selectedOrder.amount)}</span>
+                      {isBuyer ? (
+                        <span className='font-semibold flex items-center text-rose-600 dark:text-rose-400'>
+                          <Minus className='mr-0.5 size-3.5' />
+                          {formatVnd(selectedOrder.amount)}
+                        </span>
+                      ) : (
+                        <span className='font-semibold flex items-center text-emerald-600 dark:text-emerald-400'>
+                          <Plus className='mr-0.5 size-3.5' />
+                          {formatVnd(selectedOrder.amount)}
+                        </span>
+                      )}
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Nền tảng</span>
-                      <span className='font-semibold'>{groupName}</span>
+                      <span className='font-semibold'>{hasGroup ? groupName : 'Nhóm đã bị xóa (N/A)'}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Loại</span>
-                      <span className='font-semibold'>{category || 'N/A'}</span>
+                      <span className='font-semibold'>{hasGroup ? (category || 'N/A') : 'N/A'}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Chủ nhóm</span>
@@ -647,9 +799,29 @@ export default function MemberParticipantOrdersPage() {
                     )}
 
                     {confirmSuccess && (
-                      <Badge variant='secondary' className='rounded-md px-4 py-2'>
+                      <Badge variant='secondary' className='rounded-md px-4 py-2 mr-2'>
                         ✓ Đã xác nhận! Tiền đang được giải ngân.
                       </Badge>
+                    )}
+
+                    {(selectedOrder.status === 'completed' || confirmSuccess) && isBuyer && hasGroup && (
+                      ratedTxIds.has(selectedOrder._id) ? (
+                        <Button variant='ghost' disabled className='rounded-md text-muted-foreground gap-1.5'>
+                          <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
+                          Đã đánh giá
+                        </Button>
+                      ) : (
+                        <Button
+                          className='bg-amber-500 hover:bg-amber-600 text-white rounded-md gap-1.5'
+                          onClick={() => {
+                            setRatingTx(selectedOrder)
+                            setSelectedOrder(null)
+                          }}
+                        >
+                          <Star className='size-4 fill-white text-white' />
+                          Đánh giá chủ nhóm
+                        </Button>
+                      )
                     )}
 
                     <DialogClose asChild>
@@ -672,6 +844,21 @@ export default function MemberParticipantOrdersPage() {
         onClose={() => setDisputeTxId(null)}
         onSuccess={() => {
           if (user?.userID) fetchOrders()
+        }}
+      />
+
+      {/* Create Rating Dialog */}
+      <CreateRatingDialog
+        open={!!ratingTx}
+        transaction={ratingTx}
+        onClose={() => setRatingTx(null)}
+        onSuccess={(txId) => {
+          setRatedTxIds((prev) => {
+            const updated = new Set(prev)
+            updated.add(txId)
+            return updated
+          })
+          fetchOrders()
         }}
       />
     </div>
@@ -837,6 +1024,160 @@ function CreateDisputeDialog({ open, transactionId, onClose, onSuccess }: Create
           >
             {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
             Gửi yêu cầu khiếu nại
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+interface CreateRatingDialogProps {
+  open: boolean
+  transaction: Transaction | null
+  onClose: () => void
+  onSuccess: (txId: string) => void
+}
+
+function StarRatingInput({ rating, onChange }: { rating: number; onChange: (r: number) => void }) {
+  return (
+    <div className='flex gap-2 justify-center py-2'>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type='button'
+          onClick={() => onChange(star)}
+          className='transition transform hover:scale-110 focus:outline-none'
+        >
+          <Star
+            className={`size-8 ${star <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
+          />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function CreateRatingDialog({ open, transaction, onClose, onSuccess }: CreateRatingDialogProps) {
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async () => {
+    if (!transaction) return
+    setLoading(true)
+    setError(null)
+    try {
+      await fetchClient('/ratings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionId: transaction._id,
+          rating,
+          comment: comment.trim(),
+        }),
+      })
+
+      toast.success('Đánh giá chủ nhóm thành công!')
+      onSuccess(transaction._id)
+      handleClose()
+    } catch (err: any) {
+      setError(err.message || 'Đánh giá thất bại.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    setRating(5)
+    setComment('')
+    setError(null)
+    onClose()
+  }
+
+  if (!transaction) return null
+
+  // Resolve group and owner names
+  let groupName = 'Nhóm dùng chung'
+  let ownerName = 'N/A'
+
+  if (transaction.groupId && typeof transaction.groupId === 'object') {
+    groupName = transaction.groupId.name || 'Nhóm dùng chung'
+    if (transaction.groupId.ownerId && typeof transaction.groupId.ownerId === 'object') {
+      ownerName = (transaction.groupId.ownerId as any).displayName || (transaction.groupId.ownerId as any).username || 'N/A'
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent className='sm:max-w-md'>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className='size-2 rounded-full bg-amber-500 animate-pulse' />
+            Đánh giá chủ nhóm
+          </DialogTitle>
+          <DialogDescription>
+            Đóng góp ý kiến để giúp cải thiện chất lượng dịch vụ của cộng đồng. Đánh giá của bạn sẽ tự động cập nhật điểm uy tín (Trust Score) của chủ nhóm.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='space-y-4 py-4'>
+          <div className='rounded-lg border p-4 bg-muted/20 text-sm space-y-1.5'>
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Tên nhóm:</span>
+              <span className='font-semibold'>{groupName}</span>
+            </div>
+            <div className='flex justify-between'>
+              <span className='text-muted-foreground'>Chủ nhóm:</span>
+              <span className='font-semibold'>{ownerName}</span>
+            </div>
+          </div>
+
+          <div className='space-y-2 text-center'>
+            <Label className='text-sm font-bold uppercase tracking-wider text-muted-foreground'>
+              Chọn mức độ hài lòng
+            </Label>
+            <StarRatingInput rating={rating} onChange={setRating} />
+            <div className='text-sm font-semibold text-amber-500'>
+              {rating === 5 && 'Rất hài lòng (5/5)'}
+              {rating === 4 && 'Hài lòng (4/5)'}
+              {rating === 3 && 'Bình thường (3/5)'}
+              {rating === 2 && 'Không hài lòng (2/5)'}
+              {rating === 1 && 'Rất tệ (1/5)'}
+            </div>
+          </div>
+
+          <div className='space-y-1.5'>
+            <Label className='text-xs font-bold uppercase tracking-wider text-muted-foreground'>
+              Bình luận / Ý kiến đóng góp (tùy chọn)
+            </Label>
+            <textarea
+              className='mt-1.5 w-full rounded-lg border p-3 text-sm focus:outline-none bg-card focus:border-amber-500 transition-colors'
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder='Nhập ý kiến của bạn về quá trình cấp quyền tài khoản của chủ nhóm...'
+            />
+          </div>
+
+          {error && (
+            <p className='rounded-lg bg-destructive/10 p-2 text-sm text-destructive'>{error}</p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant='outline' onClick={handleClose} disabled={loading}>
+            Hủy
+          </Button>
+          <Button
+            className='bg-amber-500 hover:bg-amber-600 text-white'
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading && <Loader2 className='mr-2 size-3.5 animate-spin' />}
+            Gửi đánh giá
           </Button>
         </DialogFooter>
       </DialogContent>

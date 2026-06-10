@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BanknoteArrowUp, CircleDollarSign, Landmark } from 'lucide-react'
+import { BanknoteArrowUp, CircleDollarSign, Landmark, Plus, Minus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -473,8 +473,18 @@ export default function MemberWalletPage() {
                               {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                             </div>
                           </TableCell>
-                          <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
-                            {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
+                          <TableCell className='text-right font-semibold'>
+                            {item.type === 'topup' ? (
+                              <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
+                                <Plus className='mr-0.5 size-3.5 shrink-0' />
+                                {item.amount.toLocaleString('vi-VN')}đ
+                              </span>
+                            ) : (
+                              <span className='inline-flex items-center text-rose-600 dark:text-rose-400 font-bold'>
+                                <Minus className='mr-0.5 size-3.5 shrink-0' />
+                                {item.amount.toLocaleString('vi-VN')}đ
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell className="text-center">
                             {getStatusBadge(item.status)}
@@ -537,8 +547,18 @@ export default function MemberWalletPage() {
                           {item.type === 'topup' ? 'Nạp tiền' : 'Rút tiền'}
                         </div>
                       </TableCell>
-                      <TableCell className={`text-right font-semibold ${item.type === 'topup' ? '' : 'text-destructive'}`}>
-                        {item.type === 'topup' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} đ
+                      <TableCell className='text-right font-semibold'>
+                        {item.type === 'topup' ? (
+                          <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
+                            <Plus className='mr-0.5 size-3.5 shrink-0' />
+                            {item.amount.toLocaleString('vi-VN')}đ
+                          </span>
+                        ) : (
+                          <span className='inline-flex items-center text-rose-600 dark:text-rose-400 font-bold'>
+                            <Minus className='mr-0.5 size-3.5 shrink-0' />
+                            {item.amount.toLocaleString('vi-VN')}đ
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         {getStatusBadge(item.status)}

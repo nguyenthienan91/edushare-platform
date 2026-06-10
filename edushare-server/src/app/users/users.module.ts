@@ -9,6 +9,7 @@ import { WalletsModule } from '../wallets/wallets.module'
 import { AuthModule } from '../auth/auth.module'
 import { GroupsModule } from '../groups/groups.module'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
+import { PaginationUtilModule } from '../../common/utils/pagination-util/pagination-util.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.s
     forwardRef(() => AuthModule),
     forwardRef(() => WalletsModule),
     forwardRef(() => GroupsModule),
+    PaginationUtilModule,
   ],
   controllers: [UsersController, AdminUsersController],
   providers: [UsersService, CloudinaryService],

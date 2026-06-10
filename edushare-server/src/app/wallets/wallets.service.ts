@@ -339,4 +339,52 @@ export class WalletsService {
     const list = items.slice(paging.skip, paging.skip + paging.itemPerPage)
     return this.paginationUtilService.format(list)
   }
+
+  // ─── Admin APIs ──────────────────────────────────────────────────────────────
+
+  /**
+   * [ADMIN] Lấy danh sách tất cả lệnh rút tiền của toàn hệ thống.
+   * Hỗ trợ filter theo status (pending | approved | rejected) và phân trang.
+   */
+  async getAdminWithdrawals(pagination: Pagination, status?: 'pending' | 'approved' | 'rejected') {
+    const filter = status ? { status } : {}
+
+    const totalItems = await this.withdrawalModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const withdrawals = await this.withdrawalModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .populate('userId', 'displayName email avatar')
+      .lean()
+      .exec()
+
+    const list = withdrawals.map((w: any) => ({
+      id: w._id,
+      amount: w.amount,
+      status: w.status,
+      bankName: w.bankName,
+      accountNumber: w.accountNumber,
+      accountName: w.accountName,
+      rejectReason: w.rejectReason,
+      createdAt: w.createdAt,
+      updatedAt: w.updatedAt,
+      user: w.userId
+        ? {
+            id: w.userId._id,
+            displayName: w.userId.displayName,
+            email: w.userId.email,
+            avatar: w.userId.avatar,
+          }
+        : null,
+    }))
+
+    return this.paginationUtilService.format(list)
+  }
 }

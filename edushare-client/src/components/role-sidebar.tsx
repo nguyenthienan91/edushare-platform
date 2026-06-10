@@ -10,6 +10,7 @@ import {
   Wallet,
   Home,
   CreditCard,
+  UserPlus,
   Star,
   ShieldAlert,
   Settings,
@@ -73,7 +74,7 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
         label: 'Khám phá',
         items: [
           { title: 'Tổng quan', url: '/dashboard/overview', icon: Home, isActive: true },
-          // { title: 'Thị trường', url: '/dashboard/participant', icon: LayoutDashboard },
+          { title: 'Gia nhập nhóm', url: '/dashboard/participant', icon: UserPlus },
         ],
       },
       {

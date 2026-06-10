@@ -25,7 +25,7 @@ export default function OwnerCreateGroup() {
       description="Thiết kế một nhóm chia sẻ mới với form tối giản và live preview."
     >
       <div className="space-y-6 ">
-        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
+        <div className="rounded-xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/50">
           <Badge className="rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100">Create Group</Badge>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight ">
             Tạo nhóm mới
@@ -36,7 +36,7 @@ export default function OwnerCreateGroup() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Thông tin nhóm</CardTitle>
               <CardDescription>Điền thông tin cơ bản để bắt đầu nhóm chia sẻ của bạn.</CardDescription>
@@ -127,13 +127,13 @@ export default function OwnerCreateGroup() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+          <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
             <CardHeader>
               <CardTitle className="">Live Preview Card</CardTitle>
               <CardDescription>Xem trước giao diện nhóm của bạn ngay khi chỉnh form.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-3xl  from-sky-50 to-white p-5 ring-1 ring-sky-100">
+              <div className="rounded-xl  from-sky-50 to-white p-5 ring-1 ring-sky-100">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full  px-3 py-1 text-xs font-medium text-sky-700 shadow-sm">

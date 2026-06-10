@@ -23,6 +23,7 @@ import {
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { fetchClient } from '@/utils/fetchClient'
@@ -284,23 +285,34 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
     if (!group) return
     setLoadingTx(true)
     try {
-      const res = await fetchClient(`/groups/${group._id}/members`)
-      
-      const pendingList = res?.data?.pending ?? []
-      const formattedPending = pendingList.map((tx: any) => ({
-        _id: tx.transactionId,
-        senderId: tx.user,
+      // Fetch fresh group details to get the approved list
+      const freshGroup = await fetchClient(`/groups/${group._id}`)
+      const approvedList = freshGroup?.members ?? freshGroup?.data?.members ?? group.members ?? []
+      setJoinedMembers(approvedList)
+
+      // Fetch transaction history relating to user (as owner or sender)
+      const res = await fetchClient('/transactions/me?page=1&itemPerPage=100')
+      const allList = res?.list ?? []
+
+      // Filter transactions that belong to this group
+      const filtered = allList.filter((tx: any) => {
+        const gId = typeof tx.groupId === 'object' && tx.groupId !== null
+          ? tx.groupId._id
+          : String(tx.groupId)
+        return gId === group._id
+      })
+
+      const formattedPending = filtered.map((tx: any) => ({
+        _id: tx._id,
+        senderId: tx.senderId,
         amount: tx.amount,
         status: tx.status,
         createdAt: tx.createdAt
       }))
       setTransactions(formattedPending)
-
-      const approvedList = res?.data?.approved ?? []
-      setJoinedMembers(approvedList)
     } catch {
       setTransactions([])
-      setJoinedMembers([])
+      setJoinedMembers(group.members ?? [])
     } finally {
       setLoadingTx(false)
     }
@@ -316,7 +328,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
     if (!approveConfirm) return
     setApprovingId(approveConfirm)
     try {
-      await fetchClient(`/transaction/${approveConfirm}/approve`, { method: 'POST' })
+      await fetchClient(`/transactions/${approveConfirm}/approve`, { method: 'POST' })
       await fetchTransactions()
       toast.success('Duyệt thành viên thành công!')
     } catch (err: any) {
@@ -330,10 +342,13 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
   if (!open || !group) return null
 
   const pendingTransactions = transactions.filter(
-    (t) => t.status === 'held_in_escrow',
+    (t) => t.status === 'held' || t.status === 'held_in_escrow',
   )
   const approvedTransactions = transactions.filter(
     (t) => t.status === 'approved_waiting_proof',
+  )
+  const proofSubmittedTransactions = transactions.filter(
+    (t) => t.status === 'proof' || t.status === 'proof_submitted',
   )
 
   const getSenderDisplay = (tx: Transaction) => {
@@ -372,7 +387,7 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
                     <div className='flex justify-center py-8'>
                       <Loader2 className='size-6 animate-spin ' />
                     </div>
-                  ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 ? (
+                  ) : pendingTransactions.length === 0 && approvedTransactions.length === 0 && proofSubmittedTransactions.length === 0 ? (
                     <p className='py-6 text-center text-sm '>Không có yêu cầu nào.</p>
                   ) : (
                     <div className='overflow-x-auto scrollbar-thin'>
@@ -424,6 +439,19 @@ function ManageMembersDialog({ open, group, onClose, onRefresh }: ManageMembersD
                                     <ImagePlus className='mr-2 size-4' />
                                     Nộp minh chứng
                                   </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {proofSubmittedTransactions.map((tx) => (
+                            <TableRow key={tx._id}>
+                              <TableCell className='font-medium'>{getSenderDisplay(tx)}</TableCell>
+                              <TableCell>{getSenderEmail(tx)}</TableCell>
+                              <TableCell>
+                                <div className='flex justify-end gap-2'>
+                                  <Badge variant='outline' className='text-xs text-muted-foreground'>
+                                    Đã nộp minh chứng (Chờ xác nhận)
+                                  </Badge>
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -514,6 +542,7 @@ export default function MemberManageGroup() {
   const [loadingUser, setLoadingUser] = useState(true)
   const [isVip, setIsVip] = useState(false)
   const [groups, setGroups] = useState<Group[]>([])
+  const [activeTab, setActiveTab] = useState<'created' | 'joined'>('created')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [totalPages, setTotalPages] = useState(1)
@@ -570,10 +599,10 @@ export default function MemberManageGroup() {
     return () => clearTimeout(timer)
   }, [query])
 
-  // Reset page when filter/sort changes
+  // Reset page when tab/filter/sort changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [statusFilter, priceOrder])
+  }, [activeTab, statusFilter, priceOrder])
 
   // Fetch groups
   const fetchGroups = useCallback(async () => {
@@ -581,38 +610,50 @@ export default function MemberManageGroup() {
     setLoading(true)
     setError(null)
     try {
-      // Build search params for the API call to /api/groups as requested
+      // Build search params for the API call to /api/groups/search
       const params = new URLSearchParams()
-      params.set('ownerId', user.userID)
+      if (activeTab === 'created') {
+        params.set('ownerId', user.userID)
+      } else {
+        params.set('members', user.userID)
+      }
+      
       if (debouncedQuery.trim()) {
-        params.set('keyword', debouncedQuery.trim())
+        params.set('name', debouncedQuery.trim())
       }
       if (statusFilter !== 'all') {
         params.set('status', statusFilter)
       }
 
-      // Call GET /api/groups with params
-      const res = await fetchClient(`/groups?${params.toString()}`)
+      // Call GET /api/groups/search with params
+      const res = await fetchClient(`/groups/search?${params.toString()}`)
 
-      // Since we don't touch the backend, the backend findAll endpoint returns all groups.
-      // We will perform client-side filtering to ensure correct results match the requested parameters.
-      let fetchedList: Group[] = res?.data ?? []
+      let fetchedList: Group[] = res?.data ?? res?.list ?? []
 
-      // 1. Filter by ownerId
-      fetchedList = fetchedList.filter((g) => {
-        const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId !== null
-          ? g.ownerId._id
-          : String(g.ownerId)
-        return ownerIdStr === user.userID
-      })
+      // Client-side filtering
+      if (activeTab === 'created') {
+        fetchedList = fetchedList.filter((g) => {
+          const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId !== null
+            ? g.ownerId._id
+            : String(g.ownerId)
+          return ownerIdStr === user.userID
+        })
+      } else {
+        fetchedList = fetchedList.filter((g) => {
+          return (g.members ?? []).some((m) => {
+            const memberIdStr = typeof m === 'object' && m !== null ? m._id : String(m)
+            return memberIdStr === user.userID
+          })
+        })
+      }
 
-      // 2. Filter by keyword (searching group name case-insensitively)
+      // Filter by keyword (searching group name case-insensitively)
       if (debouncedQuery.trim()) {
         const queryLower = debouncedQuery.trim().toLowerCase()
         fetchedList = fetchedList.filter((g) => g.name?.toLowerCase().includes(queryLower))
       }
 
-      // 3. Filter by status
+      // Filter by status
       if (statusFilter !== 'all') {
         fetchedList = fetchedList.filter((g) => g.status === statusFilter)
       }
@@ -639,7 +680,7 @@ export default function MemberManageGroup() {
     } finally {
       setLoading(false)
     }
-  }, [user?.userID, debouncedQuery, statusFilter, priceOrder, currentPage])
+  }, [user?.userID, activeTab, debouncedQuery, statusFilter, priceOrder, currentPage])
 
   useEffect(() => {
     fetchGroups()
@@ -723,6 +764,22 @@ export default function MemberManageGroup() {
         </CardContent>
       </Card>
 
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => setActiveTab(val as 'created' | 'joined')}
+        className='w-full'
+      >
+        <TabsList className='grid w-full grid-cols-2 bg-muted p-1 rounded-lg h-11'>
+          <TabsTrigger value='created' className='rounded-md text-sm font-medium transition-all'>
+            Nhóm tôi tạo
+          </TabsTrigger>
+          <TabsTrigger value='joined' className='rounded-md text-sm font-medium transition-all'>
+            Nhóm tôi tham gia
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
       <Card>
         <CardContent className='p-4 md:p-5'>
@@ -802,10 +859,19 @@ export default function MemberManageGroup() {
 
       {/* Groups Grid */}
       {!loading && groups.length === 0 && !error ? (
-        <div className='flex flex-col items-center justify-center border border-dashed py-16'>
+        <div className='flex flex-col items-center justify-center border border-dashed py-16 rounded-lg bg-card shadow-sm'>
           <Users className='size-12 text-muted-foreground/40' />
-          <p className='mt-3 text-sm font-medium text-muted-foreground'>Bạn chưa có nhóm nào.</p>
-          <p className='mt-1 text-xs '>Hãy tạo nhóm đầu tiên của bạn!</p>
+          {activeTab === 'created' ? (
+            <>
+              <p className='mt-3 text-sm font-medium text-muted-foreground'>Bạn chưa tạo nhóm nào.</p>
+              <p className='mt-1 text-xs text-muted-foreground'>Hãy tạo nhóm đầu tiên của bạn!</p>
+            </>
+          ) : (
+            <>
+              <p className='mt-3 text-sm font-medium text-muted-foreground'>Bạn chưa tham gia nhóm nào.</p>
+              <p className='mt-1 text-xs text-muted-foreground'>Hãy khám phá các nhóm có sẵn để gia nhập!</p>
+            </>
+          )}
         </div>
       ) : (
         <div className='grid gap-6 md:grid-cols-2 xl:grid-cols-3'>
@@ -871,30 +937,43 @@ export default function MemberManageGroup() {
                         </div>
                       </div>
 
-                      {/* Manage Members button */}
-                      <Button
-                        id={`manage-members-btn-${group._id}`}
-                        variant='default'
-                        className='w-full rounded-md'
-                        onClick={() => setManagingGroup(group)}
-                      >
-                        <Users className='mr-2 size-4' />
-                        Quản lý thành viên
-                      </Button>
+                      {activeTab === 'created' ? (
+                        <>
+                          {/* Manage Members button */}
+                          <Button
+                            id={`manage-members-btn-${group._id}`}
+                            variant='default'
+                            className='w-full rounded-md'
+                            onClick={() => setManagingGroup(group)}
+                          >
+                            <Users className='mr-2 size-4' />
+                            Quản lý thành viên
+                          </Button>
 
-                      {/* Action buttons */}
-                      <div className='flex flex-wrap gap-2 pt-1'>
-                        <Button
-                          id={`remove-group-btn-${group._id}`}
-                          size='sm'
-                          variant='destructive'
-                          className='rounded-md'
-                          onClick={() => setRemoveConfirm(group._id)}
-                        >
-                          <Trash2 className='mr-2 size-4' />
-                          xoá nhóm
-                        </Button>
-                      </div>
+                          {/* Action buttons */}
+                          <div className='flex flex-wrap gap-2 pt-1'>
+                            <Button
+                              id={`remove-group-btn-${group._id}`}
+                              size='sm'
+                              variant='destructive'
+                              className='rounded-md'
+                              onClick={() => setRemoveConfirm(group._id)}
+                            >
+                              <Trash2 className='mr-2 size-4' />
+                              xoá nhóm
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className='rounded-md border bg-muted/40 p-3 text-sm'>
+                          <p className='text-xs text-muted-foreground'>Chủ nhóm</p>
+                          <p className='mt-1 font-semibold'>
+                            {typeof group.ownerId === 'object' && group.ownerId !== null
+                              ? group.ownerId.displayName || group.ownerId.username || 'Chủ nhóm'
+                              : 'Chủ nhóm'}
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )

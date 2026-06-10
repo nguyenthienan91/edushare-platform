@@ -58,12 +58,22 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
   const sizeClass = size === 'md' ? 'size-5' : 'size-4'
   return (
     <div className='flex gap-0.5'>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`${sizeClass} ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`}
-        />
-      ))}
+      {[1, 2, 3, 4, 5].map((star) => {
+        const fillAmount = Math.max(0, Math.min(100, (rating - (star - 1)) * 100))
+        return (
+          <div key={star} className='relative inline-block'>
+            <Star className={`${sizeClass} text-muted-foreground/30`} />
+            {fillAmount > 0 && (
+              <div
+                className='absolute top-0 left-0 overflow-hidden'
+                style={{ width: `${fillAmount}%` }}
+              >
+                <Star className={`${sizeClass} fill-yellow-400 text-yellow-400`} />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -238,8 +248,9 @@ export default function MemberReviewsPage() {
 
       // 2. Fetch groups where I am the owner
       const groupsRes = await fetchClient('/groups?page=1&itemPerPage=100')
-      if (groupsRes && groupsRes.data) {
-        const myOwnedGroups = groupsRes.data.filter((g: any) => {
+      const groupsData = groupsRes?.data ?? groupsRes?.list
+      if (groupsData) {
+        const myOwnedGroups = groupsData.filter((g: any) => {
           const ownerIdStr = typeof g.ownerId === 'object' && g.ownerId 
             ? g.ownerId._id || g.ownerId.id 
             : g.ownerId
@@ -356,7 +367,7 @@ export default function MemberReviewsPage() {
           </Badge>
           <h2 className='mt-3 text-3xl font-semibold tracking-tight'>Đánh giá & Xếp hạng</h2>
           <p className='mt-2 max-w-2xl text-sm text-muted-foreground'>
-            Quản lý đánh giá từ các giao dịch của bạn với hệ thống Shadcn nguyên bản.
+            Quản lý đánh giá từ các giao dịch 
           </p>
         </CardContent>
       </Card>
