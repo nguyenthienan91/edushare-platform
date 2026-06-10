@@ -541,6 +541,7 @@ export default function MemberParticipantOrdersPage() {
                     const groupInfo = getGroupInfo(resolvedGroup)
                     const category = groupInfo.category
                     const ownerName = getOwnerName(resolvedGroup)
+                    const hasGroup = !!resolvedGroup
 
                     return (
                       <TableRow 
@@ -559,7 +560,9 @@ export default function MemberParticipantOrdersPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className='font-semibold text-base'>{category || 'N/A'}</div>
+                          <div className={`font-semibold text-base ${!hasGroup ? 'text-muted-foreground italic' : ''}`}>
+                            {hasGroup ? (category || 'N/A') : 'Nhóm đã bị xóa (N/A)'}
+                          </div>
                           <div className='mt-1 text-xs text-muted-foreground'>
                             Chủ nhóm: {ownerName}
                           </div>
@@ -607,7 +610,7 @@ export default function MemberParticipantOrdersPage() {
                                 : String(order.senderId) === user?.userID
                               const isRated = ratedTxIds.has(order._id)
 
-                              if (order.status === 'completed' && isBuyer) {
+                              if (order.status === 'completed' && isBuyer && hasGroup) {
                                 return isRated ? (
                                   <Button size='sm' variant='ghost' disabled className='text-muted-foreground gap-1.5'>
                                     <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
@@ -668,11 +671,13 @@ export default function MemberParticipantOrdersPage() {
               ? (selectedOrder.senderId as any)._id === user?.userID
               : String(selectedOrder.senderId) === user?.userID
 
+            const hasGroup = !!resolvedGroup
+
             return (
               <>
                 <DialogHeader>
                   <DialogTitle className='text-2xl font-bold'>
-                    {groupName} · {shortId(selectedOrder._id)}
+                    {hasGroup ? groupName : 'Nhóm đã bị xóa'} · {shortId(selectedOrder._id)}
                   </DialogTitle>
                   <DialogDescription>
                     Gói bạn vừa tham gia đang được theo dõi trong hệ thống ký quỹ.
@@ -706,11 +711,11 @@ export default function MemberParticipantOrdersPage() {
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Nền tảng</span>
-                      <span className='font-semibold'>{groupName}</span>
+                      <span className='font-semibold'>{hasGroup ? groupName : 'Nhóm đã bị xóa (N/A)'}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Loại</span>
-                      <span className='font-semibold'>{category || 'N/A'}</span>
+                      <span className='font-semibold'>{hasGroup ? (category || 'N/A') : 'N/A'}</span>
                     </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-muted-foreground'>Chủ nhóm</span>
@@ -799,7 +804,7 @@ export default function MemberParticipantOrdersPage() {
                       </Badge>
                     )}
 
-                    {(selectedOrder.status === 'completed' || confirmSuccess) && isBuyer && (
+                    {(selectedOrder.status === 'completed' || confirmSuccess) && isBuyer && hasGroup && (
                       ratedTxIds.has(selectedOrder._id) ? (
                         <Button variant='ghost' disabled className='rounded-md text-muted-foreground gap-1.5'>
                           <Star className='size-4 fill-muted-foreground/30 text-muted-foreground/30' />
