@@ -7,6 +7,8 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { Wallet, WalletDocument } from '../wallets/schemas/wallet.schema'
 import { NotificationsService } from '../notifications/notification.service'
+import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Injectable()
 export class UsersService {
@@ -14,6 +16,7 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     private readonly notificationsService: NotificationsService,
+    private readonly paginationUtilService: PaginationUtilService,
   ) {}
 
   async getUser(filter: Partial<User> & Record<string, any>): Promise<UserDocument | null> {
@@ -26,6 +29,47 @@ export class UsersService {
 
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().select('-password').exec()
+  }
+
+  /**
+   * Lấy danh sách user có phân trang + tìm kiếm theo tên/email + lọc theo role.
+   * @param pagination  page & itemPerPage
+   * @param search      Tìm kiếm theo displayName hoặc email (regex, không phân biệt hoa thường)
+   * @param role        Lọc theo role ('guest' | 'member' | 'admin')
+   */
+  async findAllWithPagination(
+    pagination: Pagination,
+    search?: string,
+    role?: UserRole,
+  ) {
+    const filter: Record<string, any> = { _destroy: false }
+
+    if (search) {
+      const regex = new RegExp(search, 'i')
+      filter.$or = [{ displayName: regex }, { email: regex }]
+    }
+
+    if (role) {
+      filter.role = role
+    }
+
+    const totalItems = await this.userModel.countDocuments(filter).exec()
+    const paging = this.paginationUtilService.paging({
+      page: pagination.page,
+      itemPerPage: pagination.itemPerPage,
+      totalItems,
+    })
+
+    const users = await this.userModel
+      .find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(paging.skip)
+      .limit(paging.itemPerPage)
+      .lean()
+      .exec()
+
+    return this.paginationUtilService.format(users)
   }
 
   async findById(id: string): Promise<UserDocument | null> {

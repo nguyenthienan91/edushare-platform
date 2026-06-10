@@ -13,6 +13,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import 'multer'
@@ -24,9 +25,11 @@ import { UserRole } from './entities/user.entity'
 import { User } from '../../common/decorators/user.decorator'
 import type { UserInfo } from '../../common/decorators/user.decorator'
 import { AuthGuard } from '../auth/auth.guard'
-import { ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger'
+import { ApiConsumes, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { GroupsService } from '../groups/groups.service'
 import { CloudinaryService } from '../../common/services/cloudinary/cloudinary.service'
+import { ParseParamsPaginationPipe } from '../../common/pipes/parse-params-pagination.pipe'
+import { Pagination } from '../../common/utils/pagination-util/pagination-util.interface'
 
 @Controller('users')
 @Roles(UserRole.ADMIN)
@@ -100,8 +103,17 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll()
+  @ApiOperation({ summary: '[ADMIN] Lay danh sach user co phan trang va tim kiem' })
+  @ApiQuery({ name: 'page', required: false, description: 'So trang (mac dinh: 1)' })
+  @ApiQuery({ name: 'itemPerPage', required: false, description: 'So phan tu moi trang (mac dinh: 10)' })
+  @ApiQuery({ name: 'search', required: false, description: 'Tim kiem theo ten hoac email' })
+  @ApiQuery({ name: 'role', required: false, enum: ['guest', 'member', 'admin'], description: 'Loc theo role' })
+  findAll(
+    @Query(new ParseParamsPaginationPipe()) pagination: Pagination,
+    @Query('search') search?: string,
+    @Query('role') role?: 'guest' | 'member' | 'admin',
+  ) {
+    return this.usersService.findAllWithPagination(pagination, search, role as any)
   }
 
   @Get(':id')
