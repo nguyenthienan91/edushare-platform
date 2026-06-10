@@ -22,19 +22,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 
-const CATEGORIES = [
-  { name: 'Cursor', count: '08 nhóm', accent: 'bg-slate-950 text-white' },
-  { name: 'Codex', count: '06 nhóm', accent: 'bg-indigo-50 text-indigo-700' },
-  { name: 'Chat GPT', count: '02 nhóm', accent: 'bg-emerald-50 text-emerald-700' },
-  { name: 'Canva', count: '00 nhóm', accent: 'bg-sky-50 text-sky-700' },
-  { name: 'VPS giá rẻ', count: '08 nhóm', accent: 'bg-violet-50 text-violet-700' },
-  { name: 'Kiro', count: '00 nhóm', accent: 'bg-orange-50 text-orange-700' },
-  { name: 'Kling', count: '02 nhóm', accent: 'bg-rose-50 text-rose-700' },
-  { name: 'Suno', count: '02 nhóm', accent: 'bg-amber-50 text-amber-700' },
-  { name: 'Youtube', count: '01 nhóm', accent: 'bg-red-50 text-red-700' },
-  { name: 'Khác', count: '02 nhóm', accent: 'bg-slate-100 text-slate-700' },
-]
-
 const MEMBERSHIP_PLAN = {
   title: 'Member / Standard User',
   price: '29.000 đ / tháng',
@@ -90,7 +77,7 @@ const FAQS = [
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
   const [isUpgrading, setIsUpgrading] = useState(false)
-  const categories = useMemo(() => CATEGORIES, [])
+  
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
@@ -217,70 +204,55 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="pricing" className="mt-16">
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">Gói 29k / tháng</h2>
-              <p className="mt-2 text-muted-foreground">Member / Standard User dành cho sinh viên đã đóng phí thành viên.</p>
-            </div>
-            <Button variant="ghost" className="rounded-full">
-              Xem quyền lợi <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+        <section id="pricing" className="mt-20">
+          <div className="mb-10 text-center flex flex-col items-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gói 29k / tháng</h2>
+            <p className="mt-3 text-base text-muted-foreground max-w-2xl">
+              Nâng cấp trải nghiệm EduShare với gói định kỳ, giúp bạn tham gia nhóm đang chờ ghép nhanh chóng, với chi phí minh bạch và sự bảo vệ giao dịch bởi EduShare.
+            </p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <Card className="rounded-[2rem] border-border/60 shadow-sm">
-              <CardHeader>
-                <Badge variant="secondary" className="w-fit rounded-full">Member / Standard User</Badge>
+          <div className="mx-auto max-w-2xl">
+            <Card className="rounded-[2rem] border-border/60 shadow-sm overflow-hidden">
+              <CardHeader className="bg-muted/30 pb-8 text-center pt-8">
+                <Badge variant="secondary" className="mx-auto w-fit rounded-full mb-4">Member / Standard User</Badge>
                 <CardTitle className="text-2xl">{MEMBERSHIP_PLAN.title}</CardTitle>
-                <CardDescription>{MEMBERSHIP_PLAN.desc}</CardDescription>
+                <CardDescription className="mt-2">{MEMBERSHIP_PLAN.desc}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="rounded-[1.75rem] border border-border bg-primary/5 p-6">
+              <CardContent className="p-6 sm:p-8 -mt-4">
+                <div className="rounded-[1.75rem] border border-border bg-primary/5 p-6 shadow-inner">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Phí thành viên</p>
-                      <div className="mt-1 text-3xl font-bold">{MEMBERSHIP_PLAN.price}</div>
+                      <p className="text-sm font-medium text-muted-foreground">Phí thành viên</p>
+                      <div className="mt-1 text-3xl font-black text-foreground">{MEMBERSHIP_PLAN.price}</div>
                     </div>
-                    <Badge className="rounded-full">29k / tháng</Badge>
+                    <Badge className="rounded-full px-3 py-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">Ưu đãi sinh viên</Badge>
                   </div>
-                  <div className="mt-6 space-y-3">
+                  
+                  <div className="mt-8 space-y-4">
                     {MEMBERSHIP_PLAN.benefits.map((item) => (
-                      <div key={item} className="flex items-center gap-3 rounded-[1.25rem] border border-border bg-background px-4 py-3 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        {item}
+                      <div key={item} className="flex items-center gap-3 rounded-2xl border border-border/50 bg-background/80 px-4 py-3.5 text-sm shadow-sm">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                        <span className="font-medium">{item}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Button 
-                      className="rounded-full" 
+                      className="rounded-full flex-1 h-12 text-base font-semibold shadow-md" 
                       onClick={handleUpgradeVip} 
                       disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
                     >
-                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29k)"))}
+                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29k)"))}
                     </Button>
-                    <Button asChild variant="outline" className="rounded-full">
+                    <Button asChild variant="outline" className="rounded-full flex-1 h-12 text-base font-medium">
                       <a href="#groups">Xem nhóm đang chờ ghép</a>
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {categories.slice(0, 6).map((item) => (
-                <Card key={item.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold ${item.accent}`}>{item.name.slice(0, 1)}</div>
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{item.name}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{item.count}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
         </section>
 
