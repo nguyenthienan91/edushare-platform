@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertCircle, Clock, CheckCircle, UploadCloud, Loader2, CheckCircle2, Eye } from 'lucide-react'
+import { AlertCircle, Clock, CheckCircle, UploadCloud, Loader2, CheckCircle2, Eye, Pencil } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -7,6 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,6 +31,7 @@ export function DisputeDetailDialog({ dispute, onClose, onRefresh }: DisputeDeta
   const { user } = useAuth()
   const [uploading, setUploading] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   const getStatus = (status: string) => {
     switch (status) {
@@ -70,6 +77,7 @@ export function DisputeDetailDialog({ dispute, onClose, onRefresh }: DisputeDeta
 
       toast.success('Nộp bằng chứng phản biện thành công!')
       setSelectedFiles(null)
+      setIsEditing(false)
       await onRefresh()
       onClose()
     } catch (err: any) {
@@ -85,7 +93,13 @@ export function DisputeDetailDialog({ dispute, onClose, onRefresh }: DisputeDeta
   const isOwner = user?.userID === dispute.transactionId?.groupId?.ownerId
 
   return (
-    <Dialog open={!!dispute} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!dispute} onOpenChange={(open) => {
+      if (!open) {
+        setIsEditing(false)
+        setSelectedFiles(null)
+        onClose()
+      }
+    }}>
       <DialogContent className='w-[calc(100%-2rem)] sm:max-w-3xl md:max-w-4xl rounded-xl overflow-hidden p-6 gap-0 max-h-[90vh] flex flex-col'>
         <DialogHeader className='pb-4 border-b shrink-0'>
           <div className='flex flex-wrap items-center gap-2 mb-1.5'>
@@ -176,45 +190,113 @@ export function DisputeDetailDialog({ dispute, onClose, onRefresh }: DisputeDeta
                 </CardHeader>
                 <CardContent className='p-4 space-y-4'>
                   {isOwner && dispute.status === 'pending' ? (
-                    <div className='space-y-3'>
-                      <p className='text-xs text-muted-foreground leading-normal font-medium'>
-                        Hãy tải lên ảnh chụp màn hình chứng minh bạn đã cấp quyền sử dụng dịch vụ cho member này để đối chất thành công.
-                      </p>
-                      <div className='flex flex-col gap-2'>
-                        <input
-                          type='file'
-                          multiple
-                          accept='image/*'
-                          id={`file-upload-dialog-${dispute._id}`}
-                          className='hidden'
-                          onChange={(e) => setSelectedFiles(e.target.files)}
-                        />
-                        <Button 
-                          variant='outline' 
-                          size='sm'
-                          onClick={() => document.getElementById(`file-upload-dialog-${dispute._id}`)?.click()}
-                          className='rounded-xl w-full text-xs font-semibold h-9'
-                          disabled={uploading}
-                        >
-                          <UploadCloud className='w-4 h-4 mr-2 text-muted-foreground' />
-                          Chọn hình ảnh tệp tin
-                        </Button>
-                        <Button 
-                          size='sm'
-                          onClick={() => handleCounterProofSubmit(dispute._id)}
-                          className='bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl w-full text-xs font-semibold h-9 transition-colors'
-                          disabled={uploading || !selectedFiles}
-                        >
-                          {uploading ? <Loader2 className='w-4 h-4 mr-2 animate-spin' /> : <CheckCircle2 className='w-4 h-4 mr-2' />}
-                          Gửi ảnh đối chất phản biện
-                        </Button>
+                    dispute.ownerEvidence && dispute.ownerEvidence.length > 0 && !isEditing ? (
+                      <div className='space-y-4'>
+                        <h4 className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2'>Ảnh phản biện hiện tại</h4>
+                        <div className='flex flex-col items-center gap-3 w-full'>
+                          {dispute.ownerEvidence.map((url: string, index: number) => (
+                            <div key={index} className='relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-muted/20 group hover:shadow-md hover:border-primary/20 transition-all duration-300'>
+                              <a 
+                                href={url} 
+                                target='_blank' 
+                                rel='noreferrer' 
+                                className='w-full h-full block'
+                              >
+                                <img 
+                                  src={url} 
+                                  alt='Owner evidence' 
+                                  className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-300' 
+                                />
+                                <div className='absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300'>
+                                  <span className='text-white text-[10px] font-bold px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm flex items-center gap-1 scale-90 group-hover:scale-100 transition-transform duration-300'>
+                                    <Eye className='w-3 h-3' /> Xem ảnh lớn
+                                  </span>
+                                </div>
+                              </a>
+                              {index === 0 && (
+                                <div className='absolute top-3 right-3 z-20'>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant='secondary'
+                                          size='icon'
+                                          onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            setIsEditing(true)
+                                          }}
+                                          className='size-8 rounded-full shadow-lg  transition-all duration-300  backdrop-blur-sm '
+                                        >
+                                          <Pencil className='size-4' />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left" className='z-50'>
+                                        <p>Chỉnh sửa bằng chứng đối chất</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      {selectedFiles && selectedFiles.length > 0 && (
-                        <p className='text-xs text-indigo-600 font-semibold text-center mt-1'>
-                          Đã chọn {selectedFiles.length} ảnh
+                    ) : (
+                      <div className='space-y-3'>
+                        <p className='text-xs text-muted-foreground leading-normal font-medium'>
+                          Hãy tải lên ảnh chụp màn hình chứng minh bạn đã cấp quyền sử dụng dịch vụ cho member này để đối chất thành công.
                         </p>
-                      )}
-                    </div>
+                        <div className='flex flex-col gap-2'>
+                          <input
+                            type='file'
+                            multiple
+                            accept='image/*'
+                            id={`file-upload-dialog-${dispute._id}`}
+                            className='hidden'
+                            onChange={(e) => setSelectedFiles(e.target.files)}
+                          />
+                          <Button 
+                            variant='outline' 
+                            size='sm'
+                            onClick={() => document.getElementById(`file-upload-dialog-${dispute._id}`)?.click()}
+                            className='rounded-xl w-full text-xs font-semibold h-9'
+                            disabled={uploading}
+                          >
+                            <UploadCloud className='w-4 h-4 mr-2 text-muted-foreground' />
+                            Chọn hình ảnh tệp tin
+                          </Button>
+                          <Button 
+                            size='sm'
+                            onClick={() => handleCounterProofSubmit(dispute._id)}
+                            className='bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl w-full text-xs font-semibold h-9 transition-colors'
+                            disabled={uploading || !selectedFiles}
+                          >
+                            {uploading ? <Loader2 className='w-4 h-4 mr-2 animate-spin' /> : <CheckCircle2 className='w-4 h-4 mr-2' />}
+                            Gửi ảnh đối chất phản biện
+                          </Button>
+                          {dispute.ownerEvidence && dispute.ownerEvidence.length > 0 && (
+                            <Button 
+                              variant='ghost' 
+                              size='sm'
+                              onClick={() => {
+                                setIsEditing(false)
+                                setSelectedFiles(null)
+                              }}
+                              className='rounded-xl w-full text-xs font-semibold h-9 transition-colors text-muted-foreground hover:bg-muted'
+                              disabled={uploading}
+                            >
+                              Hủy chỉnh sửa
+                            </Button>
+                          )}
+                        </div>
+                        {selectedFiles && selectedFiles.length > 0 && (
+                          <p className='text-xs text-indigo-600 font-semibold text-center mt-1'>
+                            Đã chọn {selectedFiles.length} ảnh
+                          </p>
+                        )}
+                      </div>
+                    )
                   ) : (
                     <div>
                       <h4 className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2'>Ảnh phản biện từ chủ nhóm</h4>
