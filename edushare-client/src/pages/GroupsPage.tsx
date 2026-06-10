@@ -37,7 +37,7 @@ export default function GroupsPage() {
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const itemPerPage = 10
+  const itemPerPage = 9
   
   const { user } = useAuth();
   const navigate = useNavigate();
