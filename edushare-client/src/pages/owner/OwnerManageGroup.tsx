@@ -90,7 +90,7 @@ export default function OwnerManageGroup() {
       description="Theo dõi trạng thái nhóm, tiến độ slot và thực hiện hành động nhanh."
     >
       <div className="space-y-8 ">
-        <div className="rounded-3xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/40">
+        <div className="rounded-xl border border-sky-100/80  p-6 shadow-sm shadow-sky-100/40">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-medium text-emerald-600">Manage Group</p>
@@ -106,7 +106,7 @@ export default function OwnerManageGroup() {
           </div>
         </div>
 
-        <Card className="rounded-3xl border-slate-200/70  shadow-sm shadow-sky-100/30">
+        <Card className="rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30">
           <CardContent className="p-4 md:p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               <div className="relative w-full md:max-w-md">
@@ -186,7 +186,7 @@ export default function OwnerManageGroup() {
                         Manage Members
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="min-w-[90vw] rounded-3xl">
+                    <DialogContent className="min-w-[90vw] rounded-xl">
                       <DialogHeader>
                         <DialogTitle className="text-2xl">Manage Members - {selectedGroup.name}</DialogTitle>
                         <DialogDescription>

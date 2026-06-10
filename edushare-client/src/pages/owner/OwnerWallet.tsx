@@ -36,28 +36,28 @@ export default function OwnerWallet() {
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-3xl border-slate-200  shadow-sm">
+          <Card className="rounded-xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
               <p className="text-sm ">Số dư khả dụng</p>
               <p className="mt-2 text-3xl font-semibold ">$120.50</p>
               <Badge className="mt-3 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Đang hoạt động</Badge>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200  shadow-sm">
+          <Card className="rounded-xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
               <p className="text-sm ">Tiền đang giữ</p>
               <p className="mt-2 text-3xl font-semibold ">$48.00</p>
               <p className="mt-3 text-sm ">Đang chờ hoàn tất giao dịch</p>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200  shadow-sm">
+          <Card className="rounded-xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
               <p className="text-sm ">Yêu cầu rút tiền</p>
               <p className="mt-2 text-3xl font-semibold ">2</p>
               <p className="mt-3 text-sm ">Đang chờ duyệt</p>
             </CardContent>
           </Card>
-          <Card className="rounded-3xl border-slate-200  shadow-sm">
+          <Card className="rounded-xl border-slate-200  shadow-sm">
             <CardContent className="p-5">
               <p className="text-sm ">Tổng giao dịch</p>
               <p className="mt-2 text-3xl font-semibold ">18</p>
@@ -66,7 +66,7 @@ export default function OwnerWallet() {
           </Card>
         </div>
 
-        <Card className="rounded-3xl border-slate-200  shadow-sm">
+        <Card className="rounded-xl border-slate-200  shadow-sm">
           <CardHeader>
             <CardTitle>Trạng thái escrow</CardTitle>
             <CardDescription>Toàn bộ trạng thái tiền được giữ an toàn trong hệ thống.</CardDescription>
@@ -85,7 +85,7 @@ export default function OwnerWallet() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-slate-200  shadow-sm">
+        <Card className="rounded-xl border-slate-200  shadow-sm">
           <CardHeader>
             <CardTitle>Hành động nhanh</CardTitle>
             <CardDescription>Thao tác nhanh với ví và giao dịch.</CardDescription>
@@ -95,7 +95,7 @@ export default function OwnerWallet() {
               <DialogTrigger asChild>
                 <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Nạp thêm</Button>
               </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[560px]">
+              <DialogContent className="rounded-xl sm:max-w-[560px]">
                 <DialogHeader>
                   <DialogTitle>Nạp tiền vào ví</DialogTitle>
                   <DialogDescription>
@@ -172,7 +172,7 @@ export default function OwnerWallet() {
                   </TabsContent>
 
                   <TabsContent value="qr" className="space-y-4">
-                    <div className="rounded-3xl border border-dashed border-slate-200  p-6 text-center">
+                    <div className="rounded-xl border border-dashed border-slate-200  p-6 text-center">
                       <div className="mx-auto flex size-14 items-center justify-center rounded-full  shadow-sm ring-1 ring-slate-200">
                         <CircleDollarSign className="size-6 text-indigo-500" />
                       </div>
@@ -200,7 +200,7 @@ export default function OwnerWallet() {
               <DialogTrigger asChild>
                 <Button variant="outline">Xem lịch sử</Button>
               </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[720px]">
+              <DialogContent className="rounded-xl sm:max-w-[720px]">
                 <DialogHeader>
                   <DialogTitle>Lịch sử giao dịch</DialogTitle>
                   <DialogDescription>
@@ -237,7 +237,7 @@ export default function OwnerWallet() {
               <DialogTrigger asChild>
                 <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Yêu cầu rút</Button>
               </DialogTrigger>
-              <DialogContent className="rounded-3xl sm:max-w-[560px]">
+              <DialogContent className="rounded-xl sm:max-w-[560px]">
                 <DialogHeader>
                   <DialogTitle>Rút tiền</DialogTitle>
                   <DialogDescription>
