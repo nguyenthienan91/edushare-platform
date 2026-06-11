@@ -1,6 +1,7 @@
 import { ArrowUpRight, CalendarDays, ShieldAlert, Users, Wallet, Zap } from 'lucide-react'
 import { addDays } from 'date-fns'
 import * as React from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { DateRange } from 'react-day-picker'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Badge } from '@/components/ui/badge'
@@ -13,38 +14,48 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useMemo } from 'react'
+import { DashboardService, type AdminDashboardStats } from '@/services/dashboard.service'
 
-const stats = [
-  {
-    label: 'Tổng số người dùng',
-    value: '1,284',
-    note: '+18% trong 30 ngày',
-    icon: Users,
-    tone: 'bg-sky-100 text-sky-600'
-  },
-  {
-    label: 'Nhóm đang hoạt động',
-    value: '86',
-    note: '32 nhóm vừa được tạo',
-    icon: Zap,
-    tone: 'bg-emerald-100 text-emerald-600'
-  },
-  {
-    label: 'Doanh thu hệ thống',
-    value: '$42,900',
-    note: 'Tăng trưởng ổn định',
-    icon: Wallet,
-    tone: 'bg-violet-100 text-violet-600'
-  },
-  {
-    label: 'Khiếu nại đang chờ',
-    value: '14',
-    note: 'Cần xử lý trong hôm nay',
-    icon: ShieldAlert,
-    tone: 'bg-amber-100 text-amber-700'
-  }
-]
+function formatCurrency(amount: number): string {
+  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k`
+  return amount.toLocaleString('vi-VN')
+}
+
+function buildStats(data: AdminDashboardStats) {
+  const totalRevenue = data.totalVipRevenue + data.totalTopupAmount
+  return [
+    {
+      label: 'Tổng số người dùng',
+      value: data.totalUsers.toLocaleString('vi-VN'),
+      note: `${data.totalActiveGroups} nhóm đang hoạt động`,
+      icon: Users,
+      tone: 'bg-sky-100 text-sky-600'
+    },
+    {
+      label: 'Nhóm đang hoạt động',
+      value: data.totalActiveGroups.toLocaleString('vi-VN'),
+      note: `Tổng ${data.totalTransactions.toLocaleString('vi-VN')} giao dịch`,
+      icon: Zap,
+      tone: 'bg-emerald-100 text-emerald-600'
+    },
+    {
+      label: 'Doanh thu hệ thống',
+      value: formatCurrency(totalRevenue) + ' đ',
+      note: `Topup: ${formatCurrency(data.totalTopupAmount)}đ · VIP: ${formatCurrency(data.totalVipRevenue)}đ`,
+      icon: Wallet,
+      tone: 'bg-violet-100 text-violet-600'
+    },
+    {
+      label: 'Tổng rút đã duyệt',
+      value: formatCurrency(data.totalApprovedWithdrawalAmount) + ' đ',
+      note: `Tổng ${data.totalTransactions.toLocaleString('vi-VN')} giao dịch`,
+      icon: ShieldAlert,
+      tone: 'bg-amber-100 text-amber-700'
+    },
+  ]
+}
 
 const chartData = [
   { name: 'T2', value: 24 },
@@ -76,6 +87,20 @@ export default function AdminDashboard() {
     to: addDays(new Date(new Date().getFullYear(), 0, 12), 30),
   })
   const [dateFilterMode, setDateFilterMode] = React.useState<'day' | 'month' | 'year'>('day')
+  const [statsData, setStatsData] = useState<AdminDashboardStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
+
+  useEffect(() => {
+    DashboardService.getAdminStats()
+      .then((res) => setStatsData(res.data))
+      .catch(console.error)
+      .finally(() => setStatsLoading(false))
+  }, [])
+
+  const stats = useMemo(
+    () => (statsData ? buildStats(statsData) : []),
+    [statsData],
+  )
 
   const rangeLabel = useMemo(() => {
     switch (dateFilterMode) {
@@ -105,28 +130,43 @@ export default function AdminDashboard() {
       </Card>
 
       <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'>
-        {stats.map((item) => {
-          const Icon = item.icon
-          return (
-            <Card key={item.label} className='rounded-xl border-slate-200/70  shadow-sm shadow-sky-100/30'>
-              <CardContent className='p-5'>
-                <div className='flex items-start justify-between gap-4'>
-                  <div className='space-y-3'>
-                    <div className={`flex size-11 items-center justify-center rounded-2xl ${item.tone}`}>
-                      <Icon className='size-5' />
-                    </div>
-                    <div>
-                      <p className='text-sm '>{item.label}</p>
-                      <p className='mt-1 text-3xl font-semibold tracking-tight '>{item.value}</p>
-                      <p className='mt-1 text-xs '>{item.note}</p>
+        {statsLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className='rounded-xl border-slate-200/70 shadow-sm shadow-sky-100/30'>
+                <CardContent className='p-5'>
+                  <div className='space-y-3 animate-pulse'>
+                    <div className='size-11 rounded-2xl bg-slate-100' />
+                    <div className='space-y-2'>
+                      <div className='h-3 w-28 rounded bg-slate-100' />
+                      <div className='h-8 w-20 rounded bg-slate-100' />
+                      <div className='h-3 w-36 rounded bg-slate-100' />
                     </div>
                   </div>
-                  <ArrowUpRight className='size-4 text-slate-300' />
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+                </CardContent>
+              </Card>
+            ))
+          : stats.map((item) => {
+              const Icon = item.icon
+              return (
+                <Card key={item.label} className='rounded-xl border-slate-200/70 shadow-sm shadow-sky-100/30'>
+                  <CardContent className='p-5'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div className='space-y-3'>
+                        <div className={`flex size-11 items-center justify-center rounded-2xl ${item.tone}`}>
+                          <Icon className='size-5' />
+                        </div>
+                        <div>
+                          <p className='text-sm '>{item.label}</p>
+                          <p className='mt-1 text-3xl font-semibold tracking-tight '>{item.value}</p>
+                          <p className='mt-1 text-xs '>{item.note}</p>
+                        </div>
+                      </div>
+                      <ArrowUpRight className='size-4 text-slate-300' />
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
       </div>
 
       <Card>
