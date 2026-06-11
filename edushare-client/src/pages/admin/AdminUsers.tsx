@@ -244,10 +244,10 @@ export default function AdminUsers() {
     if (!banTarget) return
     setBanLoading(true)
     try {
-      const updated = await DashboardService.updateUser(banTarget._id, {
-        isActive: !banTarget.isActive,
-      })
-      setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)))
+      const res = banTarget.isActive
+        ? await DashboardService.banUser(banTarget._id)
+        : await DashboardService.unbanUser(banTarget._id)
+      setUsers((prev) => prev.map((u) => (u._id === res.data._id ? res.data : u)))
       setBanOpen(false)
     } catch {
       // toast nếu có

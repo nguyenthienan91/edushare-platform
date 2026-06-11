@@ -90,4 +90,18 @@ export const DashboardService = {
       requireAuth: true,
     })
   },
+
+  banUser: async (id: string): Promise<{ message: string; data: AdminUser }> => {
+    return fetchClient(`/admin/users/${id}/ban`, {
+      method: 'PATCH',
+      requireAuth: true,
+    })
+  },
+
+  unbanUser: async (id: string): Promise<{ message: string; data: AdminUser }> => {
+    return fetchClient(`/admin/users/${id}/unban`, {
+      method: 'PATCH',
+      requireAuth: true,
+    })
+  },
 }
