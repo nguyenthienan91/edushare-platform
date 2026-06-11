@@ -68,4 +68,26 @@ export const DashboardService = {
       requireAuth: true,
     })
   },
+
+  getUserById: async (id: string): Promise<AdminUser> => {
+    return fetchClient(`/users/${id}`, {
+      method: 'GET',
+      requireAuth: true,
+    })
+  },
+
+  updateUser: async (id: string, data: Partial<Pick<AdminUser, 'isActive' | 'role' | 'isSubscriptionActive'> & { trustScore: number }>): Promise<AdminUser> => {
+    return fetchClient(`/users/${id}`, {
+      method: 'PATCH',
+      requireAuth: true,
+      body: JSON.stringify(data),
+    })
+  },
+
+  deleteUser: async (id: string): Promise<void> => {
+    return fetchClient(`/users/${id}`, {
+      method: 'DELETE',
+      requireAuth: true,
+    })
+  },
 }
