@@ -14,6 +14,23 @@ export interface CommunityHealthChartPoint {
   value: number
 }
 
+export interface AdminUser {
+  _id: string
+  displayName: string
+  email: string
+  role: 'guest' | 'member' | 'admin'
+  avatar?: string
+  isActive: boolean
+  isSubscriptionActive: boolean
+  createdAt: string
+}
+
+export interface UserListResponse {
+  list: AdminUser[]
+  totalPages: number
+  totalItems: number
+}
+
 export const DashboardService = {
   getAdminStats: async (): Promise<{ status: string; data: AdminDashboardStats }> => {
     return fetchClient('/admin/dashboard/stats', {
@@ -31,6 +48,22 @@ export const DashboardService = {
     if (from) params.append('from', from.toISOString())
     if (to) params.append('to', to.toISOString())
     return fetchClient(`/admin/dashboard/chart/community-health?${params.toString()}`, {
+      method: 'GET',
+      requireAuth: true,
+    })
+  },
+  getUsers: async (params: {
+    page?: number
+    itemPerPage?: number
+    search?: string
+    role?: 'guest' | 'member' | 'admin'
+  }): Promise<UserListResponse> => {
+    const query = new URLSearchParams()
+    if (params.page) query.append('page', String(params.page))
+    if (params.itemPerPage) query.append('itemPerPage', String(params.itemPerPage))
+    if (params.search) query.append('search', params.search)
+    if (params.role) query.append('role', params.role)
+    return fetchClient(`/users?${query.toString()}`, {
       method: 'GET',
       requireAuth: true,
     })
