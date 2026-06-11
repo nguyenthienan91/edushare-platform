@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserService } from '@/services/user.service'
+import { GroupService } from '@/services/group.service'
 import {
   ArrowRight,
   BadgeCheck,
@@ -41,11 +42,7 @@ const FEATURE_CARDS = [
   { title: 'Hỗ trợ nhanh', desc: 'Trường hợp có vấn đề sẽ được theo dõi theo đơn và xử lý đúng quy trình.' },
 ]
 
-const GROUPS = [
-  { name: 'Cursor Pro 6000 request - 30 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '180.000 đ', description: 'Gói Cursor Pro 30 ngày, có 6000 request trong 30 ngày.' },
-  { name: 'Cursor Pro 1200 request - 7 ngày', tag: 'Hết hàng', category: 'Cursor', rating: 4.9, price: '250.000 đ', description: 'Gói Cursor Pro 7 ngày, có 1200 request trong 7 ngày.' },
-  { name: 'Cursor Pro 200 request/ngày - 30 ngày', tag: 'Sắp hết hàng', category: 'Cursor', rating: 4.9, price: '370.000 đ', description: 'Gói Cursor Pro 30 ngày, mỗi ngày 200 request.' },
-]
+
 
 const BENEFITS = [
   { icon: ShieldCheck, text: 'Thanh toán an toàn' },
@@ -77,9 +74,26 @@ const FAQS = [
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [featuredGroups, setFeaturedGroups] = useState<any[]>([])
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true)
   
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchFeaturedGroups = async () => {
+      try {
+        const res: any = await GroupService.getGroups({ page: 1, itemPerPage: 3 })
+        const groupsData = res?.list || res?.data || []
+        setFeaturedGroups(groupsData)
+      } catch (error) {
+        console.error('Failed to fetch featured groups', error)
+      } finally {
+        setIsLoadingGroups(false)
+      }
+    }
+    fetchFeaturedGroups()
+  }, [])
 
   const handleUpgradeVip = async () => {
     if (!isAuthenticated) {
@@ -259,54 +273,69 @@ export default function LandingPage() {
         <section id="groups" className="mt-16">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Cursor</h2>
+              <h2 className="text-3xl font-bold tracking-tight">Nhóm nổi bật</h2>
               <p className="mt-2 text-muted-foreground">Các nhóm đang chờ ghép, giá rõ ràng, slot minh bạch.</p>
             </div>
-            <Button variant="ghost" className="rounded-full">
-              Xem tất cả <ArrowRight className="ml-2 h-4 w-4" />
+            <Button variant="ghost" className="rounded-full" asChild>
+              <Link to="/groups">
+                Xem tất cả <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {GROUPS.map((group) => (
-              <Card key={group.name} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <Badge variant={group.tag === 'Còn slot' ? 'default' : 'secondary'} className="rounded-full px-3 py-1 text-xs">
-                      {group.tag}
-                    </Badge>
-                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                      {group.category}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">
-                      E
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="truncate text-base font-semibold leading-6">{group.name}</h3>
-                      <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {group.rating}
+          {isLoadingGroups ? (
+            <div className="flex items-center justify-center p-16">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : featuredGroups.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              {featuredGroups.map((group) => {
+                const isFull = group.occupiedSlots >= group.totalSlots;
+                const tag = isFull ? 'Hết chỗ' : 'Còn slot';
+                const price = new Intl.NumberFormat('vi-VN').format(group.price || 0) + ' đ';
+                return (
+                  <Card key={group._id} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <Badge variant={isFull ? 'secondary' : 'default'} className={`rounded-full px-3 py-1 text-xs ${!isFull && 'bg-emerald-500 hover:bg-emerald-600'}`}>
+                          {tag}
+                        </Badge>
+                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                          {group.category || 'Productivity'}
+                        </span>
                       </div>
-                    </div>
-                  </div>
 
-                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">{group.description}</p>
+                      <div className="mt-4 flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">
+                          E
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate text-base font-semibold leading-6">{group.name || group.platform || 'Chưa cập nhật'}</h3>
+                          <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {group.ownerId?.trustScore?.toFixed(1) || '5.0'}
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Giá</p>
-                      <div className="text-lg font-bold">{group.price}</div>
-                    </div>
-                    <Button size="sm" className="rounded-full bg-slate-900 text-white hover:bg-slate-800">
-                      Xem
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">{group.description || 'Không có mô tả.'}</p>
+
+                      <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Giá</p>
+                          <div className="text-lg font-bold">{price}</div>
+                        </div>
+                        <Button size="sm" className="rounded-full bg-slate-900 text-white hover:bg-slate-800" asChild>
+                          <Link to="/groups">Xem</Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">Chưa có nhóm nào.</div>
+          )}
         </section>
 
         <section className="mt-16 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
