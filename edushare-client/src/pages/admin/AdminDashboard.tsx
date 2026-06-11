@@ -81,10 +81,10 @@ function buildStats(data: AdminDashboardStats) {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const topServices = [
-  { name: 'Netflix', tone: 'bg-rose-100 text-rose-700' },
+  { name: 'Microsoft Family', tone: 'bg-rose-100 text-rose-700' },
   { name: 'Spotify', tone: 'bg-emerald-100 text-emerald-700' },
   { name: 'Youtube Premium', tone: 'bg-sky-100 text-sky-700' },
-  { name: 'Disney+', tone: 'bg-violet-100 text-violet-700' },
+  { name: 'Drive Family', tone: 'bg-violet-100 text-violet-700' },
 ]
 
 const dateTabs = [
