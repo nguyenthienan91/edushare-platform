@@ -1,5 +1,13 @@
-import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, HandCoins, CreditCard, Percent, Loader2, RefreshCw } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  TrendingUp,
+  TrendingDown,
+  HandCoins,
+  CreditCard,
+  Percent,
+  Loader2,
+  RefreshCw,
+} from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   BarChart,
@@ -9,85 +17,104 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
   PieChart,
   Pie,
   Cell,
 } from 'recharts'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DashboardService, type RevenueSummary } from '@/services/dashboard.service'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DashboardService, type RevenueSummary, type RevenueChartPoint } from '@/services/dashboard.service'
 
-// ─── Mock chart data (static, giữ nguyên) ────────────────────────────────────
-const monthlyData = [
-  { name: 'Tháng 1', revenue: 4000, profit: 800 },
-  { name: 'Tháng 2', revenue: 4500, profit: 900 },
-  { name: 'Tháng 3', revenue: 5200, profit: 1040 },
-  { name: 'Tháng 4', revenue: 6100, profit: 1220 },
-  { name: 'Tháng 5', revenue: 8000, profit: 1600 },
-  { name: 'Tháng 6', revenue: 9500, profit: 1900 },
-]
-
+// ─── Static pie chart data ────────────────────────────────────────────────────
 const servicesData = [
   { name: 'Nạp tiền', value: 55, color: '#0284c7' },
   { name: 'VIP', value: 30, color: '#7c3aed' },
   { name: 'Khác', value: 15, color: '#64748b' },
 ]
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// ─── Period options ───────────────────────────────────────────────────────────
+type Period = 'day' | 'week' | 'month' | 'year'
+const PERIOD_TABS: { value: Period; label: string }[] = [
+  { value: 'day', label: '7 ngày' },
+  { value: 'week', label: '7 tuần' },
+  { value: 'month', label: '12 tháng' },
+  { value: 'year', label: '5 năm' },
+]
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatVND = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 
-const formatChartVND = (value: number) => {
+const formatAxisVND = (value: number) => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`
   return String(value)
 }
 
+const formatTooltipVND = (value: number) => formatVND(value)
+
 function GrowthLabel({ growthPercent }: { growthPercent: number | null }) {
-  if (growthPercent === null) {
+  if (growthPercent === null)
     return <p className='mt-1 text-xs text-slate-400'>Không có dữ liệu tháng trước</p>
-  }
   const isUp = growthPercent >= 0
   return (
-    <p
-      className={`flex items-center mt-1 text-sm font-medium ${isUp ? 'text-emerald-600' : 'text-rose-500'}`}
-    >
+    <p className={`flex items-center mt-1 text-sm font-medium ${isUp ? 'text-emerald-600' : 'text-rose-500'}`}>
       {isUp ? <TrendingUp className='h-4 w-4 mr-1' /> : <TrendingDown className='h-4 w-4 mr-1' />}
-      {isUp ? '+' : ''}
-      {growthPercent}% so với tháng trước
+      {isUp ? '+' : ''}{growthPercent}% so với tháng trước
     </p>
   )
 }
 
-// ─── component ───────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminRevenue() {
+  // ── summary cards state ────────────────────────────────────────────────────
   const [summary, setSummary] = useState<RevenueSummary | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(true)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
 
+  // ── revenue chart state ────────────────────────────────────────────────────
+  const [chartPeriod, setChartPeriod] = useState<Period>('month')
+  const [chartData, setChartData] = useState<RevenueChartPoint[]>([])
+  const [chartLoading, setChartLoading] = useState(true)
+  const [chartError, setChartError] = useState<string | null>(null)
+
+  // ── fetch summary ──────────────────────────────────────────────────────────
   const fetchSummary = async () => {
-    setLoading(true)
-    setError(null)
+    setSummaryLoading(true)
+    setSummaryError(null)
     try {
       const res = await DashboardService.getRevenueSummary()
       setSummary(res.data)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu')
+      setSummaryError(err instanceof Error ? err.message : 'Không thể tải dữ liệu')
     } finally {
-      setLoading(false)
+      setSummaryLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchSummary()
-  }, [])
+  // ── fetch chart ────────────────────────────────────────────────────────────
+  const fetchChart = useCallback(async () => {
+    setChartLoading(true)
+    setChartError(null)
+    try {
+      const res = await DashboardService.getRevenueChart(chartPeriod)
+      setChartData(res.data ?? [])
+    } catch (err: unknown) {
+      setChartError(err instanceof Error ? err.message : 'Không thể tải biểu đồ')
+    } finally {
+      setChartLoading(false)
+    }
+  }, [chartPeriod])
 
-  // ─── render summary cards ─────────────────────────────────────────────────
+  useEffect(() => { fetchSummary() }, [])
+  useEffect(() => { fetchChart() }, [fetchChart])
 
+  // ─── render summary cards ──────────────────────────────────────────────────
   const renderSummaryCards = () => {
-    if (loading) {
+    if (summaryLoading) {
       return (
         <div className='grid gap-4 md:grid-cols-3'>
           {[0, 1, 2].map((i) => (
@@ -101,16 +128,11 @@ export default function AdminRevenue() {
       )
     }
 
-    if (error || !summary) {
+    if (summaryError || !summary) {
       return (
         <div className='rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-6 text-center text-rose-500'>
-          <p className='text-sm font-medium'>{error ?? 'Không thể tải dữ liệu'}</p>
-          <Button
-            variant='outline'
-            size='sm'
-            className='mt-3 text-rose-600 border-rose-200'
-            onClick={fetchSummary}
-          >
+          <p className='text-sm font-medium'>{summaryError ?? 'Không thể tải dữ liệu'}</p>
+          <Button variant='outline' size='sm' className='mt-3 text-rose-600 border-rose-200' onClick={fetchSummary}>
             Thử lại
           </Button>
         </div>
@@ -119,7 +141,6 @@ export default function AdminRevenue() {
 
     return (
       <div className='grid gap-4 md:grid-cols-3'>
-        {/* Card 1 — Tổng phí thu được */}
         <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
@@ -135,7 +156,6 @@ export default function AdminRevenue() {
           </CardContent>
         </Card>
 
-        {/* Card 2 — Tổng giao dịch trên sàn */}
         <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
@@ -151,7 +171,6 @@ export default function AdminRevenue() {
           </CardContent>
         </Card>
 
-        {/* Card 3 — Tỉ lệ giữ chân */}
         <Card>
           <CardContent className='p-6'>
             <div className='flex items-center justify-between'>
@@ -173,12 +192,87 @@ export default function AdminRevenue() {
     )
   }
 
+  // ─── render bar chart ──────────────────────────────────────────────────────
+  const renderBarChart = () => {
+    if (chartLoading) {
+      return (
+        <div className='h-80 flex items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin text-sky-400' />
+        </div>
+      )
+    }
+
+    if (chartError) {
+      return (
+        <div className='h-80 flex flex-col items-center justify-center text-rose-500 gap-3'>
+          <p className='text-sm font-medium'>{chartError}</p>
+          <Button variant='outline' size='sm' className='text-rose-600 border-rose-200' onClick={fetchChart}>
+            Thử lại
+          </Button>
+        </div>
+      )
+    }
+
+    if (chartData.length === 0) {
+      return (
+        <div className='h-80 flex items-center justify-center text-slate-400 text-sm'>
+          Không có dữ liệu trong khoảng thời gian này.
+        </div>
+      )
+    }
+
+    return (
+      <div className='h-80 w-full'>
+        <ResponsiveContainer width='100%' height='100%'>
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='#e2e8f0' />
+            <XAxis
+              dataKey='label'
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={formatAxisVND}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+              width={60}
+            />
+            <Tooltip
+              cursor={{ fill: '#f8fafc' }}
+              contentStyle={{
+                borderRadius: '16px',
+                border: 'none',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              }}
+              formatter={(value: number, name: string) => [
+                formatTooltipVND(value),
+                name === 'topup' ? 'Nạp tiền' : name === 'vip' ? 'VIP' : 'Tổng',
+              ]}
+            />
+            <Legend
+              iconType='circle'
+              wrapperStyle={{ paddingTop: '20px', fontSize: '13px' }}
+              formatter={(value) =>
+                value === 'topup' ? 'Nạp tiền' : value === 'vip' ? 'VIP' : 'Tổng'
+              }
+            />
+            <Bar dataKey='topup' name='topup' fill='#bae6fd' radius={[6, 6, 0, 0]} barSize={20} stackId='a' />
+            <Bar dataKey='vip' name='vip' fill='#7c3aed' radius={[6, 6, 0, 0]} barSize={20} stackId='a' />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    )
+  }
+
+  // ─── main render ──────────────────────────────────────────────────────────
   return (
     <div className='space-y-6'>
       {/* Header */}
       <Card>
         <CardContent className='pt-6'>
-          <div className='flex items-start justify-between'>
+          <div className='flex items-start justify-between gap-4'>
             <div>
               <Badge className='rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-100'>
                 Thống kê tài chính
@@ -192,10 +286,10 @@ export default function AdminRevenue() {
               variant='outline'
               size='sm'
               className='rounded-xl shrink-0'
-              onClick={fetchSummary}
-              disabled={loading}
+              onClick={() => { fetchSummary(); fetchChart() }}
+              disabled={summaryLoading || chartLoading}
             >
-              {loading ? (
+              {(summaryLoading || chartLoading) ? (
                 <Loader2 className='h-3.5 w-3.5 animate-spin' />
               ) : (
                 <RefreshCw className='h-3.5 w-3.5' />
@@ -206,51 +300,45 @@ export default function AdminRevenue() {
         </CardContent>
       </Card>
 
-      {/* Summary Cards — API data */}
+      {/* Summary Cards */}
       {renderSummaryCards()}
 
-      {/* Charts — static mock */}
+      {/* Charts */}
       <div className='grid gap-4 lg:grid-cols-3'>
-        {/* Bar Chart */}
+        {/* Bar Chart — Real API */}
         <Card className='lg:col-span-2'>
           <CardHeader>
-            <CardTitle className='text-lg'>Tốc độ tăng trưởng</CardTitle>
-            <CardDescription>So sánh Khối lượng giao dịch và Lợi nhuận phí nền tảng trong 6 tháng</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='h-80 w-full'>
-              <ResponsiveContainer width='100%' height='100%'>
-                <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='#e2e8f0' />
-                  <XAxis dataKey='name' axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={formatChartVND}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
-                  />
-                  <Tooltip
-                    cursor={{ fill: '#f8fafc' }}
-                    contentStyle={{
-                      borderRadius: '16px',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                    }}
-                    formatter={(value: number) => [formatChartVND(value)]}
-                  />
-                  <Bar dataKey='revenue' name='Tổng giao dịch' fill='#bae6fd' radius={[6, 6, 6, 6]} barSize={24} />
-                  <Bar dataKey='profit' name='Phí thu được' fill='#0284c7' radius={[6, 6, 6, 6]} barSize={24} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className='flex items-center justify-between gap-4 flex-wrap'>
+              <div>
+                <CardTitle className='text-lg'>Tốc độ tăng trưởng doanh thu</CardTitle>
+                <CardDescription className='mt-1'>
+                  So sánh doanh thu nạp tiền và VIP theo từng kỳ
+                </CardDescription>
+              </div>
+              {/* Period selector */}
+              <Tabs value={chartPeriod} onValueChange={(v) => setChartPeriod(v as Period)}>
+                <TabsList className='h-8 gap-0.5 p-0.5 rounded-xl border border-slate-200'>
+                  {PERIOD_TABS.map((t) => (
+                    <TabsTrigger
+                      key={t.value}
+                      value={t.value}
+                      className='h-7 px-3 text-xs rounded-lg data-[state=active]:bg-sky-600 data-[state=active]:text-white'
+                    >
+                      {t.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
-          </CardContent>
+          </CardHeader>
+          <CardContent>{renderBarChart()}</CardContent>
         </Card>
 
-        {/* Pie Chart */}
+        {/* Pie Chart — Static */}
         <Card>
           <CardHeader>
             <CardTitle className='text-lg'>Tỷ trọng Dịch vụ</CardTitle>
-            <CardDescription>Đóng góp doanh thu của các nguồn tháng này</CardDescription>
+            <CardDescription>Đóng góp doanh thu của các nguồn</CardDescription>
           </CardHeader>
           <CardContent className='flex flex-col items-center justify-center'>
             <div className='h-60 w-full'>

@@ -110,6 +110,13 @@ export interface WithdrawalListResponse {
   currentPage: number
 }
 
+export interface RevenueChartPoint {
+  label: string
+  topup: number
+  vip: number
+  total: number
+}
+
 export interface RevenueSummary {
   feeThisMonth: {
     total: number
@@ -136,6 +143,20 @@ export const DashboardService = {
 
   getRevenueSummary: async (): Promise<{ status: string; data: RevenueSummary }> => {
     return fetchClient('/admin/dashboard/revenue-summary', {
+      method: 'GET',
+      requireAuth: true,
+    })
+  },
+
+  getRevenueChart: async (
+    period: 'day' | 'week' | 'month' | 'year' = 'month',
+    from?: Date,
+    to?: Date,
+  ): Promise<{ status: string; data: RevenueChartPoint[] }> => {
+    const params = new URLSearchParams({ period })
+    if (from) params.append('from', from.toISOString())
+    if (to) params.append('to', to.toISOString())
+    return fetchClient(`/admin/dashboard/chart/revenue?${params.toString()}`, {
       method: 'GET',
       requireAuth: true,
     })
