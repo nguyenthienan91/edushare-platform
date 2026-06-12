@@ -83,6 +83,33 @@ export interface UserListResponse {
   totalItems: number
 }
 
+export type WithdrawalStatus = 'pending' | 'approved' | 'rejected'
+
+export interface AdminWithdrawal {
+  id: string
+  amount: number
+  status: WithdrawalStatus
+  bankName: string
+  accountNumber: string
+  accountName: string
+  rejectReason?: string
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    displayName: string
+    email: string
+    avatar?: string
+  } | null
+}
+
+export interface WithdrawalListResponse {
+  list: AdminWithdrawal[]
+  totalPages: number
+  totalItems: number
+  currentPage: number
+}
+
 export const DashboardService = {
   getAdminStats: async (): Promise<{ status: string; data: AdminDashboardStats }> => {
     return fetchClient('/admin/dashboard/stats', {
@@ -196,6 +223,32 @@ export const DashboardService = {
     return fetchClient(`/admin/groups/${id}/status/restore`, {
       method: 'PATCH',
       requireAuth: true,
+    })
+  },
+
+  getAdminWithdrawals: async (params?: {
+    status?: WithdrawalStatus
+    page?: number
+    itemPerPage?: number
+  }): Promise<WithdrawalListResponse> => {
+    const query = new URLSearchParams()
+    if (params?.status) query.append('status', params.status)
+    if (params?.page) query.append('page', String(params.page))
+    if (params?.itemPerPage) query.append('itemPerPage', String(params.itemPerPage))
+    return fetchClient(`/admin/withdrawals?${query.toString()}`, {
+      method: 'GET',
+      requireAuth: true,
+    })
+  },
+
+  reviewWithdrawal: async (
+    id: string,
+    payload: { status: 'approved' | 'rejected'; rejectReason?: string },
+  ): Promise<{ data: AdminWithdrawal }> => {
+    return fetchClient(`/admin/withdrawals/${id}/review`, {
+      method: 'POST',
+      requireAuth: true,
+      body: JSON.stringify(payload),
     })
   },
 }
