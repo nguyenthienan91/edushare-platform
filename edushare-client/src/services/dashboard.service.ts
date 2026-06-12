@@ -110,9 +110,32 @@ export interface WithdrawalListResponse {
   currentPage: number
 }
 
+export interface RevenueSummary {
+  feeThisMonth: {
+    total: number
+    growthPercent: number | null
+  }
+  transactionThisMonth: {
+    total: number
+    growthPercent: number | null
+  }
+  retentionRate: {
+    percent: number
+    totalActive: number
+    totalSubscribed: number
+  }
+}
+
 export const DashboardService = {
   getAdminStats: async (): Promise<{ status: string; data: AdminDashboardStats }> => {
     return fetchClient('/admin/dashboard/stats', {
+      method: 'GET',
+      requireAuth: true,
+    })
+  },
+
+  getRevenueSummary: async (): Promise<{ status: string; data: RevenueSummary }> => {
+    return fetchClient('/admin/dashboard/revenue-summary', {
       method: 'GET',
       requireAuth: true,
     })
