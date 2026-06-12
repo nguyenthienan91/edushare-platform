@@ -5,6 +5,7 @@ import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminDisputes from '@/pages/admin/AdminDisputes'
 import AdminGroups from '@/pages/admin/AdminGroups'
 import AdminRevenue from '@/pages/admin/AdminRevenue'
+import AdminSettings from '@/pages/admin/AdminSettings'
 import AdminUsers from '@/pages/admin/AdminUsers'
 import AdminWithdrawals from '@/pages/admin/AdminWithdrawals'
 import LandingPage from '@/pages/Landingpage'
@@ -91,6 +92,17 @@ export default function AppRoutes() {
         <Route path='/' element={<LandingPage />} />
         <Route path='/groups' element={<GroupsPage />} />
       </Route>
+
+      <Route
+        path='/admin/settings'
+        element={
+          <AdminRoute>
+            <DashboardRoute role='admin' title='Cài đặt tài khoản' description='Quản lý thông tin và bảo mật tài khoản.'>
+              <AdminSettings />
+            </DashboardRoute>
+          </AdminRoute>
+        }
+      />
 
       <Route path='/login' element={<LoginPage />} />
       <Route path='/forgot-password' element={<ForgotPasswordPage />} />
