@@ -5,7 +5,7 @@ export const GroupService = {
     const queryStr = params ? new URLSearchParams(params as Record<string, string>).toString() : '';
     return fetchClient(`/groups${queryStr ? '?' + queryStr : ''}`, {
       method: 'GET',
-      requireAuth: true
+      requireAuth: false
     })
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+
 import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -70,22 +70,10 @@ export default function MainLayout() {
 
           <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
             {NAV_ITEMS.map((item) => {
-              const isAdminOrOwner = isAuthenticated && user && ['admin', 'owner'].includes(user?.role?.toLowerCase() || '');
-
-              const handleClick = (e: React.MouseEvent) => {
-                if (item.href === '/groups' && !isAdminOrOwner) {
-                  e.preventDefault();
-                  toast.error('Truy cập bị từ chối', {
-                    description: 'Tính năng Nhóm hiện chỉ dành cho Quản trị viên và Chủ nhóm.',
-                  });
-                }
-              };
-
               return (
                 <Link
                   key={item.label}
                   to={item.href}
-                  onClick={item.href === '/groups' ? handleClick : undefined}
                   className={`transition-colors hover:text-primary ${item.href === '/groups' ? 'font-bold text-indigo-600' : ''}`}
                 >
                   {item.label}

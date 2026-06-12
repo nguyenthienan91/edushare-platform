@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { GroupService } from '@/services/group.service'
-import ForbiddenPage from '@/pages/error/ForbiddenPage'
+
 import {
   ArrowRight,
   Filter,
@@ -35,27 +35,27 @@ export default function GroupsPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category>('All')
   const [sortBy, setSortBy] = useState<SortOption>('Uy tín cao')
   const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const itemPerPage = 9
   
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Kiểm tra quyền (Roles Guard)
-  const isAllowedRole = isAuthenticated && user && ['admin', 'owner'].includes(user?.role?.toLowerCase() || '')
-
   useEffect(() => {
-    if (isAllowedRole) {
-      fetchGroups()
-    } else {
-      setIsLoading(false)
-    }
-  }, [isAllowedRole])
+    fetchGroups(currentPage)
+  }, [currentPage])
 
-  const fetchGroups = async () => {
+  const fetchGroups = async (page: number) => {
     setIsLoading(true)
     try {
-      const res: any = await GroupService.getGroups({ page: 1, itemPerPage: 100 })
-      if (res?.data) {
-        setGroups(res.data)
+      const res: any = await GroupService.getGroups({ page, itemPerPage })
+      const groupsData = res?.list || res?.data;
+      if (groupsData) {
+        setGroups(groupsData)
+      }
+      if (res?.totalPages) {
+        setTotalPages(res.totalPages)
       }
     } catch (error) {
       console.error('Failed to fetch groups', error)
@@ -87,25 +87,24 @@ export default function GroupsPage() {
       navigate('/admin/groups');
     } else if (user?.role?.toLowerCase() === 'owner') {
       navigate('/owner/groups');
+    } else {
+      navigate('/dashboard/participant');
     }
   }
 
-  // Nếu không được phép, hiển thị ForbiddenPage
-  if (!isLoading && !isAllowedRole) {
-    return <ForbiddenPage />
-  }
+  // Cho phép khách truy cập xem danh sách nhóm công khai
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         
         <div className="mb-12 text-center">
-          <Badge variant="secondary" className="px-4 py-1 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700">Quản lý nâng cao</Badge>
+          <Badge variant="secondary" className="px-4 py-1 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700">Cộng đồng chia sẻ</Badge>
           <h1 className="mt-4 text-4xl font-black tracking-tight text-foreground sm:text-5xl">
-            Danh sách nhóm tổng quan
+            Thị trường nhóm
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Trang này hiển thị toàn bộ các nhóm trên hệ thống. Truy cập giới hạn dành riêng cho Ban quản trị viên và Chủ nhóm quản lý tài khoản.
+            Khám phá và tham gia các nhóm chia sẻ tài nguyên chất lượng trên EduShare.
           </p>
         </div>
 
@@ -251,7 +250,11 @@ export default function GroupsPage() {
                           onClick={handleManageClick}
                           className="w-full rounded-2xl h-12 font-semibold"
                         >
-                          Tới trang quản lý <ArrowRight className="ml-2 h-4 w-4" />
+                          {['admin', 'owner'].includes(user?.role?.toLowerCase() || '') ? (
+                            <>Tới trang quản lý <ArrowRight className="ml-2 h-4 w-4" /></>
+                          ) : (
+                            <>Tham gia / Xem chi tiết <ArrowRight className="ml-2 h-4 w-4" /></>
+                          )}
                         </Button>
                       </div>
                     </Card>
@@ -272,6 +275,31 @@ export default function GroupsPage() {
               </div>
             )}
           </section>
+        )}
+        
+        {/* Phân trang */}
+        {!isLoading && totalPages > 1 && (
+          <div className="mt-12 flex justify-center gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              className="rounded-full"
+            >
+              Trang trước
+            </Button>
+            <div className="flex items-center px-4 font-medium">
+              Trang {currentPage} / {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              className="rounded-full"
+            >
+              Trang sau
+            </Button>
+          </div>
         )}
       </div>
     </div>

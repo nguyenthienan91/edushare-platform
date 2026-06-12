@@ -47,6 +47,12 @@ const roleMenus: Record<DashboardRole, { sections: { label: string; items: Sideb
           { title: 'Thống kê doanh thu', url: '/admin/revenue', icon: Gauge },
         ],
       },
+      {
+        label: 'Tài khoản',
+        items: [
+          { title: 'Cài đặt', url: '/admin/settings', icon: Settings },
+        ],
+      },
     ],
   },
   owner: {
