@@ -528,7 +528,7 @@ export default function MemberSettingsPage() {
             {/* Form */}
             <div className="space-y-4">
               <div>
-                <Label>Tên hiển thị</Label>
+                <Label className="mb-2 block">Tên hiển thị</Label>
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
@@ -538,12 +538,12 @@ export default function MemberSettingsPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Email</Label>
+                  <Label className="mb-2 block">Email</Label>
                   <Input value={profile?.email || ''} disabled className="bg-muted" />
                 </div>
 
                 <div>
-                  <Label>Số điện thoại</Label>
+                  <Label className="mb-2 block">Số điện thoại</Label>
                   <Input
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
@@ -554,7 +554,7 @@ export default function MemberSettingsPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Giới tính</Label>
+                  <Label className="mb-2 block">Giới tính</Label>
                   <Select value={gender} onValueChange={setGender}>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn giới tính" />
@@ -568,7 +568,7 @@ export default function MemberSettingsPage() {
                 </div>
 
                 <div>
-                  <Label>Ngày sinh</Label>
+                  <Label className="mb-2 block">Ngày sinh</Label>
                   <Input
                     type="date"
                     value={dateOfBirth}
@@ -578,7 +578,7 @@ export default function MemberSettingsPage() {
               </div>
 
               <div>
-                <Label>Địa chỉ</Label>
+                <Label className="mb-2 block">Địa chỉ</Label>
                 <Textarea
                   rows={3}
                   value={address}
@@ -612,7 +612,7 @@ export default function MemberSettingsPage() {
               <div className="space-y-4">
                 {/* Current Password */}
                 <div>
-                  <Label>Mật khẩu hiện tại</Label>
+                  <Label className="mb-2 block">Mật khẩu hiện tại</Label>
 
                   <div className="relative">
                     <Input
@@ -642,7 +642,7 @@ export default function MemberSettingsPage() {
 
                 {/* New Password */}
                 <div>
-                  <Label>Mật khẩu mới</Label>
+                  <Label className="mb-2 block">Mật khẩu mới</Label>
 
                   <div className="relative">
                     <Input
@@ -671,7 +671,7 @@ export default function MemberSettingsPage() {
                 </div>
 
                 <div>
-                  <Label>Xác nhận mật khẩu</Label>
+                  <Label className="mb-2 block">Xác nhận mật khẩu</Label>
 
                   <div className="relative">
                     <Input
@@ -850,7 +850,7 @@ export default function MemberSettingsPage() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="bankName">Tên ngân hàng <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="bankName" className="mb-2 block">Tên ngân hàng <span className="text-red-500">*</span></Label>
                       <Input
                         id="bankName"
                         value={formBankName}
@@ -861,7 +861,7 @@ export default function MemberSettingsPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="accountNumber">Số tài khoản <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="accountNumber" className="mb-2 block">Số tài khoản <span className="text-red-500">*</span></Label>
                       <Input
                         id="accountNumber"
                         value={formAccountNumber}
@@ -874,7 +874,7 @@ export default function MemberSettingsPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="accountName">Tên chủ tài khoản <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="accountName" className="mb-2 block">Tên chủ tài khoản <span className="text-red-500">*</span></Label>
                       <Input
                         id="accountName"
                         value={formAccountName}
@@ -888,7 +888,7 @@ export default function MemberSettingsPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="branch">Chi nhánh (không bắt buộc)</Label>
+                      <Label htmlFor="branch" className="mb-2 block">Chi nhánh (không bắt buộc)</Label>
                       <Input
                         id="branch"
                         value={formBranch}
