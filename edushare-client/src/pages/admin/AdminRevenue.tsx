@@ -45,7 +45,7 @@ const PERIOD_TABS: { value: Period; label: string }[] = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatVND = (value: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+  new Intl.NumberFormat('vi-VN').format(value) + ' VND'
 
 const formatAxisVND = (value: number) => {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`

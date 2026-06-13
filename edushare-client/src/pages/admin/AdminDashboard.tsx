@@ -63,14 +63,14 @@ function buildStats(data: AdminDashboardStats) {
     },
     {
       label: 'Doanh thu hệ thống',
-      value: formatCurrency(totalRevenue) + ' đ',
-      note: `Topup: ${formatCurrency(data.totalTopupAmount)}đ · VIP: ${formatCurrency(data.totalVipRevenue)}đ`,
+      value: formatCurrency(totalRevenue) + ' VND',
+      note: `Topup: ${formatCurrency(data.totalTopupAmount)} VND · VIP: ${formatCurrency(data.totalVipRevenue)} VND`,
       icon: Wallet,
       tone: 'bg-violet-100 text-violet-600',
     },
     {
       label: 'Tổng rút đã duyệt',
-      value: formatCurrency(data.totalApprovedWithdrawalAmount) + ' đ',
+      value: formatCurrency(data.totalApprovedWithdrawalAmount) + ' VND',
       note: `Tổng ${data.totalTransactions.toLocaleString('vi-VN')} giao dịch`,
       icon: ShieldAlert,
       tone: 'bg-amber-100 text-amber-700',

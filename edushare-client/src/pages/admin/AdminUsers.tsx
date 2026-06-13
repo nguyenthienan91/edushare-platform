@@ -1,5 +1,5 @@
 import {
-  MoreHorizontal, ShieldCheck, Clock, Mail, LifeBuoy, Ban, Search,
+  MoreHorizontal, ShieldCheck, Clock, LifeBuoy, Ban, Search,
   ChevronLeft, ChevronRight, Loader2, Trash2, UserCheck, UserX, Eye,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -455,11 +455,7 @@ export default function AdminUsers() {
                                     <span>Xem chi tiết</span>
                                   </DropdownMenuItem>
 
-                                  {/* Gửi thông báo */}
-                                  <DropdownMenuItem className='p-2.5 rounded-xl cursor-pointer gap-2'>
-                                    <Mail className='h-4 w-4' />
-                                    <span>Gửi thông báo</span>
-                                  </DropdownMenuItem>
+
 
                                   <DropdownMenuSeparator />
 

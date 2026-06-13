@@ -166,8 +166,8 @@ const activities: ActivityItem[] = [
   { id: 3, title: 'Adobe Creative Circle đã được xác minh', subtitle: 'Điểm tin cậy đã được cập nhật lên 97', time: '1 hour ago', type: 'verified' },
 ]
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+function formatCredit(value: number) {
+  return new Intl.NumberFormat('vi-VN').format(value) + ' credit'
 }
 
 function Badge({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'emerald' | 'indigo' | 'sky' }) {
@@ -390,7 +390,7 @@ export default function MemberParticipantPageNew() {
                     </div>
                     <div className="rounded-lg border p-4">
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">Giá / tháng</div>
-                      <div className="mt-1 font-semibold">{formatCurrency(group.price)}</div>
+                      <div className="mt-1 font-semibold">{formatCredit(group.price)}</div>
                     </div>
                   </div>
 
@@ -532,7 +532,7 @@ export default function MemberParticipantPageNew() {
                   </div>
                   <div className="rounded-lg border bg-card p-4">
                     <div className="text-muted-foreground">Price</div>
-                    <div className="mt-1 font-bold">{formatCurrency(selectedGroup.price)}</div>
+                    <div className="mt-1 font-bold">{formatCredit(selectedGroup.price)}</div>
                   </div>
                 </div>
               </div>
@@ -546,7 +546,7 @@ export default function MemberParticipantPageNew() {
               <div className="mt-5 rounded-lg border bg-card p-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Số dư ví</span>
-                  <span className="font-semibold">128,000đ</span>
+                  <span className="font-semibold">128.000 credit</span>
                 </div>
               </div>
 
@@ -593,7 +593,7 @@ export default function MemberParticipantPageNew() {
                 </div>
                 <h3 className="mb-2 text-2xl font-bold">Nâng cấp gói VIP</h3>
                 <p className="mb-6 text-sm text-muted-foreground">
-                  Tính năng này chỉ dành cho thành viên VIP. Bạn cần nâng cấp lên gói VIP (29.000đ) để có thể tham gia vào các nhóm chia sẻ tài khoản.
+                  Tính năng này chỉ dành cho thành viên VIP. Bạn cần nâng cấp lên gói VIP (29.000 credit) để có thể tham gia vào các nhóm chia sẻ tài khoản.
                 </p>
                 <div className="flex w-full flex-col gap-3">
                   <button

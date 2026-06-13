@@ -71,8 +71,8 @@ export function DashboardLayout({
     }
   }
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+  const formatCredit = (val: number) => {
+    return new Intl.NumberFormat('vi-VN').format(val) + ' credit'
   }
 
   const displayUserName = profile
@@ -80,8 +80,8 @@ export function DashboardLayout({
     : (role === 'admin' ? 'Admin' : '...')
   
   const displayUserBalance = profile && typeof profile.balance === 'number'
-    ? formatCurrency(profile.balance)
-    : (role === 'admin' ? '0 đ' : '...')
+    ? formatCredit(profile.balance)
+    : (role === 'admin' ? '0 credit' : '...')
 
   return (
     <SidebarProvider>

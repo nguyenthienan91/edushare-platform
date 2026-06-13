@@ -47,7 +47,7 @@ const ITEMS_PER_PAGE = 10
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  new Intl.NumberFormat('vi-VN').format(amount) + ' VND'
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleString('vi-VN', {
