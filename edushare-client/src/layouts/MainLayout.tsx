@@ -138,14 +138,10 @@ export default function MainLayout() {
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem disabled className="opacity-100 font-medium text-slate-500 py-2 flex-col items-start gap-1">
-                      {user?.role?.toLowerCase() === 'admin' ? (
-                        <span>Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} đ</span>
-                      ) : (
-                        <>
-                          <span>Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit</span>
-                          <span className="text-[10px] text-muted-foreground font-normal">1.000 VND = 1.000 credit</span>
-                        </>
-                      )}
+                      <>
+                        <span>Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">1.000 VND = 1.000 credit</span>
+                      </>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
