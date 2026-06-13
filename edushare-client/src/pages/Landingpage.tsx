@@ -25,8 +25,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const MEMBERSHIP_PLAN = {
   title: 'Member / Standard User',
-  price: '29.000 đ / tháng',
-  desc: 'Sinh viên đã đóng phí thành viên 29k/tháng.',
+  price: '29.000 credit / tháng',
+  desc: 'Sinh viên đã đóng phí thành viên 29.000 credit/tháng.',
   benefits: [
     'Được tham gia nhóm đang chờ ghép',
     'Dùng escrow để bảo vệ giao dịch',
@@ -220,7 +220,7 @@ export default function LandingPage() {
 
         <section id="pricing" className="mt-20">
           <div className="mb-10 text-center flex flex-col items-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gói 29k / tháng</h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gói 29.000 credit / tháng</h2>
             <p className="mt-3 text-base text-muted-foreground max-w-2xl">
               Nâng cấp trải nghiệm EduShare với gói định kỳ, giúp bạn tham gia nhóm đang chờ ghép nhanh chóng, với chi phí minh bạch và sự bảo vệ giao dịch bởi EduShare.
             </p>
@@ -258,7 +258,7 @@ export default function LandingPage() {
                       onClick={handleUpgradeVip} 
                       disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
                     >
-                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29k)"))}
+                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29.000 credit)"))}
                     </Button>
                     <Button asChild variant="outline" className="rounded-full flex-1 h-12 text-base font-medium">
                       <a href="#groups">Xem nhóm đang chờ ghép</a>

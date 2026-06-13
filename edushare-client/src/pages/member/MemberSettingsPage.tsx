@@ -386,8 +386,9 @@ export default function MemberSettingsPage() {
     .slice(0, 2)
     .toUpperCase();
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+  // 1đ = 1 credit
+  const formatCredit = (value: number) =>
+    new Intl.NumberFormat('vi-VN').format(value) + ' credit';
 
   const formatDate = (iso: string | null) => {
     if (!iso) return '—';
@@ -731,7 +732,7 @@ export default function MemberSettingsPage() {
                     </p>
 
                     <p className="text-sm font-semibold text-emerald-600">
-                      Số dư: {formatCurrency(profile?.balance ?? 0)}
+                      Số dư: {formatCredit(profile?.balance ?? 0)}
                     </p>
                   </div>
                 </div>
@@ -787,7 +788,7 @@ export default function MemberSettingsPage() {
                   >
                     {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
                     <Crown className="size-4 mr-2" />
-                    Gia hạn thêm 30 ngày — 29.000đ
+                    Gia hạn thêm 30 ngày — 29.000 credit
                   </Button>
                   
                 </div>
@@ -795,7 +796,7 @@ export default function MemberSettingsPage() {
                 <div className="space-y-4">
                   <div className="rounded-lg border p-4 bg-amber-500/10 border-amber-500/20">
                     <p className="text-sm text-amber-600">
-                      Nâng cấp gói VIP Member với giá <strong>29.000đ / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
+                      Nâng cấp gói VIP Member với giá <strong>29.000 credit / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
                     </p>
                   </div>
 
@@ -806,7 +807,7 @@ export default function MemberSettingsPage() {
                   >
                     {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
                     <Crown className="size-4 mr-2" />
-                    Nâng cấp VIP — 29.000đ
+                    Nâng cấp VIP — 29.000 credit
                   </Button>
                 </div>
               )}
@@ -882,8 +883,8 @@ export default function MemberSettingsPage() {
                         placeholder="NGUYEN THIEN AN (in hoa không dấu)"
                         required
                       />
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        * Tự động viết hoa & xóa dấu tiếng Việt.
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        1đ = 1 credit. Tự động viết hoa & xóa dấu tiếng Việt.
                       </p>
                     </div>
 
