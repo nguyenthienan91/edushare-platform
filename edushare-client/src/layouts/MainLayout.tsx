@@ -143,7 +143,7 @@ export default function MainLayout() {
                       ) : (
                         <>
                           <span>Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit</span>
-                          <span className="text-[10px] text-muted-foreground font-normal">1đ = 1 credit</span>
+                          <span className="text-[10px] text-muted-foreground font-normal">1.000 VND = 1.000 credit</span>
                         </>
                       )}
                     </DropdownMenuItem>

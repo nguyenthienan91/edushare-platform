@@ -386,7 +386,7 @@ export default function MemberSettingsPage() {
     .slice(0, 2)
     .toUpperCase();
 
-  // 1đ = 1 credit
+  // 1.000 VND = 1.000 credit
   const formatCredit = (value: number) =>
     new Intl.NumberFormat('vi-VN').format(value) + ' credit';
 
@@ -884,7 +884,7 @@ export default function MemberSettingsPage() {
                         required
                       />
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        1đ = 1 credit. Tự động viết hoa & xóa dấu tiếng Việt.
+                        1.000 VND = 1.000 credit. Tự động viết hoa & xóa dấu tiếng Việt.
                       </p>
                     </div>
 
