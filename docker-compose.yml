@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  nestjs-app:
+    build:
+      context: ./edushare-server
+      dockerfile: Dockerfile
+    container_name: edushare-backend
+    restart: always
+    ports:
+      - "8888:8888" # Ánh xạ đúng cổng 8888 từ Docker ra ngoài VPS
+    env_file:
+      - ./edushare-server/.env # Đọc file cấu hình .env nằm trong thư mục backend
