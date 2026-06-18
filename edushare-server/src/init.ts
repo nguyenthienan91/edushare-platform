@@ -54,7 +54,7 @@ const initOpenAPI = (app: INestApplication) => {
   )
 
   openApiDoc = removeFieldsAndRelations(openApiDoc)
-  SwaggerModule.setup(APP_PREFIX, app, cleanupOpenApiDoc(openApiDoc))
+  SwaggerModule.setup('docs', app, cleanupOpenApiDoc(openApiDoc))
 }
 
 const initApp = (app: INestApplication) => {
