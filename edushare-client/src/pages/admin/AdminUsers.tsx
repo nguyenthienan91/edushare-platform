@@ -1,5 +1,5 @@
 import {
-  MoreHorizontal, ShieldCheck, Clock, LifeBuoy, Ban, Search,
+  MoreHorizontal, ShieldCheck, Clock, Ban, Search,
   ChevronLeft, ChevronRight, Loader2, Trash2, UserCheck, UserX, Eye,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
