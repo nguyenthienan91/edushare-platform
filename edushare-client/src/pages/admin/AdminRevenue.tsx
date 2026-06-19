@@ -246,10 +246,10 @@ export default function AdminRevenue() {
                 border: 'none',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               }}
-              formatter={(value: number, name: string) => [
-                formatTooltipVND(value),
-                name === 'topup' ? 'Nạp tiền' : name === 'vip' ? 'VIP' : 'Tổng',
-              ]}
+           formatter={(value: any, name: any) => [
+  formatTooltipVND(Number(value)),
+  name === 'topup' ? 'Nạp tiền' : name === 'vip' ? 'VIP' : 'Tổng',
+]}
             />
             <Legend
               iconType='circle'
@@ -365,7 +365,7 @@ export default function AdminRevenue() {
                       boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     }}
                     itemStyle={{ color: '#0f172a' }}
-                    formatter={(value: number) => [`${value}%`]}
+                    formatter={(value: any) => [`${value}%`]}
                   />
                 </PieChart>
               </ResponsiveContainer>

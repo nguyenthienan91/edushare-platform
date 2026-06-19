@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
-import { ArrowDown, ArrowUp, ArrowUpDown, BadgeCheck, Loader2, Search, Star, UserRound, Users } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown,  Loader2, Search, Star, UserRound, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -240,7 +240,6 @@ export default function MemberJoinGroup() {
                 const progress = Math.round((group.occupiedSlots / group.totalSlots) * 100)
                 const slotsLeft = Math.max(group.totalSlots - group.occupiedSlots, 0)
                 const trustScore = getOwnerTrustScore(group.ownerId)
-                const isJoinable = group.status === 'available' && slotsLeft > 0
 
                 return (
                   <Card key={group._id} className='border transition hover:shadow-md'>

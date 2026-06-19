@@ -1,7 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import {
-  ChevronLeft,
-  ChevronRight,
   Clock3,
   FileText,
   ImageIcon,
