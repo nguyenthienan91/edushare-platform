@@ -54,12 +54,12 @@ const initOpenAPI = (app: INestApplication) => {
   )
 
   openApiDoc = removeFieldsAndRelations(openApiDoc)
-  SwaggerModule.setup('api/docs', app, cleanupOpenApiDoc(openApiDoc))
+  SwaggerModule.setup(APP_PREFIX, app, cleanupOpenApiDoc(openApiDoc))
 }
 
 const initApp = (app: INestApplication) => {
-  const { APP_PREFIX = '/api', FE_URL } = process.env
-  app.setGlobalPrefix(APP_PREFIX)
+  const { FE_URL } = process.env
+  app.setGlobalPrefix('/api')
   app.enableCors({
     origin: FE_URL ? FE_URL.split(',').map((url) => url.trim().replace(/\/$/, '')) : '*',
   })

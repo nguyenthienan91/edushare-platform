@@ -12,7 +12,7 @@ async function bootstrap() {
   const {
     PORT = 3000,
     HOST = 'localhost',
-    APP_PREFIX = '/api',
+    APP_PREFIX = '/docs',
     APP_NAME = 'nestjs_app',
     NODE_ENV = 'development',
   } = process.env
