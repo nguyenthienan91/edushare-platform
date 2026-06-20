@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ThemeToggler, type Resolved, type ThemeSelection } from '@/components/animate-ui/primitives/effects/theme-toggler';
 import { useAuth } from '@/contexts/AuthContext';
 import { WalletService } from '@/services/wallet.service';
@@ -93,14 +94,21 @@ export default function MainLayout() {
                 const nextTheme = effective === 'dark' ? 'light' : 'dark'
 
                 return (
-                  <button
-                    type='button'
-                    onClick={() => toggleTheme(nextTheme)}
-                    className='relative flex size-9 items-center justify-center rounded-full transition-colors'
-                    aria-label='Toggle theme'
-                  >
-                    {effective === 'dark' ? <Moon className='size-4' /> : <Sun className='size-4' />}
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type='button'
+                        onClick={() => toggleTheme(nextTheme)}
+                        className='relative flex size-9 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        aria-label='Toggle theme'
+                      >
+                        {effective === 'dark' ? <Moon className='size-4' /> : <Sun className='size-4' />}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {effective === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
+                    </TooltipContent>
+                  </Tooltip>
                 )
               }}
             </ThemeToggler>
@@ -108,11 +116,21 @@ export default function MainLayout() {
             {isAuthenticated ? (
               <>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:ring-0">
-                      <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type='button'
+                          className='relative flex size-9 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none'
+                        >
+                          <Wallet className="size-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Ví EduShare
+                    </TooltipContent>
+                  </Tooltip>
                   <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-lg">
                     <DropdownMenuLabel className="text-base font-semibold">Ví EduShare</DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -137,23 +155,32 @@ export default function MainLayout() {
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled className="opacity-100 font-medium text-slate-500 py-2 flex-col items-start gap-1">
-                      <>
-                        <span>Số dư: {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">1.000 VND = 1.000 credit</span>
-                      </>
+                    <DropdownMenuItem disabled className="opacity-100 py-2.5 flex-col items-start gap-1.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 rounded-lg mx-1 my-1">
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-xs text-muted-foreground font-medium">Số dư khả dụng</span>
+                        <span className="font-bold text-sm text-indigo-600 dark:text-indigo-400">
+                          {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-muted-foreground/80 font-normal">Tỷ giá: 1.000 VND = 1.000 credit</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Button asChild variant="outline" size="icon" className="rounded-full bg-background hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                  <Link 
-                    to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
-                    title="Về Dashboard"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link 
+                      to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
+                      className="relative flex size-9 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    >
+                      <LayoutDashboard className="size-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Về Dashboard
+                  </TooltipContent>
+                </Tooltip>
+
                 <Button onClick={handleLogout} variant="outline" className="rounded-full px-5">
                   Đăng xuất
                 </Button>
@@ -186,7 +213,7 @@ export default function MainLayout() {
           <a href="#">Liên hệ</a>
         </div>
 
-        <p>© 2026 Share Hub. Tất cả các quyền được bảo lưu.</p>
+        <p>© 2026 EduShare. Tất cả các quyền được bảo lưu.</p>
       </footer>
     </div>
   );
