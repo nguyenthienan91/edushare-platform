@@ -75,7 +75,7 @@ export default function MainLayout() {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className={`transition-colors hover:text-primary ${item.href === '/groups' ? 'font-bold text-indigo-600' : ''}`}
+                  className="transition-colors hover:text-primary"
                 >
                   {item.label}
                 </Link>
@@ -155,14 +155,14 @@ export default function MainLayout() {
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled className="opacity-100 py-2.5 flex-col items-start gap-1.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 rounded-lg mx-1 my-1">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-xs text-muted-foreground font-medium">Số dư khả dụng</span>
-                        <span className="font-bold text-sm text-indigo-600 dark:text-indigo-400">
+                    <DropdownMenuItem disabled className="opacity-100 py-2.5 flex-col items-start gap-0.5 rounded-lg bg-primary/10 dark:bg-primary/15 cursor-default select-none">
+                      <>
+                        <span className="text-xs text-muted-foreground font-medium">Số dư hiện tại</span>
+                        <span className="text-sm font-bold text-primary tracking-tight">
                           {walletBalance !== null ? new Intl.NumberFormat('vi-VN').format(walletBalance) : '...'} credit
                         </span>
-                      </div>
-                      <span className="text-[9px] text-muted-foreground/80 font-normal">Tỷ giá: 1.000 VND = 1.000 credit</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">1.000 VND = 1.000 credit</span>
+                      </>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -205,15 +205,83 @@ export default function MainLayout() {
 
       <Outlet />
 
-      <footer className="border-t border-slate-200 py-12 text-center text-sm">
-        <div className="mb-6 flex justify-center space-x-6">
-          <a href="#">Điều khoản dịch vụ</a>
-          <a href="#">Chính sách bảo mật</a>
-          <a href="#">Tuyên bố miễn trừ</a>
-          <a href="#">Liên hệ</a>
+      <footer className="border-t border-border/50 bg-background text-foreground py-16 px-4 sm:px-6 lg:px-8 mt-24">
+        <div className="mx-auto max-w-7xl grid gap-10 md:grid-cols-2 lg:grid-cols-5 text-left">
+          
+          {/* Logo & Slogan Column */}
+          <div className="space-y-4 lg:col-span-1">
+            <h3 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">
+              EduShare<span className="text-emerald-500">.</span>
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Dùng chung tài khoản thông minh, tiết kiệm tối đa chi phí học tập cho sinh viên.
+            </p>
+          </div>
+
+          {/* Company Column */}
+          <div className="space-y-4">
+            <h4 className="text-base font-extrabold text-slate-800 dark:text-slate-100">Công ty</h4>
+            <ul className="space-y-2.5 text-sm font-medium text-muted-foreground">
+              <li><a href="#" className="hover:text-primary transition-colors">Về EduShare</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Tuyển dụng</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Ứng dụng</a></li>
+            </ul>
+          </div>
+
+          {/* Contact Column */}
+          <div className="space-y-4">
+            <h4 className="text-base font-extrabold text-slate-800 dark:text-slate-100">Liên hệ</h4>
+            <ul className="space-y-2.5 text-sm font-medium text-muted-foreground">
+              <li><a href="#" className="hover:text-primary transition-colors">Hỗ trợ / FAQ</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Báo chí</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Đối tác</a></li>
+            </ul>
+          </div>
+
+          {/* More Column */}
+          <div className="space-y-4">
+            <h4 className="text-base font-extrabold text-slate-800 dark:text-slate-100">Chính sách</h4>
+            <ul className="space-y-2.5 text-sm font-medium text-muted-foreground">
+              <li><a href="#" className="hover:text-primary transition-colors">Điều khoản dịch vụ</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Chính sách bảo mật</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Tuyên bố miễn trừ</a></li>
+            </ul>
+          </div>
+
+          {/* Socials & Store Column */}
+          <div className="space-y-6 lg:col-span-1">
+                     <div className="flex items-center gap-3">
+              {/* Facebook */}
+              <a 
+                href="https://web.facebook.com/share/1BMmpYuGMf/?mibextid=wwXIfr&_rdc=1&_rdr" 
+                target="_blank"
+                rel="noreferrer"
+                className="flex size-10 items-center justify-center rounded-full bg-[#1877F2]/10 dark:bg-[#1877F2]/20 text-[#1877F2] hover:bg-[#1877F2] hover:text-white transition-all duration-300 shadow-sm"
+              >
+                <svg className="size-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                </svg>
+              </a>
+
+              {/* TikTok */}
+              <a 
+                href="https://www.tiktok.com/@.cng.ngh92?_r=1&_t=ZS-97MrEQ8AKmq" 
+                target="_blank"
+                rel="noreferrer"
+                className="flex size-10 items-center justify-center rounded-full bg-slate-950/10 dark:bg-white/10 text-slate-800 dark:text-slate-200 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all duration-300 shadow-sm"
+              >
+                <svg className="size-4.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12.525.024a.066.066 0 00-.008.006 8.22 8.22 0 00-.171 1.76c.01 1.636.711 3.197 1.956 4.256a.065.065 0 00.063.003c.536-.263 1.107-.464 1.7-.6a.066.066 0 00.053-.065V1.876a.066.066 0 00-.056-.065 5.922 5.922 0 01-3.473-1.72.067.067 0 00-.065-.067H12.525zm-2.072 0a.066.066 0 00-.066.066V15.75c0 1.83-1.485 3.314-3.316 3.314-1.83 0-3.314-1.485-3.314-3.315 0-1.83 1.484-3.315 3.314-3.315.358 0 .707.057 1.042.17a.066.066 0 00.083-.053V9.011a.066.066 0 00-.05-.064 6.84 6.84 0 00-1.075-.084C3.21 8.863.125 11.95.125 15.75c0 3.801 3.086 6.887 6.887 6.887 3.8 0 6.886-3.086 6.886-6.887V6.994c1.238 1.01 2.82 1.583 4.49 1.606a.066.066 0 00.067-.066V5.021a.066.066 0 00-.05-.064A5.926 5.926 0 0113.6 2.378a.066.066 0 00-.058-.063V.09a.066.066 0 00-.066-.066H10.453z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
         </div>
 
-        <p>© 2026 EduShare. Tất cả các quyền được bảo lưu.</p>
+        <div className="mt-16 border-t border-border/40 pt-8 text-center text-xs text-muted-foreground font-medium">
+          <p>© 2026 EduShare. Tất cả các quyền được bảo lưu.</p>
+        </div>
       </footer>
     </div>
   );
