@@ -4,6 +4,11 @@ import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserService } from '@/services/user.service'
 import { GroupService } from '@/services/group.service'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
+
+gsap.registerPlugin(ScrollTrigger)
 import {
   ArrowRight,
   Bell,
@@ -13,10 +18,17 @@ import {
   ShieldCheck,
   Star,
   Wallet,
+  MousePointerClick,
+  CreditCard,
+  Headphones,
+  Compass,
+  Send,
+  Heart,
+  BookOpen,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 
 
 const MEMBERSHIP_PLAN = {
@@ -39,12 +51,6 @@ const BENEFITS = [
   { icon: ShieldCheck, text: 'Thanh toán an toàn' },
   { icon: Bell, text: 'Hỗ trợ 24/7' },
   { icon: Wallet, text: 'Thanh toán VietQR' },
-]
-
-const SUPPORT_ITEMS = [
-  'Thông tin email hoặc dữ liệu cần thiết được lưu cùng đơn.',
-  'Mã đơn, số tiền và trạng thái thanh toán được ghi nhận rõ.',
-  'Yêu cầu gia hạn hoặc hỗ trợ lại được theo dõi trong cùng đơn.',
 ]
 
 
@@ -102,6 +108,170 @@ export default function LandingPage() {
     fetchFeaturedGroups()
   }, [])
 
+  useGSAP(() => {
+    // Hero Animations
+    gsap.from('.hero-title', {
+      y: 40,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.out',
+    })
+    
+    gsap.from('.hero-subtitle', {
+      y: 20,
+      opacity: 0,
+      duration: 0.8,
+      delay: 0.2,
+      ease: 'power3.out',
+    })
+    
+    gsap.from('.hero-cta', {
+      y: 20,
+      opacity: 0,
+      duration: 0.8,
+      delay: 0.4,
+      ease: 'power3.out',
+    })
+
+    gsap.from('.hero-image-wrapper', {
+      scale: 0.95,
+      opacity: 0,
+      duration: 1,
+      delay: 0.2,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger animations for featured groups
+    gsap.from('.featured-group-card', {
+      scrollTrigger: {
+        trigger: '.featured-groups-section',
+        start: 'top 85%',
+      },
+      y: 50,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.15,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger for pricing
+    gsap.from('#pricing .lg\\:col-span-7', {
+      scrollTrigger: {
+        trigger: '#pricing',
+        start: 'top 85%',
+      },
+      x: -40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    gsap.from('#pricing .lg\\:col-span-5', {
+      scrollTrigger: {
+        trigger: '#pricing',
+        start: 'top 85%',
+      },
+      x: 40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger for features
+    gsap.from('#features .space-y-8', {
+      scrollTrigger: {
+        trigger: '#features',
+        start: 'top 85%',
+      },
+      x: -40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    gsap.from('#features .relative', {
+      scrollTrigger: {
+        trigger: '#features',
+        start: 'top 85%',
+      },
+      x: 40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger for support
+    gsap.from('#support .space-y-8', {
+      scrollTrigger: {
+        trigger: '#support',
+        start: 'top 85%',
+      },
+      x: -40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    gsap.from('#support .relative', {
+      scrollTrigger: {
+        trigger: '#support',
+        start: 'top 85%',
+      },
+      x: 40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger for testimonials
+    gsap.from('#testimonials .space-y-6', {
+      scrollTrigger: {
+        trigger: '#testimonials',
+        start: 'top 85%',
+      },
+      y: 40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    gsap.from('#testimonials .flex-1', {
+      scrollTrigger: {
+        trigger: '#testimonials',
+        start: 'top 85%',
+      },
+      y: 40,
+      opacity: 0,
+      duration: 0.8,
+      delay: 0.15,
+      ease: 'power3.out',
+    })
+
+    // Scroll trigger for faq
+    gsap.from('#faq .mb-12', {
+      scrollTrigger: {
+        trigger: '#faq',
+        start: 'top 85%',
+      },
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+
+    gsap.from('#faq .space-y-4 > div', {
+      scrollTrigger: {
+        trigger: '#faq',
+        start: 'top 80%',
+      },
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power3.out',
+    })
+  }, [])
+
   const handleUpgradeVip = async () => {
     if (!isAuthenticated) {
       navigate('/login')
@@ -147,7 +317,7 @@ export default function LandingPage() {
           <div className="space-y-8">
             <div className="space-y-6">
               
-              <h1 className="text-5xl font-black tracking-tight sm:text-6xl text-foreground leading-[1.1] relative">
+              <h1 className="hero-title text-5xl font-black tracking-tight sm:text-6xl text-foreground leading-[1.1] relative">
                 Mua chung tài khoản số để <br />
                 <span className="relative inline-block text-emerald-500 dark:text-emerald-400 mt-2">
                   Tăng Hiệu Suất
@@ -157,13 +327,13 @@ export default function LandingPage() {
                 </span> <br />
                 của bạn
               </h1>
-              <p className="text-base leading-7 text-muted-foreground sm:text-lg max-w-xl">
+              <p className="hero-subtitle text-base leading-7 text-muted-foreground sm:text-lg max-w-xl">
                 EduShare giúp sinh viên ghép nhóm các gói Canva, Microsoft 365, Adobe, AI tools... với escrow,
                 Trust Score và quản lý thành viên tự động để giảm scam, giảm thao tác thủ công.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-5">
+            <div className="hero-cta flex flex-wrap items-center gap-5">
               <Button asChild size="lg" className="rounded-full px-8 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow-lg shadow-emerald-500/20">
                 <a href="#groups">Bắt đầu ngay</a>
               </Button>
@@ -185,7 +355,7 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-          <div className="relative flex justify-center lg:justify-end px-6 lg:px-0 w-full h-full min-h-[460px] lg:h-[500px]">
+          <div className="hero-image-wrapper relative flex justify-center lg:justify-end px-6 lg:px-0 w-full h-full min-h-[460px] lg:h-[500px]">
             {/* Ambient Background Glow */}
             <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-100/30 to-violet-100/30 dark:from-emerald-950/10 dark:to-violet-950/10 rounded-2xl blur-3xl" />
 
@@ -279,13 +449,13 @@ export default function LandingPage() {
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
           ) : featuredGroups.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="featured-groups-section grid gap-4 md:grid-cols-3">
               {featuredGroups.map((group) => {
                 const isFull = group.occupiedSlots >= group.totalSlots;
                 const tag = isFull ? 'Hết chỗ' : 'Còn slot';
                 const price = new Intl.NumberFormat('vi-VN').format(group.price || 0) + ' đ';
                 return (
-                  <Card key={group._id} className="rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
+                  <Card key={group._id} className="featured-group-card rounded-[1.5rem] border-border/60 shadow-sm transition-transform hover:-translate-y-0.5">
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between gap-3">
                         <Badge variant={isFull ? 'secondary' : 'default'} className={`rounded-full px-3 py-1 text-xs ${!isFull && 'bg-emerald-500 hover:bg-emerald-600'}`}>
@@ -330,60 +500,90 @@ export default function LandingPage() {
         </section>
 
 
-        <section id="pricing" className="mt-20">
-          <div className="mb-10 text-center flex flex-col items-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gói 29.000 credit / tháng</h2>
-            <p className="mt-3 text-base text-muted-foreground max-w-2xl">
+        <section id="pricing" className="mt-28">
+          <div className="mb-14 text-center flex flex-col items-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-2">
+              Bảng giá dịch vụ
+            </span>
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
+              Gói Thành Viên Standard
+            </h2>
+            <p className="mt-3 text-base text-muted-foreground max-w-2xl leading-relaxed">
               Nâng cấp trải nghiệm EduShare với gói định kỳ, giúp bạn tham gia nhóm đang chờ ghép nhanh chóng, với chi phí minh bạch và sự bảo vệ giao dịch bởi EduShare.
             </p>
           </div>
 
-          <div className="mx-auto max-w-2xl">
-            <Card className=" border-border/60 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/30 pb-8 text-center pt-8">
-                <Badge variant="secondary" className="mx-auto w-fit rounded-full mb-4">Member / Standard User</Badge>
-                <CardTitle className="text-2xl">{MEMBERSHIP_PLAN.title}</CardTitle>
-                <CardDescription className="mt-2">{MEMBERSHIP_PLAN.desc}</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 sm:p-8 -mt-4">
-                <div className="rounded-[1.75rem] border border-border bg-primary/5 p-6 shadow-inner">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Phí thành viên</p>
-                      <div className="mt-1 text-3xl font-black text-foreground">{MEMBERSHIP_PLAN.price}</div>
+          <div className="mx-auto max-w-5xl grid gap-10 lg:grid-cols-12 items-center">
+            {/* Left Part: Info & Benefits list */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-3">
+                <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-xs">
+                  Member / Standard User
+                </Badge>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                  {MEMBERSHIP_PLAN.title}
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {MEMBERSHIP_PLAN.desc}
+                </p>
+              </div>
+
+              <div className="grid gap-3.5 sm:grid-cols-2 pt-2">
+                {MEMBERSHIP_PLAN.benefits.map((item) => (
+                  <div 
+                    key={item} 
+                    className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3.5 text-sm shadow-sm transition-all duration-300 hover:border-emerald-500/30"
+                  >
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="font-semibold text-foreground/80 leading-snug">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Part: Checkout Price Box */}
+            <div className="lg:col-span-5 relative">
+              {/* Soft Gradient Background Panel */}
+              <div className="absolute -inset-2 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 dark:from-emerald-950/20 dark:to-blue-950/20 rounded-[2.5rem] blur-2xl opacity-70" />
+              
+              <div className="relative border border-border/80 bg-card rounded-[2rem] p-7 sm:p-8 shadow-xl flex flex-col justify-between space-y-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phí đăng ký</p>
+                    <div className="text-2xl sm:text-3xl font-black text-foreground">
+                      29.000 credit <span className="text-xs font-normal text-muted-foreground">/ tháng</span>
                     </div>
-                    <Badge className="rounded-full px-3 py-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">Ưu đãi sinh viên</Badge>
                   </div>
-                  
-                  <div className="mt-8 space-y-4">
-                    {MEMBERSHIP_PLAN.benefits.map((item) => (
-                      <div key={item} className="flex items-center gap-3 rounded-2xl border border-border/50 bg-background/80 px-4 py-3.5 text-sm shadow-sm">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                        <span className="font-medium">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <Button 
-                      className="rounded-full flex-1 h-12 text-base font-semibold shadow-md" 
-                      onClick={handleUpgradeVip} 
-                      disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
-                    >
-                      {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29.000 credit)"))}
-                    </Button>
-                    <Button asChild variant="outline" className="rounded-full flex-1 h-12 text-base font-medium">
-                      <a href="#groups">Xem nhóm đang chờ ghép</a>
-                    </Button>
-                  </div>
+                  <Badge className="rounded-full px-3 py-1 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border-none shrink-0 shadow-sm text-xs font-bold">
+                    Ưu đãi sinh viên
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="text-xs leading-relaxed text-muted-foreground/80 bg-muted/40 rounded-xl p-3.5 border border-border/40">
+                  Phí thành viên được thanh toán bằng credit và tự động gia hạn mỗi tháng. Bạn có thể hủy gói bất kỳ lúc nào từ cài đặt tài khoản.
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <Button 
+                    className="rounded-full w-full h-12 text-base font-bold shadow-md bg-emerald-500 hover:bg-emerald-600 text-white border-none transition-colors" 
+                    onClick={handleUpgradeVip} 
+                    disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
+                  >
+                    {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29.000 credit)"))}
+                  </Button>
+                  <Button asChild variant="outline" className="rounded-full w-full h-12 text-base font-semibold">
+                    <a href="#groups">Xem nhóm đang chờ ghép</a>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
 
-        <section className="mt-24 grid gap-16 lg:grid-cols-2 items-center">
+        <section id="features" className="mt-24 grid gap-16 lg:grid-cols-2 items-center">
           <style>{`
             @keyframes float-slow {
               0%, 100% { transform: translateY(0); }
@@ -485,26 +685,141 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="mt-16">
-          <Card className=" border-border/60 shadow-sm">
-            <CardHeader>
-              <Badge variant="secondary" className="w-fit rounded-full">
+        <section id="support" className="mt-28 grid gap-12 lg:grid-cols-2 items-center">
+          {/* Left Column: Subtitle, Title, Steps */}
+          <div className="space-y-8">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-500">
                 Mua nhanh, biết rõ
-              </Badge>
-              <CardTitle className="text-3xl">Cần hỗ trợ? Có người theo đơn</CardTitle>
-              <CardDescription>
+              </span>
+              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground leading-[1.15]">
+                Cần hỗ trợ?<br />Có người theo đơn
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-lg leading-relaxed mt-2">
                 Với gói cần email hoặc thao tác thủ công, thông tin bạn nhập được ghi nhận đầy đủ để đội hỗ trợ tiếp nhận đúng việc.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3">
-              {SUPPORT_ITEMS.map((item) => (
-                <div key={item} className="rounded-[1.5rem] border border-border p-5 text-sm leading-6 text-muted-foreground">
-                  <CheckCircle2 className="mb-3 h-5 w-5 text-primary" />
-                  {item}
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Step 1 */}
+              <div className="flex gap-5 items-start">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 shadow-sm shadow-amber-500/5">
+                  <MousePointerClick className="size-6" />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-foreground">
+                    Thông tin lưu cùng đơn
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Thông tin email hoặc dữ liệu cần thiết được lưu cùng đơn.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex gap-5 items-start">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 shadow-sm shadow-rose-500/5">
+                  <CreditCard className="size-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-foreground">
+                    Ghi nhận thanh toán rõ ràng
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Mã đơn, số tiền và trạng thái thanh toán được ghi nhận rõ.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex gap-5 items-start">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-500 shadow-sm shadow-teal-500/5">
+                  <Headphones className="size-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-foreground">
+                    Theo dõi & Hỗ trợ kịp thời
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Yêu cầu gia hạn hoặc hỗ trợ lại được theo dõi trong cùng đơn.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Creative card mockup with overlapping ongoing widget */}
+          <div className="relative flex justify-center lg:justify-end px-6 lg:px-0">
+            {/* Soft Ambient Background Glow */}
+            <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-100/20 to-blue-100/20 dark:from-emerald-950/5 dark:to-blue-950/5 rounded-[3rem] blur-3xl" />
+            
+            {/* Main Premium Card (Greece Trip counterpart) */}
+            <div className="relative w-full max-w-[370px] bg-card text-card-foreground rounded-[2rem] shadow-xl border border-border/40 p-5 space-y-4">
+              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-inner bg-muted">
+                <img 
+                  src="/images/edu_sharing_card.png" 
+                  alt="EduShare Account Sharing" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="space-y-2.5 px-1">
+                <h3 className="text-lg font-bold tracking-tight text-foreground">
+                  Gói học tập Canva Pro
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Gia hạn tự động</span>
+                  <span>•</span>
+                  <span>Bởi EduShare Support</span>
+                </div>
+
+                {/* Interactive Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button className="flex size-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors shadow-sm">
+                    <BookOpen className="size-4" />
+                  </button>
+                  <button className="flex size-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors shadow-sm">
+                    <Compass className="size-4" />
+                  </button>
+                  <button className="flex size-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors shadow-sm">
+                    <Send className="size-4" />
+                  </button>
+                </div>
+
+                {/* Footer Metadata */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/60 text-xs">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <CheckCircle2 className="size-4 text-emerald-500" />
+                    <span>12 slot đang hoạt động</span>
+                  </div>
+                  <button className="text-rose-500 hover:text-rose-600 transition-colors">
+                    <Heart className="size-4 fill-rose-500/10 hover:fill-rose-500" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Overlapping Floating Card Widget (Rome Trip counterpart) */}
+              <div className="absolute -bottom-6 -right-4 sm:-right-8 flex items-start gap-3 rounded-2xl bg-background/95 dark:bg-slate-900/95 p-3.5 shadow-2xl border border-border/40 backdrop-blur-md w-[220px] animate-float-delayed">
+                <div className="size-11 shrink-0 rounded-full overflow-hidden bg-muted border border-border/30 shadow-sm">
+                  <img src="/images/rome_icon.png" alt="Microsoft 365" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Đang xử lý</p>
+                  <p className="text-xs font-extrabold text-foreground truncate">Microsoft 365 Family</p>
+                  
+                  <div className="pt-1.5 space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-semibold text-emerald-500">80% hoàn thành</span>
+                      <span className="text-muted-foreground">4/5 slots</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-1.5">
+                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '80%' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
         <section id="testimonials" className="mt-24 grid gap-12 lg:grid-cols-2 items-center py-12">
           <div className="space-y-6">
@@ -595,52 +910,51 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="faq" className="mt-16 pb-24">
-          <Card className=" border-border/60 shadow-sm">
-            <CardHeader className="text-center">
-              <Badge variant="secondary" className="mx-auto w-fit rounded-full">
-                Câu hỏi thường gặp
-              </Badge>
-              <CardTitle className="text-3xl">Câu hỏi thường gặp</CardTitle>
-              <CardDescription>Tìm câu trả lời nhanh cho những thắc mắc phổ biến nhất về EduShare.</CardDescription>
-            </CardHeader>
-            <CardContent className="mx-auto max-w-4xl">
-              <div className="space-y-4">
-                {FAQS.map((item, index) => {
-                  const isOpen = openFaqIndex === index
-                  return (
-                    <div key={item.question} className="rounded-[1.25rem] border border-border">
-                      <button type="button" onClick={() => setOpenFaqIndex(isOpen ? -1 : index)} className="flex w-full items-center justify-between px-5 py-4 text-left">
-                        <span className="font-medium">{item.question}</span>
-                        <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                      </button>
-                      {isOpen ? <div className="border-t border-border px-5 py-4 text-sm leading-6 text-muted-foreground">{item.answer}</div> : null}
+        <section id="faq" className="mt-28 pb-24">
+          <div className="mb-12 text-center flex flex-col items-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-2">
+              Câu hỏi thường gặp
+            </span>
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
+              Câu hỏi thường gặp
+            </h2>
+            <p className="mt-3 text-base text-muted-foreground max-w-2xl leading-relaxed">
+              Tìm câu trả lời nhanh cho những thắc mắc phổ biến nhất về EduShare.
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-4xl space-y-4">
+            {FAQS.map((item, index) => {
+              const isOpen = openFaqIndex === index
+              return (
+                <div 
+                  key={item.question} 
+                  className="rounded-[1.25rem] border border-border/80 bg-card hover:bg-muted/30 dark:hover:bg-muted/10 transition-colors overflow-hidden"
+                >
+                  <button 
+                    type="button" 
+                    onClick={() => setOpenFaqIndex(isOpen ? -1 : index)} 
+                    className="flex w-full items-center justify-between px-6 py-5 text-left font-bold text-foreground focus:outline-none"
+                  >
+                    <span className="text-base sm:text-lg">{item.question}</span>
+                    <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`} />
+                  </button>
+                  <div 
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      isOpen ? 'max-h-[300px] border-t border-border/50' : 'max-h-0'
+                    }`}
+                  >
+                    <div className="px-6 py-5 text-sm sm:text-base leading-relaxed text-muted-foreground">
+                      {item.answer}
                     </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </section>
 
-        <section className="pb-16">
-          <Card className=" border-border/60 bg-gradient-to-r from-primary to-sky-500 text-white shadow-sm">
-            <CardContent className="p-8 text-center sm:p-10">
-              <h2 className="text-3xl font-bold tracking-tight">Sẵn sàng thử cách ghép nhóm an toàn hơn?</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-white/85">
-                Tham gia EduShare để tìm nhóm phù hợp, bảo vệ giao dịch bằng escrow và quản lý mọi thứ gọn gàng hơn.
-              </p>
-              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <Button asChild size="lg" variant="secondary" className="rounded-full px-7 text-slate-950">
-                  <Link to="/login">Bắt đầu miễn phí</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-full border-white/30 bg-white/10 px-7 text-white hover:bg-white/20 hover:text-white">
-                  <a href="#groups">Xem nhóm đang chờ ghép</a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+
       </main>
     </div>
   )

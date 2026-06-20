@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 
 import { ArrowRight, Moon, Sun, LayoutDashboard, Wallet, CreditCard, Receipt, Eye } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -21,9 +21,9 @@ import { WalletService } from '@/services/wallet.service';
 const NAV_ITEMS = [
   { label: 'Trang chủ', href: '/' },
   { label: 'Nhóm', href: '/groups' },
-  { label: 'Tính năng', href: '#' },
-  { label: 'FAQ', href: '#' },
-  { label: 'Liên hệ', href: '#' },
+  { label: 'Tính năng', href: '/#features' },
+  { label: 'FAQ', href: '/#faq' },
+  { label: 'Liên hệ', href: '/#footer' },
 ];
 
 export default function MainLayout() {
@@ -31,6 +31,22 @@ export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.slice(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    } else if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -205,7 +221,7 @@ export default function MainLayout() {
 
       <Outlet />
 
-      <footer className="border-t border-border/50 bg-background text-foreground py-16 px-4 sm:px-6 lg:px-8 mt-24">
+      <footer id="footer" className="border-t border-border/50 bg-background text-foreground py-16 px-4 sm:px-6 lg:px-8 mt-24">
         <div className="mx-auto max-w-7xl grid gap-10 md:grid-cols-2 lg:grid-cols-5 text-left">
           
           {/* Logo & Slogan Column */}

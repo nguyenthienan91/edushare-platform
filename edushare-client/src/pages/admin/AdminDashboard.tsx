@@ -231,7 +231,7 @@ export default function AdminDashboard() {
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className='rounded-full px-4 py-2 text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm'
+                      className='rounded-full px-4 py-2 text-sm '
                     >
                       <CalendarDays className='mr-2 size-4' />
                       {tab.label}
