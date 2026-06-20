@@ -226,12 +226,12 @@ export default function AdminDashboard() {
             <div className='flex flex-col gap-3 md:flex-row md:items-center'>
               {/* Period tabs */}
               <Tabs value={period} onValueChange={(v) => { setPeriod(v as Period); setDateRange(undefined) }}>
-                <TabsList className='rounded-full bg-slate-100 p-1'>
+                <TabsList className='rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-slate-500 dark:text-slate-400'>
                   {dateTabs.map((tab) => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className='rounded-full px-4 py-2 text-sm '
+                      className='rounded-full px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200'
                     >
                       <CalendarDays className='mr-2 size-4' />
                       {tab.label}
@@ -245,10 +245,10 @@ export default function AdminDashboard() {
                 <PopoverTrigger asChild>
                   <Button
                     variant='outline'
-                    className='h-12 min-w-[280px] justify-start rounded-2xl border-slate-200 px-4 text-left font-normal hover:bg-slate-100'
+                    className='h-12 min-w-[280px] justify-start rounded-2xl border-slate-200 dark:border-slate-700 px-4 text-left font-normal hover:bg-slate-100 dark:hover:bg-slate-800 text-foreground transition-all duration-200'
                   >
-                    <CalendarDays className='mr-2 size-4 text-slate-400' />
-                    <span className='truncate text-slate-500'>{rangeLabel}</span>
+                    <CalendarDays className='mr-2 size-4 text-slate-400 dark:text-slate-500' />
+                    <span className='truncate text-slate-500 dark:text-slate-400'>{rangeLabel}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align='end' className='w-auto p-0'>
