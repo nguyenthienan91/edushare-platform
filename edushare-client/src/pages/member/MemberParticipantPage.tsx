@@ -248,7 +248,7 @@ export default function MemberParticipantPage() {
               {/* Body */}
               <div className="p-6">
                 <div className=" border rounded-md p-4 text-sm  mb-5">
-                  Share Hub chỉ là nền tảng hỗ trợ chia sẻ chi phí,
+                  EduShare chỉ là nền tảng hỗ trợ chia sẻ chi phí,
                   không bán tài khoản.
                 </div>
 
