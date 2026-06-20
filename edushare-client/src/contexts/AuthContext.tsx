@@ -12,6 +12,7 @@ export interface UserContext {
 interface AuthContextType {
   user: UserContext | null
   isAuthenticated: boolean
+  isLoading: boolean
   login: (accessToken: string, refreshToken: string) => UserContext | null
   logout: () => Promise<void>
 }
@@ -20,18 +21,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserContext | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      const decoded = decodeToken(token)
-      // Check expiration if we have it
-      if (decoded && (!decoded.exp || decoded.exp * 1000 > Date.now())) {
-        setUser(decoded)
-      } else {
-        logout()
+    const initAuth = async () => {
+      const token = localStorage.getItem('accessToken')
+      if (token) {
+        const decoded = decodeToken(token)
+        // Check expiration if we have it
+        if (decoded && (!decoded.exp || decoded.exp * 1000 > Date.now())) {
+          setUser(decoded)
+        } else {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+          setUser(null)
+          try {
+            await AuthService.logout()
+          } catch (error) {
+            console.error('Logout error on init:', error)
+          }
+        }
       }
+      setIsLoading(false)
     }
+    initAuth()
   }, [])
 
   const login = (accessToken: string, refreshToken: string) => {
@@ -58,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

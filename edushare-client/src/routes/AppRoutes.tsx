@@ -65,22 +65,36 @@ function DashboardRoute({
   )
 }
 
+function LoadingScreen() {
+  return (
+    <div className='flex h-screen w-screen items-center justify-center bg-slate-50/50'>
+      <div className='flex flex-col items-center gap-3'>
+        <div className='h-8 w-8 animate-spin rounded-full border-4 border-slate-900 border-t-transparent' />
+        <p className='text-sm font-medium text-slate-500'>Đang tải...</p>
+      </div>
+    </div>
+  )
+}
+
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (user?.role?.toLowerCase() !== 'admin') return <ForbiddenPage />
   return <>{children}</>
 }
 
 function MemberRoute() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (user?.role?.toLowerCase() === 'guest') return <ForbiddenPage />
   return <Outlet />
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <>{children}</>
 }
