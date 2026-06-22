@@ -105,9 +105,16 @@ export class AuthService {
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email, phoneNumber, redirectTo } = forgotPasswordDto
-    const user = await this.usersService.getUser({
-      $or: [{ email }, { phoneNumber }],
-    })
+
+    const orConditions: Record<string, any>[] = []
+    if (email) orConditions.push({ email })
+    if (phoneNumber) orConditions.push({ phoneNumber })
+
+    if (orConditions.length === 0) {
+      throw new BadRequestException('Email hoặc số điện thoại là bắt buộc')
+    }
+
+    const user = await this.usersService.getUser({ $or: orConditions })
 
     if (!user) throw new UnauthorizedException('Not found user')
 
