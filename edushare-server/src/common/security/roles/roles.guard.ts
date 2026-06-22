@@ -14,10 +14,7 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     // Nếu route được đánh dấu @Public() thì bypass hoàn toàn
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [context.getHandler(), context.getClass()])
     if (isPublic) return true
 
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
