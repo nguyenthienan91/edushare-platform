@@ -4,6 +4,7 @@ import { AuthGuard } from '../auth/auth.guard'
 import { CreateDepositLinkDto } from './dto/create-deposit-link.dto'
 import { PayOSWebhookDto } from './dto/payos-webhook.dto'
 import { ApiBody } from '@nestjs/swagger'
+import { Public } from '../../common/decorators/roles.decorator'
 
 @Controller('payment-gateway')
 export class PaymentGatewayController {
@@ -19,6 +20,7 @@ export class PaymentGatewayController {
 
   // Endpoint công khai để nhận Webhook từ PayOS bắn về
   @Post('webhook')
+  @Public()
   @ApiBody({ type: PayOSWebhookDto })
   async handleWebhook(@Body() webhookBody: PayOSWebhookDto) {
     return await this.paymentService.handlePayOSWebhook(webhookBody)
