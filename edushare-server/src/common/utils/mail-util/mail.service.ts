@@ -28,7 +28,7 @@ export class MailService {
 
     try {
       await this.resend.emails.send({
-        from: 'EduShare <no-reply@thienantech.pro.vn>',
+        from: 'EduShare <no-reply@edushare.cloud>',
         to: email,
         subject: 'Khôi phục mật khẩu - EduShare',
         html: `
