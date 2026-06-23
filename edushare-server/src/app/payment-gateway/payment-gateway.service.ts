@@ -85,4 +85,13 @@ export class PaymentGatewayService {
       return { status: 'invalid signature' }
     }
   }
+
+  /**
+   * 3. Frontend gọi API này khi phát hiện ?cancel=true trong URL redirect từ PayOS
+   * Dùng để set trạng thái topup từ pending -> failed
+   */
+  async cancelDeposit(orderCode: number) {
+    await this.walletsService.cancelTopupFromPayOS(orderCode)
+    return { status: 'success', message: 'Lệnh nạp tiền đã được hủy' }
+  }
 }
