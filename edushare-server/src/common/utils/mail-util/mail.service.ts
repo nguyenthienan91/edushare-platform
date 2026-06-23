@@ -23,7 +23,11 @@ export class MailService {
         return false
       }
     }
-    const baseUrl = (redirectTo && isValidUrl(redirectTo) ? redirectTo : feUrl).replace(/\/$/, '')
+    let baseUrl = (redirectTo && isValidUrl(redirectTo) ? redirectTo : feUrl).replace(/\/$/, '')
+    // 2. 🟢 FIX CHÍ MẠNG: Nếu trong đường dẫn đã có sẵn '/reset-password', hãy xóa nó đi để tránh bị trùng lặp
+    if (baseUrl.endsWith('/reset-password')) {
+      baseUrl = baseUrl.replace(/\/reset-password$/, '')
+    }
     const resetLink = `${baseUrl}/reset-password?token=${token}`
 
     try {
