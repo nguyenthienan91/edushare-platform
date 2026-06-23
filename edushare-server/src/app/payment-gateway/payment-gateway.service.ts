@@ -68,24 +68,15 @@ export class PaymentGatewayService {
     }
 
     try {
-      // --- LUỒNG CHẠY THẬT CỦA PAYOS (Đã verify chữ ký bảo mật) ---
-      // cast as any vì TypeScript type thiếu field 'status' (PayOS gửi nhưng không khai báo trong @types)
-      const verifiedData = (await this.payos.webhooks.verify(webhookBody)) as any
+      // --- LUỒNG CHẠY THẬT CỦA PAYOS (Giữ nguyên để khi lên Production hoạt động bảo mật) ---
+      // verify() xác thực chữ ký và trả về webhook.data trực tiếp
+      // webhookBody.status KHÔNG tồn tại trong payload server nhận — chỉ có trong URL redirect browser
+      const verifiedData = await this.payos.webhooks.verify(webhookBody)
 
-      if (verifiedData) {
-        const orderCode = verifiedData.orderCode
-        // 'code' luôn là '00' cho cả PAID lẫn CANCELLED → phải dùng 'status' để phân biệt
-        const paymentStatus = verifiedData.status as string
-
-        // 1. 🟢 Giao dịch thành công -> Cộng tiền
-        if (paymentStatus === 'PAID') {
-          await this.walletsService.addBalanceFromPayOS(orderCode)
-        }
-
-        // 2. 🔴 Giao dịch bị hủy -> Hủy đơn
-        else if (paymentStatus === 'CANCELLED') {
-          await this.walletsService.cancelTopupFromPayOS(orderCode)
-        }
+      // verifiedData.code === '00' nghĩa là giao dịch THÀNH CÔNG (data-level code)
+      // PayOS KHÔNG gửi webhook khi user hủy → chỉ redirect browser về cancelUrl
+      if (verifiedData && verifiedData.code === '00') {
+        await this.walletsService.addBalanceFromPayOS(verifiedData.orderCode)
       }
 
       return { status: 'success' }
