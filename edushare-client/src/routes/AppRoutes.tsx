@@ -86,7 +86,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function MemberRoute() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <Outlet />
