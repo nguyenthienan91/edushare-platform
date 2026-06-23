@@ -1,8 +1,11 @@
 import { useSearchParams, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle2, XCircle, Wallet, ArrowRight, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { toast } from 'sonner'
+import { PaymentService } from '../../services/payment.service'
 
 export default function WalletResultPage() {
   const [searchParams] = useSearchParams()
@@ -12,6 +15,25 @@ export default function WalletResultPage() {
   const cancel = searchParams.get('cancel')
   const transactionId = searchParams.get('id')
   const orderCode = searchParams.get('orderCode')
+
+  useEffect(() => {
+    if (cancel === 'true' && orderCode) {
+      const codeNum = Number(orderCode)
+      if (codeNum) {
+        PaymentService.cancelDeposit(codeNum)
+          .then(() => {
+            toast.warning('Lệnh nạp tiền đã bị hủy')
+          })
+          .catch((err) => {
+            console.error('Failed to cancel deposit:', err)
+          })
+          .finally(() => {
+            localStorage.removeItem('pendingCancelOrderCode')
+            window.history.replaceState({}, '', '/wallet')
+          })
+      }
+    }
+  }, [cancel, orderCode])
 
   // Xác định trạng thái thanh toán từ PayOS
   // Nếu tham số cancel là 'true' hoặc status chứa thông tin cancel, thì chắc chắn là HỦY
