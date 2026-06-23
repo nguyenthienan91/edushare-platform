@@ -13,6 +13,7 @@ import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import TopupPage from '@/pages/wallet/TopupPage'
+import WalletResultPage from '@/pages/wallet/WalletResultPage'
 import GroupsPage from '@/pages/GroupsPage'
 import MemberJoinGroup from '@/pages/member/MemberJoinGroup'
 import MemberGroupDetailPage from '@/pages/member/MemberGroupDetailPage'
@@ -122,6 +123,7 @@ export default function AppRoutes() {
       <Route path='/forgot-password' element={<ForgotPasswordPage />} />
       <Route path='/reset-password' element={<ResetPasswordPage />} />
       <Route path='/topup' element={<AuthRoute><TopupPage /></AuthRoute>} />
+      <Route path='/wallet' element={<AuthRoute><WalletResultPage /></AuthRoute>} />
       <Route element={<MemberRoute />}>
         <Route path='/member' element={<Navigate to='/dashboard/overview' replace />} />
       <Route path='/member/overview' element={<Navigate to='/dashboard/overview' replace />} />

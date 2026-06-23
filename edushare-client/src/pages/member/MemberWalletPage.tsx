@@ -474,7 +474,11 @@ export default function MemberWalletPage() {
                             </div>
                           </TableCell>
                           <TableCell className='text-right font-semibold'>
-                            {item.type === 'topup' ? (
+                            {item.status === 'pending' ? (
+                              <span className='inline-flex items-center text-muted-foreground font-semibold'>
+                                {item.amount.toLocaleString('vi-VN')}đ
+                              </span>
+                            ) : item.type === 'topup' ? (
                               <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
                                 <Plus className='mr-0.5 size-3.5 shrink-0' />
                                 {item.amount.toLocaleString('vi-VN')}đ
@@ -548,7 +552,11 @@ export default function MemberWalletPage() {
                         </div>
                       </TableCell>
                       <TableCell className='text-right font-semibold'>
-                        {item.type === 'topup' ? (
+                        {item.status === 'pending' ? (
+                          <span className='inline-flex items-center text-muted-foreground font-semibold'>
+                            {item.amount.toLocaleString('vi-VN')}đ
+                          </span>
+                        ) : item.type === 'topup' ? (
                           <span className='inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold'>
                             <Plus className='mr-0.5 size-3.5 shrink-0' />
                             {item.amount.toLocaleString('vi-VN')}đ
