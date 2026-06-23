@@ -93,6 +93,11 @@ export class WalletsService {
     await this.walletModel.findOneAndUpdate({ userId: topupOrder.userId }, { $inc: { balance: topupOrder.amount } })
   }
 
+  async cancelTopupFromPayOS(orderCode: number) {
+    await this.topupModel.updateOne({ orderCode: orderCode, status: 'pending' }, { $set: { status: 'failed' } })
+    return true
+  }
+
   async requestWithdraw(userId: string, withdrawRequestDto: WithdrawRequestDto): Promise<WithdrawalDocument> {
     const session = await this.walletModel.db.startSession()
     try {
