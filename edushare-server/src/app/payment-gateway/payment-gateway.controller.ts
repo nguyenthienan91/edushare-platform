@@ -3,8 +3,9 @@ import { PaymentGatewayService } from './payment-gateway.service'
 import { AuthGuard } from '../auth/auth.guard'
 import { CreateDepositLinkDto } from './dto/create-deposit-link.dto'
 import { PayOSWebhookDto } from './dto/payos-webhook.dto'
-import { ApiBody } from '@nestjs/swagger'
+import { ApiBody, ApiOperation } from '@nestjs/swagger'
 import { Public } from '../../common/decorators/roles.decorator'
+import { CancelDepositDto } from './dto/cancel-deposit.dto'
 
 @Controller('payment-gateway')
 export class PaymentGatewayController {
@@ -24,5 +25,15 @@ export class PaymentGatewayController {
   @ApiBody({ type: PayOSWebhookDto })
   async handleWebhook(@Body() webhookBody: PayOSWebhookDto) {
     return await this.paymentService.handlePayOSWebhook(webhookBody)
+  }
+
+  // Endpoint cho frontend gọi khi PayOS redirect về với cancel=true
+  // Frontend detect ?cancel=true trong cancelUrl rồi gọi API này để set trạng thái failed
+  @Post('cancel')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Hủy lệnh nạp tiền khi user bấm Hủy trên trang PayOS' })
+  @ApiBody({ type: CancelDepositDto })
+  async cancelDeposit(@Body() body: CancelDepositDto) {
+    return await this.paymentService.cancelDeposit(body.orderCode)
   }
 }
