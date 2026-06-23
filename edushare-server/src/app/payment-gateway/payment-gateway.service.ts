@@ -51,25 +51,43 @@ export class PaymentGatewayService {
    * 2. Xử lý dữ liệu Webhook do PayOS tự động bắn về khi user quét mã xong
    */
   async handlePayOSWebhook(webhookBody: any) {
-    // 💡 LỐI ĐI TẮT DÀNH CHO DEVELOPER TEST TRÊN SWAGGER
-    // Nếu dữ liệu truyền lên có code "00" và KHÔNG chứa trường signature
-    if (webhookBody.code === '00' && !webhookBody.signature) {
+    // 💡 LỐI ĐI TẮT DÀNH CHO DEVELOPER TEST TRÊN SWAGGER (Bypass Signature)
+    if (!webhookBody.signature) {
       if (webhookBody.data && webhookBody.data.orderCode) {
-        await this.walletsService.addBalanceFromPayOS(webhookBody.data.orderCode)
-        return { status: 'success', message: 'Giả lập Webhook thành công (Bypass Signature)' }
+        if (webhookBody.data.status === 'PAID') {
+          await this.walletsService.addBalanceFromPayOS(webhookBody.data.orderCode)
+          return { status: 'success', message: 'Giả lập Nạp tiền thành công (Bypass Signature)' }
+        }
+        // Giả lập Hủy trên Swagger bằng cách truyền body.data.status = 'CANCELLED'
+        else if (webhookBody.data.status === 'CANCELLED') {
+          // Gọi hàm xử lý hủy thông qua walletsService cho đồng bộ
+          await this.walletsService.cancelTopupFromPayOS(webhookBody.data.orderCode)
+          return { status: 'success', message: 'Giả lập Hủy thành công (Bypass Signature)' }
+        }
       }
     }
 
     try {
-      // --- LUỒNG CHẠY THẬT CỦA PAYOS (Giữ nguyên để khi lên Production hoạt động bảo mật) ---
-      // Giải mã và xác thực chữ ký bảo mật xem có đúng là PayOS gửi không
-      const verifiedData = await this.payos.webhooks.verify(webhookBody)
+      // --- LUỒNG CHẠY THẬT CỦA PAYOS (Đã verify chữ ký bảo mật) ---
+      // cast as any vì TypeScript type thiếu field 'status' (PayOS gửi nhưng không khai báo trong @types)
+      const verifiedData = (await this.payos.webhooks.verify(webhookBody)) as any
 
-      // Nếu giao dịch thành công (mã thành công thông thường của PayOS là '00')
-      if (verifiedData && webhookBody.code === '00') {
-        // Kích hoạt hàm cộng tiền vào ví người dùng dựa trên orderCode
-        await this.walletsService.addBalanceFromPayOS(verifiedData.orderCode)
+      if (verifiedData) {
+        const orderCode = verifiedData.orderCode
+        // 'code' luôn là '00' cho cả PAID lẫn CANCELLED → phải dùng 'status' để phân biệt
+        const paymentStatus = verifiedData.status as string
+
+        // 1. 🟢 Giao dịch thành công -> Cộng tiền
+        if (paymentStatus === 'PAID') {
+          await this.walletsService.addBalanceFromPayOS(orderCode)
+        }
+
+        // 2. 🔴 Giao dịch bị hủy -> Hủy đơn
+        else if (paymentStatus === 'CANCELLED') {
+          await this.walletsService.cancelTopupFromPayOS(orderCode)
+        }
       }
+
       return { status: 'success' }
     } catch (error) {
       // Trả về lỗi nếu chữ ký webhook bị sai (có kẻ cố tình hack dữ liệu nạp tiền)

@@ -7,6 +7,14 @@ export class WebhookDataDto {
     type: Number,
   })
   orderCode!: number
+
+  @ApiProperty({
+    description: 'Trạng thái giao dịch do PayOS trả về',
+    example: 'PAID',
+    enum: ['PAID', 'CANCELLED', 'PENDING'],
+    type: String,
+  })
+  status!: string
 }
 
 export class PayOSWebhookDto {
