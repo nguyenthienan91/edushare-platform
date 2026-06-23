@@ -180,9 +180,23 @@ export default function LoginPage() {
             <button
               type='button'
               onClick={() => setIsLogin(!isLogin)}
-              className='text-sm font-medium hover:text-indigo-500 transition-colors'
+              className='text-sm font-medium text-slate-500 hover:text-slate-600 dark:text-slate-400 transition-colors'
             >
-              {isLogin ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
+              {isLogin ? (
+                <>
+                  Chưa có tài khoản?{' '}
+                  <span className='text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 underline ml-1 font-semibold'>
+                    Đăng ký
+                  </span>
+                </>
+              ) : (
+                <>
+                  Đã có tài khoản?{' '}
+                  <span className='text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 underline ml-1 font-semibold'>
+                    Đăng nhập
+                  </span>
+                </>
+              )}
             </button>
           </div>
         </div>
