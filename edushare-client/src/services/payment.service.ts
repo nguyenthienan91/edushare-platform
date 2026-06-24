@@ -9,4 +9,11 @@ export const PaymentService = {
       requireAuth: true
     })
   },
+  cancelDeposit: async (orderCode: number) => {
+    return fetchClient('/payment-gateway/cancel', {
+      method: 'POST',
+      body: JSON.stringify({ orderCode }),
+      requireAuth: true
+    })
+  },
 }

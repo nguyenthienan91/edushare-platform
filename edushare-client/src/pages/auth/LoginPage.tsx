@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AuthService } from '../../services/auth.service'
 import { useAuth } from '../../contexts/AuthContext'
+import { PaymentService } from '../../services/payment.service'
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -56,7 +57,32 @@ export default function LoginPage() {
       
       if (decodedUser?.role) {
         toast.success('Đăng nhập thành công')
-        navigate(roleRoutes[decodedUser.role] ?? '/')
+        
+        // Handle pending cancel order if present
+        const pendingCancelOrderCode = localStorage.getItem('pendingCancelOrderCode')
+        if (pendingCancelOrderCode) {
+          const codeNum = Number(pendingCancelOrderCode)
+          if (codeNum) {
+            PaymentService.cancelDeposit(codeNum)
+              .then(() => {
+                toast.warning('Lệnh nạp tiền đã bị hủy')
+              })
+              .catch((err) => {
+                console.error('Failed to cancel deposit after login:', err)
+              })
+              .finally(() => {
+                localStorage.removeItem('pendingCancelOrderCode')
+              })
+          }
+        }
+
+        const redirectUrl = localStorage.getItem('redirectUrl')
+        if (redirectUrl) {
+          localStorage.removeItem('redirectUrl')
+          navigate(redirectUrl)
+        } else {
+          navigate(roleRoutes[decodedUser.role] ?? '/')
+        }
       } else {
         toast.error('Token không hợp lệ')
       }

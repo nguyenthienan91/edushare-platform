@@ -169,6 +169,8 @@ export default function MemberWalletPage() {
         return <Badge variant="secondary">Đang xử lý</Badge>
       case 'rejected':
         return <Badge variant="destructive">Bị từ chối</Badge>
+      case 'failed':
+        return <Badge variant="destructive">Thất bại</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -474,7 +476,7 @@ export default function MemberWalletPage() {
                             </div>
                           </TableCell>
                           <TableCell className='text-right font-semibold'>
-                            {item.status === 'pending' ? (
+                            {item.status === 'pending' || item.status === 'failed' || item.status === 'rejected' ? (
                               <span className='inline-flex items-center text-muted-foreground font-semibold'>
                                 {item.amount.toLocaleString('vi-VN')}đ
                               </span>
@@ -552,7 +554,7 @@ export default function MemberWalletPage() {
                         </div>
                       </TableCell>
                       <TableCell className='text-right font-semibold'>
-                        {item.status === 'pending' ? (
+                        {item.status === 'pending' || item.status === 'failed' || item.status === 'rejected' ? (
                           <span className='inline-flex items-center text-muted-foreground font-semibold'>
                             {item.amount.toLocaleString('vi-VN')}đ
                           </span>

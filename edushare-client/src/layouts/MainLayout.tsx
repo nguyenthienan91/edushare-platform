@@ -186,7 +186,7 @@ export default function MainLayout() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Link 
-                      to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' : user?.role?.toLowerCase() === 'owner' ? '/owner/overview' : '/dashboard/overview'} 
+                      to={user?.role?.toLowerCase() === 'admin' ? '/admin/overview' :  '/dashboard/overview'} 
                       className="relative flex size-9 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     >
                       <LayoutDashboard className="size-4" />
