@@ -13,6 +13,7 @@ import {
   DollarSign,
   Info,
   Loader2,
+  Lock,
   ShieldCheck,
   Star,
   UserRound,
@@ -130,6 +131,36 @@ export default function MemberGroupDetailPage() {
   const [loadingRatings, setLoadingRatings] = useState(true)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isVip, setIsVip] = useState(false)
+  const [loadingUser, setLoadingUser] = useState(true)
+
+  useEffect(() => {
+    let active = true
+
+    const checkVipStatus = async () => {
+      try {
+        const res = await fetchClient('/users/me')
+        if (res && res.isSubscriptionActive === true) {
+          setIsVip(true)
+        } else {
+          setIsVip(false)
+        }
+      } catch (err) {
+        console.error('Error fetching user info:', err)
+        setIsVip(false)
+      } finally {
+        if (active) {
+          setLoadingUser(false)
+        }
+      }
+    }
+
+    checkVipStatus()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const fetchGroupDetails = useCallback(async () => {
     if (!id) return
@@ -226,7 +257,7 @@ export default function MemberGroupDetailPage() {
     return name.substring(0, 2).toUpperCase()
   }
 
-  if (loadingGroup) {
+  if (loadingUser || loadingGroup) {
     return (
       <div className='space-y-6'>
         <div className='flex items-center gap-2'>
@@ -256,6 +287,44 @@ export default function MemberGroupDetailPage() {
             </Card>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (!isVip) {
+    return (
+      <div className='flex items-center justify-center py-10 px-4'>
+        <Card className='max-w-md w-full rounded-lg shadow text-center p-8 relative overflow-hidden'>
+          <div className='relative flex flex-col items-center gap-6'>
+            <div className='flex size-16 items-center justify-center rounded-lg bg-muted text-muted-foreground'>
+              <Lock className='size-8' />
+            </div>
+            
+            <div className='space-y-2'>
+              <h3 className='text-2xl font-bold tracking-tight'>Yêu cầu tài khoản VIP</h3>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
+                Tính năng tham gia nhóm dùng chung phần mềm chỉ dành riêng cho thành viên VIP của EduShare. Kích hoạt VIP ngay để bắt đầu chia sẻ chi phí!
+              </p>
+            </div>
+
+            <div className='w-full pt-4 space-y-3 relative z-10'>
+              <Button 
+                onClick={() => navigate('/dashboard/wallet')}
+                variant='default'
+                className='w-full rounded-md h-12 font-medium'
+              >
+                Nâng cấp VIP (29,000đ/tháng)
+              </Button>
+              <Button 
+                onClick={() => navigate('/dashboard/overview')}
+                variant='outline'
+                className='w-full rounded-md h-12 font-medium'
+              >
+                Quay lại
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     )
   }

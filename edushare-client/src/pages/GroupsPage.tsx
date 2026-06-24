@@ -82,13 +82,14 @@ export default function GroupsPage() {
     })
   }, [groups, search, selectedCategory, sortBy])
 
-  const handleManageClick = () => {
+  const handleManageClick = (group: any) => {
+    const isOwner = group?.ownerId?._id === user?.userID || group?.ownerId === user?.userID;
     if (user?.role?.toLowerCase() === 'admin') {
       navigate('/admin/groups');
-    } else if (user?.role?.toLowerCase() === 'owner') {
-      navigate('/owner/groups');
+    } else if (isOwner) {
+      navigate('/dashboard/groups');
     } else {
-      navigate('/dashboard/participant');
+      navigate(`/dashboard/participant/${group?._id}`);
     }
   }
 
@@ -247,10 +248,10 @@ export default function GroupsPage() {
                       </CardContent>
                       <div className="p-6 pt-0 mt-auto">
                         <Button
-                          onClick={handleManageClick}
+                          onClick={() => handleManageClick(group)}
                           className="w-full rounded-2xl h-12 font-semibold"
                         >
-                          {['admin', 'owner'].includes(user?.role?.toLowerCase() || '') ? (
+                          {user?.role?.toLowerCase() === 'admin' || (group?.ownerId?._id === user?.userID || group?.ownerId === user?.userID) ? (
                             <>Tới trang quản lý <ArrowRight className="ml-2 h-4 w-4" /></>
                           ) : (
                             <>Tham gia / Xem chi tiết <ArrowRight className="ml-2 h-4 w-4" /></>

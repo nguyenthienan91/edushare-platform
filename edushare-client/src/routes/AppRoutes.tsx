@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, Outlet } from 'react-router-dom'
+import { Navigate, Route, Routes, Outlet, useSearchParams } from 'react-router-dom'
 
 import MainLayout from '@/layouts/MainLayout'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
@@ -86,17 +86,27 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function MemberRoute() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   if (isLoading) return <LoadingScreen />
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (user?.role?.toLowerCase() === 'guest') return <ForbiddenPage />
   return <Outlet />
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
+  const [searchParams] = useSearchParams()
+
   if (isLoading) return <LoadingScreen />
-  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    const cancel = searchParams.get('cancel')
+    const orderCode = searchParams.get('orderCode')
+    if (cancel === 'true' && orderCode) {
+      localStorage.setItem('pendingCancelOrderCode', orderCode)
+    }
+    // Save current path + query params for post-login redirect
+    localStorage.setItem('redirectUrl', window.location.pathname + window.location.search)
+    return <Navigate to="/login" replace />
+  }
   return <>{children}</>
 }
 
