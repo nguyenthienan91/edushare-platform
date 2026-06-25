@@ -5,6 +5,9 @@ import { KeyRound, Check, AlertTriangle, ArrowRight, Loader2 } from 'lucide-reac
 import { toast } from 'sonner'
 import { AuthService } from '../../services/auth.service'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('')
@@ -71,12 +74,12 @@ export default function ResetPasswordPage() {
         variants={cardVariants}
         className="w-full max-w-md"
       >
-        <div className="relative overflow-hidden w-full shadow-2xl rounded-3xl border border-border/60 bg-background/60 backdrop-blur-2xl p-8 sm:p-10">
+        <Card className="relative overflow-hidden w-full shadow-2xl rounded-3xl border border-border/60 bg-background/60 backdrop-blur-2xl p-8 sm:p-10">
           {/* Decorative Gradient Overlay */}
           <div className="absolute inset-0 bg-linear-to-b from-white/5 to-white/0 pointer-events-none" />
 
           {/* Logo & Header */}
-          <div className="flex flex-col items-center text-center mb-8 relative z-10">
+          <CardContent className="p-0 flex flex-col items-center text-center mb-8 relative z-10">
             <Link to="/" className="flex items-center gap-3 group mb-6">
               <img
                 src="/images/logo.jpg"
@@ -85,11 +88,11 @@ export default function ResetPasswordPage() {
               />
               <div className="text-left">
                 <h1 className="text-xl font-bold tracking-tight">EduShare</h1>
-                <p className="text-[10px] font-medium text-sky-600">An toàn, thân thiện, dành cho sinh viên</p>
+                <p className="text-[10px] font-medium text-primary">An toàn, thân thiện, dành cho sinh viên</p>
               </div>
             </Link>
 
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 mb-4 shadow-xs">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 text-primary mb-4 shadow-xs">
               <KeyRound className="h-8 w-8" />
             </div>
             
@@ -99,16 +102,16 @@ export default function ResetPasswordPage() {
             <p className="mt-2 text-sm text-muted-foreground px-4">
               Vui lòng thiết lập mật khẩu mới để bảo vệ tài khoản của bạn.
             </p>
-          </div>
+          </CardContent>
 
           {/* Form Content */}
           <div className="relative z-10">
             {!token ? (
               <div className="text-center py-4 space-y-4">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-500">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
                   <AlertTriangle className="h-6 w-6" />
                 </div>
-                <p className="text-sm font-medium text-rose-500">
+                <p className="text-sm font-medium text-destructive">
                   Đường dẫn khôi phục mật khẩu không hợp lệ (thiếu mã token xác thực).
                 </p>
                 <div className="pt-2">
@@ -123,7 +126,7 @@ export default function ResetPasswordPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-6 space-y-4"
               >
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 shadow-sm">
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary shadow-sm">
                   <Check className="h-7 w-7" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">Mật khẩu đã đặt lại thành công!</h3>
@@ -131,34 +134,34 @@ export default function ResetPasswordPage() {
                   Hệ thống đang chuyển hướng bạn về trang Đăng nhập sau giây lát...
                 </p>
                 <div className="pt-4 flex justify-center">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
               </motion.div>
             ) : (
               <form className="space-y-5" onSubmit={handleSubmit}>
                 {/* New Password */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-foreground/90">Mật khẩu mới</label>
-                  <input
+                  <Label className="text-sm font-semibold text-foreground/90">Mật khẩu mới</Label>
+                  <Input
                     type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Tối thiểu 6 ký tự"
-                    className="w-full px-4 py-3 bg-muted/30 border border-border/80 rounded-2xl placeholder-muted-foreground/60 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    className="w-full bg-background border-input"
                   />
                 </div>
 
                 {/* Confirm New Password */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-foreground/90">Xác nhận mật khẩu mới</label>
-                  <input
+                  <Label className="text-sm font-semibold text-foreground/90">Xác nhận mật khẩu mới</Label>
+                  <Input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Nhập lại mật khẩu mới"
-                    className="w-full px-4 py-3 bg-muted/30 border border-border/80 rounded-2xl placeholder-muted-foreground/60 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    className="w-full bg-background border-input"
                   />
                 </div>
 
@@ -167,7 +170,7 @@ export default function ResetPasswordPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-6 text-base font-semibold rounded-2xl bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center gap-2 group transition-all duration-200"
+                    className="w-full h-12 text-base font-semibold rounded-xl flex items-center justify-center gap-2 group transition-all duration-200"
                   >
                     {isLoading ? (
                       <>
@@ -185,8 +188,9 @@ export default function ResetPasswordPage() {
               </form>
             )}
           </div>
-        </div>
+        </Card>
       </motion.div>
     </div>
   )
 }
+
