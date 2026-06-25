@@ -2,6 +2,10 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AuthService } from '../../services/auth.service'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -42,44 +46,42 @@ export default function ForgotPasswordPage() {
           />
           <div className='text-left'>
             <h1 className='text-2xl font-bold tracking-tight'>EduShare</h1>
-            <p className='text-xs font-medium text-sky-600'>An toàn, thân thiện, dành cho sinh viên</p>
+            <p className='text-xs font-medium text-primary'>An toàn, thân thiện, dành cho sinh viên</p>
           </div>
         </Link>
         <h2 className='mt-8 text-center text-3xl font-extrabold'>
           Quên mật khẩu?
         </h2>
-        <p className='mt-2 text-center text-sm'>
+        <p className='mt-2 text-center text-sm text-muted-foreground'>
           Đừng lo, chúng tôi sẽ gửi liên kết khôi phục qua email cho bạn
         </p>
       </div>
 
       {/* Card */}
-      <div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className='py-8 px-6 shadow-sm border border-slate-100 sm:rounded-2xl'>
+      <Card className='mt-8 sm:mx-auto sm:w-full sm:max-w-md shadow-xs border border-border/80 sm:rounded-2xl bg-card text-card-foreground'>
+        <CardContent className='py-8 px-6'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             {/* Email */}
-            <div>
-              <label className='block text-sm font-medium'>Email của bạn</label>
-              <div className='mt-1'>
-                <input
-                  type='email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder='you@example.com'
-                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                />
-              </div>
+            <div className='space-y-1.5'>
+              <Label className='text-sm font-medium text-foreground'>Email của bạn</Label>
+              <Input
+                type='email'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder='you@example.com'
+                className='w-full bg-background border-input'
+              />
             </div>
 
             {/* Button */}
             <div>
-              <button
+              <Button
                 type='submit'
                 disabled={isLoading}
-                className='w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full py-2.5 h-10'
               >
                 {isLoading ? 'Đang gửi...' : 'Gửi liên kết khôi phục'}
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -87,13 +89,14 @@ export default function ForgotPasswordPage() {
           <div className='mt-6 text-center'>
             <Link
               to='/login'
-              className='text-sm font-medium hover:text-indigo-500 transition-colors'
+              className='text-sm font-medium text-primary hover:text-primary/80 transition-colors underline font-semibold'
             >
               Quay lại Đăng nhập
             </Link>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
+

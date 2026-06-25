@@ -4,11 +4,19 @@ import { toast } from 'sonner'
 import { AuthService } from '../../services/auth.service'
 import { useAuth } from '../../contexts/AuthContext'
 import { PaymentService } from '../../services/payment.service'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -35,6 +43,9 @@ export default function LoginPage() {
       if (password.length < 6) {
         return toast.error('Mật khẩu phải từ 6 ký tự trở lên')
       }
+      if (password !== confirmPassword) {
+        return toast.error('Mật khẩu xác nhận không khớp')
+      }
 
       setIsLoading(true)
       try {
@@ -42,6 +53,9 @@ export default function LoginPage() {
         toast.success('Đăng ký thành công! Vui lòng đăng nhập.')
         setIsLogin(true)
         setPassword('')
+        setConfirmPassword('')
+        setShowPassword(false)
+        setShowConfirmPassword(false)
       } catch (error: any) {
         toast.error(error.message)
       } finally {
@@ -94,7 +108,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='min-h-screen from-white via-slate-50 to-indigo-50/40 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+    <div className='min-h-screen from-white via-slate-50 to-indigo-50/40 flex flex-col justify-center py-4 sm:px-6 lg:px-8'>
       {/* Logo */}
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <Link to='/' className='flex items-center justify-center gap-3 group'>
@@ -106,83 +120,99 @@ export default function LoginPage() {
 
           <div className='text-left'>
             <h1 className='text-2xl font-bold tracking-tight'>EduShare</h1>
-            <p className='text-xs font-medium text-sky-600'>An toàn, thân thiện, dành cho sinh viên</p>
+            <p className='text-xs font-medium text-primary'>An toàn, thân thiện, dành cho sinh viên</p>
           </div>
         </Link>
         <h2 className='mt-8 text-center text-3xl font-extrabold'>
           {isLogin ? 'Đăng nhập vào tài khoản' : 'Tạo tài khoản mới'}
         </h2>
-        <p className='mt-2 text-center text-sm'>
-          {isLogin ? 'Chào mừng bạn quay trở lại' : 'Bắt đầu hành trình của bạn'}
-        </p>
+        
       </div>
 
       {/* Card */}
-      <div className='mt-8 sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className=' py-8 px-6 shadow-sm border border-slate-100 sm:rounded-2xl'>
+      <Card className='mt-8 sm:mx-auto sm:w-full sm:max-w-md shadow-xs border border-border/80 sm:rounded-2xl bg-card text-card-foreground'>
+        <CardContent className='py-8 px-6'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             {/* Register only: Display Name */}
             {!isLogin && (
-              <div>
-                <label className='block text-sm font-medium'>Họ và tên</label>
-                <div className='mt-1'>
-                  <input
-                    type='text'
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder='Nguyễn Văn A'
-                    className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                  />
-                </div>
+              <div className='space-y-1.5'>
+                <Label className='text-sm font-medium text-foreground'>Họ và tên</Label>
+                <Input
+                  type='text'
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder='Nguyễn Văn A'
+                  className='w-full bg-background border-input'
+                />
               </div>
             )}
 
-
-
             {/* Email */}
-            <div>
-              <label className='block text-sm font-medium'>Email</label>
-              <div className='mt-1'>
-                <input
-                  type='email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder='you@example.com'
-                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                />
-              </div>
+            <div className='space-y-1.5'>
+              <Label className='text-sm font-medium text-foreground'>Email</Label>
+              <Input
+                type='email'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder='you@example.com'
+                className='w-full bg-background border-input'
+              />
             </div>
 
             {/* Password */}
-            <div>
-              <label className='block text-sm font-medium'>Mật khẩu</label>
-              <div className='mt-1'>
-                <input
-                  type='password'
+            <div className='space-y-1.5'>
+              <Label className='text-sm font-medium text-foreground'>Mật khẩu</Label>
+              <div className='relative'>
+                <Input
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder='••••••••'
-                  className='appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                  className='w-full bg-background border-input pr-9'
                 />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-0'
+                >
+                  {showPassword ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
+                </button>
               </div>
             </div>
+
+            {/* Register only: Confirm Password */}
+            {!isLogin && (
+              <div className='space-y-1.5'>
+                <Label className='text-sm font-medium text-foreground'>Xác nhận mật khẩu</Label>
+                <div className='relative'>
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder='••••••••'
+                    className='w-full bg-background border-input pr-9'
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-0'
+                  >
+                    {showConfirmPassword ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Remember & Forgot Password (Login only) */}
             {isLogin && (
               <div className='flex items-center justify-between'>
                 <div className='flex items-center'>
-                  <input
-                    id='remember-me'
-                    type='checkbox'
-                    className='h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded'
-                  />
-                  <label htmlFor='remember-me' className='ml-2 block text-sm'>
-                    Ghi nhớ đăng nhập
-                  </label>
+                 
+                
                 </div>
 
                 <div className='text-sm'>
-                  <Link to='/forgot-password' className='font-medium text-emerald-600 hover:text-emerald-500'>
+                  <Link to='/forgot-password' className='font-medium text-primary hover:text-primary/80 transition-colors'>
                     Quên mật khẩu?
                   </Link>
                 </div>
@@ -191,13 +221,13 @@ export default function LoginPage() {
 
             {/* Button */}
             <div>
-              <button
+              <Button
                 type='submit'
                 disabled={isLoading}
-                className='w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full py-2.5 h-10'
               >
                 {isLoading ? 'Đang xử lý...' : isLogin ? 'Đăng nhập' : 'Đăng ký'}
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -205,28 +235,34 @@ export default function LoginPage() {
           <div className='mt-6 text-center'>
             <button
               type='button'
-              onClick={() => setIsLogin(!isLogin)}
-              className='text-sm font-medium text-slate-500 hover:text-slate-600 dark:text-slate-400 transition-colors'
+              onClick={() => {
+                setIsLogin(!isLogin)
+                setConfirmPassword('')
+                setShowPassword(false)
+                setShowConfirmPassword(false)
+              }}
+              className='text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-0'
             >
               {isLogin ? (
                 <>
                   Chưa có tài khoản?{' '}
-                  <span className='text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 underline ml-1 font-semibold'>
+                  <span className='text-primary hover:text-primary/80 underline ml-1 font-semibold'>
                     Đăng ký
                   </span>
                 </>
               ) : (
                 <>
                   Đã có tài khoản?{' '}
-                  <span className='text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 underline ml-1 font-semibold'>
+                  <span className='text-primary hover:text-primary/80 underline ml-1 font-semibold'>
                     Đăng nhập
                   </span>
                 </>
               )}
             </button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
+
