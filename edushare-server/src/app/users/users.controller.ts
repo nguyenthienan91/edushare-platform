@@ -20,6 +20,7 @@ import 'multer'
 import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { UpgradeVipDto } from './dto/upgrade-vip.dto'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { UserRole } from './entities/user.entity'
 import { User } from '../../common/decorators/user.decorator'
@@ -91,10 +92,10 @@ export class UsersController {
   @Post('upgrade-vip')
   @Roles()
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Dùng 29k trong ví để mua/gia hạn gói VIP hệ thống' })
-  async upgradeVip(@Req() req: any) {
+  @ApiOperation({ summary: 'Dùng tiền trong ví để mua/gia hạn gói VIP hệ thống (1, 6, 12 tháng)' })
+  async upgradeVip(@Req() req: any, @Body() body: UpgradeVipDto) {
     const userId = req.user.userID
-    return await this.usersService.purchaseVipSubscription(userId)
+    return await this.usersService.purchaseVipSubscription(userId, body.months)
   }
 
   @Post()
