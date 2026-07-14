@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchClient } from '@/utils/fetchClient'
-import { ArrowDown, ArrowUp, ArrowUpDown,  Loader2, Search, Star, UserRound, Users } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, Loader2, Search, Star, UserRound, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -69,6 +69,11 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 
 
 function formatCurrency(value: number) {
   return `${new Intl.NumberFormat('vi-VN').format(value || 0)}đ`
+}
+
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return 'Không giới hạn'
+  return new Date(dateStr).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function getOwnerName(owner: Group['ownerId']) {
@@ -268,7 +273,7 @@ export default function MemberJoinGroup() {
                     <CardContent className='space-y-4'>
                       {group.description && <p className='line-clamp-2 text-sm text-muted-foreground'>{group.description}</p>}
 
-                      <div className='grid grid-cols-2 gap-3 text-sm'>
+                      <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm'>
                         <div className='border p-3'>
                           <p className='text-xs text-muted-foreground'>Slot còn lại</p>
                           <p className='mt-1 font-semibold'>{slotsLeft} slot</p>
@@ -279,11 +284,17 @@ export default function MemberJoinGroup() {
                         </div>
                         <div className='border p-3'>
                           <p className='flex items-center gap-1 text-xs text-muted-foreground'>
+                            <Calendar className='size-3.5' /> Thời hạn
+                          </p>
+                          <p className='mt-1 font-semibold'>{formatDate(group.expiredAt)}</p>
+                        </div>
+                        <div className='border p-3'>
+                          <p className='flex items-center gap-1 text-xs text-muted-foreground'>
                             <Star className='size-3.5' /> Trust score
                           </p>
                           <p className='mt-1 font-semibold'>{trustScore !== null ? `${trustScore}/5` : 'Chưa có'}</p>
                         </div>
-                        <div className='border p-3'>
+                        <div className='border p-3 col-span-2'>
                           <p className='flex items-center gap-1 text-xs text-muted-foreground'>
                             <UserRound className='size-3.5' /> Chủ nhóm
                           </p>
