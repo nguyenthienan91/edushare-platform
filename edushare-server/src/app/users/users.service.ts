@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import dayjs from 'dayjs'
 import { InjectModel } from '@nestjs/mongoose'
 import type { Model, UpdateQuery } from 'mongoose'
 import { Types } from 'mongoose'
@@ -184,40 +185,55 @@ export class UsersService {
     return updatedUser
   }
 
-  async purchaseVipSubscription(userId: string) {
-    const VIP_PRICE = 29000 // Giá gói VIP hệ thống quy định
+  async purchaseVipSubscription(userId: string, months: number) {
+    const priceMatrix: Record<number, number> = {
+      1: 29000,
+      6: 150000,
+      12: 250000,
+    }
+
+    const price = priceMatrix[months]
+    if (!price) {
+      throw new BadRequestException('Gói nâng cấp không hợp lệ.')
+    }
+
     const session = await this.userModel.db.startSession()
     session.startTransaction()
 
     try {
       // 1. Kiểm tra số dư ví khả dụng của User
       const wallet = await this.walletModel.findOne({ userId: new Types.ObjectId(userId) }).session(session)
-      if (!wallet || wallet.balance < VIP_PRICE) {
-        throw new BadRequestException('Insufficient balance. You need at least 29,000đ to purchase a VIP subscription.')
+      if (!wallet || wallet.balance < price) {
+        throw new BadRequestException(`Số dư không đủ. Bạn cần ít nhất ${price.toLocaleString('vi-VN')} credit để mua gói VIP.`)
       }
 
       // 2. Thực hiện trừ tiền sạch trong ví
-      wallet.balance -= VIP_PRICE
+      wallet.balance -= price
       await wallet.save({ session })
 
-      // 3. Tính ngày hết hạn mới: nếu user còn hạn thì gia hạn từ ngày hết hạn cũ (cộng dồn),
-      //    nếu đã hết hạn hoặc chưa có thì tính từ hôm nay
-      const durationInDays = 30
-      const now = new Date()
+      // 3. Tính ngày hết hạn mới
+      const now = dayjs()
 
       const existingUser = await this.userModel.findById(userId).session(session)
       if (!existingUser) throw new NotFoundException('User account not found.')
 
-      // Lấy mốc bắt đầu tính: nếu subscription vẫn còn hiệu lực thì kéo dài từ ngày hết hạn cũ
-      const baseDate =
-        existingUser.isSubscriptionActive && existingUser.membershipExpiresAt && existingUser.membershipExpiresAt > now
-          ? new Date(existingUser.membershipExpiresAt)
-          : now
+      const isActivePremium =
+        existingUser.isSubscriptionActive === true &&
+        existingUser.membershipExpiresAt &&
+        dayjs(existingUser.membershipExpiresAt).isAfter(now)
 
-      const expiresAt = new Date(baseDate)
-      expiresAt.setDate(baseDate.getDate() + durationInDays)
+      let startedAt: Date
+      let expiresAt: Date
 
-      const startedAt = now
+      if (isActivePremium) {
+        // Đang còn hạn: giữ nguyên startedAt cũ, cộng dồn expiresAt
+        startedAt = existingUser.membershipStartedAt || now.toDate()
+        expiresAt = dayjs(existingUser.membershipExpiresAt).add(months, 'month').toDate()
+      } else {
+        // Hết hạn hoặc chưa từng đăng ký: tính từ now
+        startedAt = now.toDate()
+        expiresAt = now.add(months, 'month').toDate()
+      }
 
       const updatedUser = await this.userModel.findByIdAndUpdate(
         userId,
@@ -226,7 +242,7 @@ export class UsersService {
           membershipStartedAt: startedAt,
           membershipExpiresAt: expiresAt,
           isSubscriptionActive: true,
-          lastPaymentAt: startedAt,
+          lastPaymentAt: now.toDate(),
         },
         { returnDocument: 'after', session },
       )
@@ -239,7 +255,7 @@ export class UsersService {
       await session.commitTransaction()
 
       // Gửi thông báo SAU KHI commit thành công - fire-and-forget, lỗi noti không ảnh hưởng giao dịch
-      const formattedExpiryDate = expiresAt.toLocaleDateString('vi-VN')
+      const formattedExpiryDate = dayjs(expiresAt).format('DD/MM/YYYY')
       this.notificationsService
         .createNotification(
           userId, // Người nhận thông báo chính là User vừa mua gói
@@ -251,7 +267,7 @@ export class UsersService {
 
       return {
         status: 'success',
-        message: 'Nâng cấp tài khoản VIP thành công trong 30 ngày!',
+        message: `Nâng cấp tài khoản VIP thành công thêm ${months} tháng!`,
         data: {
           role: updatedUser.role,
           membershipExpiresAt: updatedUser.membershipExpiresAt,

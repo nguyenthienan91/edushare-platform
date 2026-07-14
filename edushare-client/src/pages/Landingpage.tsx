@@ -29,6 +29,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog'
 
 
 const MEMBERSHIP_PLAN = {
@@ -87,6 +88,8 @@ export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [selectedMonths, setSelectedMonths] = useState<number>(1)
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; months: number }>({ open: false, months: 1 })
   const [featuredGroups, setFeaturedGroups] = useState<any[]>([])
   const [isLoadingGroups, setIsLoadingGroups] = useState(true)
   
@@ -272,28 +275,41 @@ export default function LandingPage() {
     })
   }, [])
 
-  const handleUpgradeVip = async () => {
+  const PRICE_MAP: Record<number, { price: number; label: string }> = {
+    1: { price: 29000, label: 'Gói 1 Tháng' },
+    6: { price: 150000, label: 'Gói 6 Tháng' },
+    12: { price: 250000, label: 'Gói 1 Năm' },
+  }
+
+  const handleSelectPlan = (months: number) => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
 
-    if (user?.role?.toLowerCase() !== 'guest') {
-      toast.info("Tài khoản của bạn", { description: "Bạn đã là thành viên (Member) hoặc ở cấp độ cao hơn." })
+    if (user?.role?.toLowerCase() === 'admin') {
+      toast.info("Tài khoản của bạn", { description: "Admin không cần mua VIP." })
       return
     }
 
+    setConfirmDialog({ open: true, months })
+  }
+
+  const confirmUpgradeVip = async () => {
+    const planMonths = confirmDialog.months
+    setConfirmDialog({ open: false, months: planMonths })
+    setSelectedMonths(planMonths)
     setIsUpgrading(true)
     try {
-      const res: any = await UserService.upgradeVip()
+      const res: any = await UserService.upgradeVip(planMonths)
       if (res?.status === 'success' || res?.message) {
-        toast.success("Nâng cấp VIP thành công!", { description: "Bây giờ bạn có thể tham gia các nhóm chia sẻ." })
+        toast.success("Nâng cấp VIP thành công!", { description: res?.message || "Bây giờ bạn có thể tham gia các nhóm chia sẻ." })
         setTimeout(() => window.location.reload(), 1500)
       }
     } catch (error: any) {
       const errorMessage = error.message || "Có lỗi xảy ra, vui lòng thử lại sau."
       toast.error("Giao dịch thất bại", { description: errorMessage })
-      if (errorMessage.toLowerCase().includes("balance")) {
+      if (errorMessage.toLowerCase().includes("balance") || errorMessage.toLowerCase().includes("số dư")) {
         navigate('/topup')
       }
     } finally {
@@ -506,80 +522,162 @@ export default function LandingPage() {
               Bảng giá dịch vụ
             </span>
             <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
-              Gói Thành Viên Standard
+              Chọn gói phù hợp với bạn
             </h2>
             <p className="mt-3 text-base text-muted-foreground max-w-2xl leading-relaxed">
               Nâng cấp trải nghiệm EduShare với gói định kỳ, giúp bạn tham gia nhóm đang chờ ghép nhanh chóng, với chi phí minh bạch và sự bảo vệ giao dịch bởi EduShare.
             </p>
           </div>
 
-          <div className="mx-auto max-w-5xl grid gap-10 lg:grid-cols-12 items-center">
-            {/* Left Part: Info & Benefits list */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="space-y-3">
-                <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-xs">
-                  Member / Standard User
-                </Badge>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                  {MEMBERSHIP_PLAN.title}
-                </h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  {MEMBERSHIP_PLAN.desc}
-                </p>
-              </div>
-
-              <div className="grid gap-3.5 sm:grid-cols-2 pt-2">
-                {MEMBERSHIP_PLAN.benefits.map((item) => (
-                  <div 
-                    key={item} 
-                    className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3.5 text-sm shadow-sm transition-all duration-300 hover:border-emerald-500/30"
-                  >
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                    </span>
-                    <span className="font-semibold text-foreground/80 leading-snug">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Part: Checkout Price Box */}
-            <div className="lg:col-span-5 relative">
-              {/* Soft Gradient Background Panel */}
-              <div className="absolute -inset-2 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 dark:from-emerald-950/20 dark:to-blue-950/20 rounded-[2.5rem] blur-2xl opacity-70" />
-              
-              <div className="relative border border-border/80 bg-card rounded-[2rem] p-7 sm:p-8 shadow-xl flex flex-col justify-between space-y-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phí đăng ký</p>
-                    <div className="text-2xl sm:text-3xl font-black text-foreground">
-                      29.000 credit <span className="text-xs font-normal text-muted-foreground">/ tháng</span>
-                    </div>
-                  </div>
-                  <Badge className="rounded-full px-3 py-1 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border-none shrink-0 shadow-sm text-xs font-bold">
-                    Ưu đãi sinh viên
-                  </Badge>
+          {/* Benefits row */}
+          <div className="mx-auto max-w-4xl mb-10">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {MEMBERSHIP_PLAN.benefits.map((item) => (
+                <div 
+                  key={item} 
+                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3.5 text-sm shadow-sm transition-all duration-300 hover:border-emerald-500/30"
+                >
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="font-semibold text-foreground/80 leading-snug">{item}</span>
                 </div>
-
-                <div className="text-xs leading-relaxed text-muted-foreground/80 bg-muted/40 rounded-xl p-3.5 border border-border/40">
-                  Phí thành viên được thanh toán bằng credit và tự động gia hạn mỗi tháng. Bạn có thể hủy gói bất kỳ lúc nào từ cài đặt tài khoản.
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <Button 
-                    className="rounded-full w-full h-12 text-base font-bold shadow-md bg-emerald-500 hover:bg-emerald-600 text-white border-none transition-colors" 
-                    onClick={handleUpgradeVip} 
-                    disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() !== 'guest')}
-                  >
-                    {isUpgrading ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để đăng ký ngay" : (user?.role?.toLowerCase() !== 'guest' ? "Bạn đã là VIP" : "Nâng cấp VIP ngay (29.000 credit)"))}
-                  </Button>
-                  <Button asChild variant="outline" className="rounded-full w-full h-12 text-base font-semibold">
-                    <a href="#groups">Xem nhóm đang chờ ghép</a>
-                  </Button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+
+          {/* 3 Pricing Cards */}
+          <div className="mx-auto max-w-5xl grid gap-6 lg:grid-cols-3 items-stretch">
+
+            {/* Card 1 - Gói 1 Tháng */}
+            <div className="relative border border-border/80 bg-card rounded-[2rem] p-7 shadow-xl flex flex-col justify-between space-y-5 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs font-bold">Cơ bản</Badge>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Gói 1 Tháng</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Trải nghiệm linh hoạt, phù hợp dùng thử</p>
+                </div>
+                <div className="pt-2">
+                  <span className="text-3xl font-black text-foreground">29.000</span>
+                  <span className="text-sm font-medium text-muted-foreground ml-1">credit / tháng</span>
+                </div>
+                <div className="text-xs leading-relaxed text-muted-foreground/80 bg-muted/40 rounded-xl p-3 border border-border/40">
+                  Thanh toán 1 lần, sử dụng trong 30 ngày. Có thể gia hạn và cộng dồn thời gian.
+                </div>
+              </div>
+              <Button 
+                className="rounded-full w-full h-12 text-base font-bold shadow-md bg-foreground/90 hover:bg-foreground text-background border-none transition-colors" 
+                onClick={() => handleSelectPlan(1)} 
+                disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() === 'admin')}
+              >
+                {isUpgrading && selectedMonths === 1 ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để mua" : (user?.role?.toLowerCase() === 'admin' ? "Admin" : "Chọn gói này"))}
+              </Button>
+            </div>
+
+            {/* Card 2 - Gói 6 Tháng (Popular) */}
+            <div className="relative border-2 border-emerald-500 bg-card rounded-[2rem] p-7 shadow-2xl flex flex-col justify-between space-y-5 transition-all duration-300 hover:shadow-emerald-500/10 hover:-translate-y-1 lg:scale-105">
+              {/* Popular badge */}
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                <Badge className="rounded-full px-4 py-1.5 bg-emerald-500 text-white border-none shadow-lg text-xs font-bold">
+                  🔥 Phổ biến nhất
+                </Badge>
+              </div>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <Badge className="rounded-full px-3 py-1 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border-none text-xs font-bold">Tiết kiệm 15%</Badge>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Gói 6 Tháng</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Lựa chọn tốt nhất cho sinh viên theo kỳ</p>
+                </div>
+                <div className="pt-2">
+                  <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">150.000</span>
+                  <span className="text-sm font-medium text-muted-foreground ml-1">credit / 6 tháng</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="line-through">174.000 credit</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">Tiết kiệm 24.000 credit</span>
+                </div>
+                <div className="text-xs leading-relaxed text-muted-foreground/80 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl p-3 border border-emerald-200/40 dark:border-emerald-800/30">
+                  Thanh toán 1 lần, sử dụng 6 tháng liên tục. Cộng dồn thời gian nếu gia hạn thêm.
+                </div>
+              </div>
+              <Button 
+                className="rounded-full w-full h-12 text-base font-bold shadow-lg bg-emerald-500 hover:bg-emerald-600 text-white border-none transition-colors" 
+                onClick={() => handleSelectPlan(6)} 
+                disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() === 'admin')}
+              >
+                {isUpgrading && selectedMonths === 6 ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để mua" : (user?.role?.toLowerCase() === 'admin' ? "Admin" : "Chọn gói phổ biến"))}
+              </Button>
+            </div>
+
+            {/* Card 3 - Gói 1 Năm */}
+            <div className="relative border border-border/80 bg-card rounded-[2rem] p-7 shadow-xl flex flex-col justify-between space-y-5 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Badge className="rounded-full px-3 py-1 bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border-none text-xs font-bold">Tiết kiệm 30%</Badge>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Gói 1 Năm</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Đầu tư dài hạn, tiết kiệm tối đa</p>
+                </div>
+                <div className="pt-2">
+                  <span className="text-3xl font-black text-foreground">250.000</span>
+                  <span className="text-sm font-medium text-muted-foreground ml-1">credit / năm</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="line-through">348.000 credit</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">Tiết kiệm 98.000 credit</span>
+                </div>
+                <div className="text-xs leading-relaxed text-muted-foreground/80 bg-muted/40 rounded-xl p-3 border border-border/40">
+                  Thanh toán 1 lần, sử dụng cả năm. Cộng dồn thời gian nếu gia hạn thêm.
+                </div>
+              </div>
+              <Button 
+                className="rounded-full w-full h-12 text-base font-bold shadow-md bg-foreground/90 hover:bg-foreground text-background border-none transition-colors" 
+                onClick={() => handleSelectPlan(12)} 
+                disabled={isUpgrading || (isAuthenticated && user?.role?.toLowerCase() === 'admin')}
+              >
+                {isUpgrading && selectedMonths === 12 ? "Đang xử lý..." : (!isAuthenticated ? "Đăng nhập để mua" : (user?.role?.toLowerCase() === 'admin' ? "Admin" : "Chọn gói này"))}
+              </Button>
+            </div>
+
+          </div>
+
+          {/* Confirmation Dialog */}
+          <Dialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-lg">Xác nhận nâng cấp VIP</DialogTitle>
+                <DialogDescription>
+                  Bạn có chắc chắn muốn mua gói này không? Số credit sẽ được trừ từ ví của bạn.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Gói đã chọn</span>
+                  <span className="text-sm font-bold text-foreground">{PRICE_MAP[confirmDialog.months]?.label}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Thành tiền</span>
+                  <span className="text-base font-black text-emerald-600 dark:text-emerald-400">{PRICE_MAP[confirmDialog.months]?.price.toLocaleString('vi-VN')} credit</span>
+                </div>
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <DialogClose asChild>
+                  <Button variant="outline" className="rounded-full">Hủy bỏ</Button>
+                </DialogClose>
+                <Button 
+                  className="rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                  onClick={confirmUpgradeVip}
+                >
+                  Xác nhận thanh toán
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </section>
 
 

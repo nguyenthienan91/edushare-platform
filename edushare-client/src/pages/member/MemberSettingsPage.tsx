@@ -105,6 +105,7 @@ export default function MemberSettingsPage() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [upgradingVip, setUpgradingVip] = useState(false);
+  const [vipConfirmDialog, setVipConfirmDialog] = useState<{ open: boolean; months: number }>({ open: false, months: 1 });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -364,12 +365,26 @@ export default function MemberSettingsPage() {
   };
 
   // ─── Upgrade VIP ────────────────────────────────────────────────────
-  const handleUpgradeVip = async () => {
+  const VIP_PLANS = [
+    { months: 1, price: 29000, label: '1 tháng', priceLabel: '29.000' },
+    { months: 6, price: 150000, label: '6 tháng', priceLabel: '150.000' },
+    { months: 12, price: 250000, label: '1 năm', priceLabel: '250.000' },
+  ];
+
+  const handleSelectVipPlan = (months: number) => {
+    setVipConfirmDialog({ open: true, months });
+  };
+
+  const confirmUpgradeVip = async () => {
+    const months = vipConfirmDialog.months;
+    setVipConfirmDialog({ open: false, months });
     setUpgradingVip(true);
     try {
-      const res = await fetchClient('/users/upgrade-vip', { method: 'POST' });
+      const res = await fetchClient('/users/upgrade-vip', {
+        method: 'POST',
+        body: JSON.stringify({ months }),
+      });
       toast.success(res.message || 'Nâng cấp VIP thành công!');
-      // Refresh profile to get updated role + balance
       await fetchProfile();
     } catch (error: any) {
       toast.error(error.message || 'Không thể nâng cấp VIP. Kiểm tra số dư ví.');
@@ -781,36 +796,84 @@ export default function MemberSettingsPage() {
                     <span className="font-semibold">{formatDate(profile?.lastPaymentAt ?? null)}</span>
                   </div>
                   <Separator />
-                  <Button
-                    className="w-full"
-                    onClick={handleUpgradeVip}
-                    disabled={upgradingVip || isVip}
-                  >
-                    {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
-                    <Crown className="size-4 mr-2" />
-                    Gia hạn thêm 30 ngày — 29.000 credit
-                  </Button>
-                  
+                  <p className="text-xs text-muted-foreground">Gia hạn thêm thời gian sử dụng (cộng dồn vào gói hiện tại):</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {VIP_PLANS.map((plan) => (
+                      <Button
+                        key={plan.months}
+                        variant={plan.months === 6 ? 'default' : 'outline'}
+                        className={`w-full text-xs h-auto py-3 flex flex-col gap-0.5 ${plan.months === 6 ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}`}
+                        onClick={() => handleSelectVipPlan(plan.months)}
+                        disabled={upgradingVip}
+                      >
+                        <span className="font-bold">{plan.label}</span>
+                        <span className="opacity-80">{plan.priceLabel} credit</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="rounded-lg border p-4 bg-amber-500/10 border-amber-500/20">
                     <p className="text-sm text-amber-600">
-                      Nâng cấp gói VIP Member với giá <strong>29.000 credit / 30 ngày</strong> để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
+                      Nâng cấp gói VIP Member để mở khóa toàn bộ tính năng tham gia nhóm dùng chung phần mềm.
                     </p>
                   </div>
 
-                  <Button
-                    className="w-full"
-                    onClick={handleUpgradeVip}
-                    disabled={upgradingVip}
-                  >
-                    {upgradingVip && <Loader2 className="size-4 mr-2 animate-spin" />}
-                    <Crown className="size-4 mr-2" />
-                    Nâng cấp VIP — 29.000 credit
-                  </Button>
+                  <div className="grid grid-cols-3 gap-2">
+                    {VIP_PLANS.map((plan) => (
+                      <Button
+                        key={plan.months}
+                        variant={plan.months === 6 ? 'default' : 'outline'}
+                        className={`w-full text-xs h-auto py-3 flex flex-col gap-0.5 ${plan.months === 6 ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : ''}`}
+                        onClick={() => handleSelectVipPlan(plan.months)}
+                        disabled={upgradingVip}
+                      >
+                        {upgradingVip && <Loader2 className="size-3 animate-spin" />}
+                        <span className="font-bold">{plan.label}</span>
+                        <span className="opacity-80">{plan.priceLabel} credit</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* VIP Confirmation Dialog */}
+              <Dialog open={vipConfirmDialog.open} onOpenChange={(open) => setVipConfirmDialog(prev => ({ ...prev, open }))}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg">Xác nhận {isVip ? 'gia hạn' : 'nâng cấp'} VIP</DialogTitle>
+                    <DialogDescription>
+                      Số credit sẽ được trừ từ ví của bạn. {isVip ? 'Thời gian sẽ được cộng dồn vào gói hiện tại.' : ''}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">Gói đã chọn</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {VIP_PLANS.find(p => p.months === vipConfirmDialog.months)?.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">Thành tiền</span>
+                      <span className="text-base font-black text-emerald-600">
+                        {VIP_PLANS.find(p => p.months === vipConfirmDialog.months)?.priceLabel} credit
+                      </span>
+                    </div>
+                  </div>
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button variant="outline" className="rounded-full" onClick={() => setVipConfirmDialog(prev => ({ ...prev, open: false }))}>
+                      Hủy bỏ
+                    </Button>
+                    <Button
+                      className="rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                      onClick={confirmUpgradeVip}
+                    >
+                      Xác nhận thanh toán
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </Card>
 
             {/* Bank Info */}
